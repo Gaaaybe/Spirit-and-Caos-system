@@ -127,6 +127,20 @@ Acesse: `http://localhost:5173`
 npm run build
 ```
 
+### Deploy
+
+O projeto está configurado para **deploy automático** no GitHub Pages:
+
+- ✅ Push no `master` → Deploy automático
+- ✅ Testes executados antes do deploy
+- ✅ Build otimizado com Vite
+- 🌐 **URL:** `https://gaaaybe.github.io/Spirit-and-Caos-system/`
+
+**Configuração manual (primeira vez):**
+1. Vá em **Settings** → **Pages** no GitHub
+2. Em **Source**, selecione **GitHub Actions**
+3. Faça push no master e aguarde o deploy (~2 min)
+
 ## 📝 Exemplos de Uso
 
 ### Criar um Poder Simples
