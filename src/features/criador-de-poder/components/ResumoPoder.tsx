@@ -1,6 +1,6 @@
 import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast } from '../../../shared/ui';
 import { Poder } from '../regras/calculadoraCusto';
-import { MODIFICACOES, obterNomeParametro, buscarGrauNaTabela } from '../../../data';
+import { MODIFICACOES, obterNomeParametro, buscarGrauNaTabela, EFEITOS, ESCALAS } from '../../../data';
 import type { DetalhesPoder } from '../types';
 
 interface ResumoPoderProps {
@@ -15,6 +15,91 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     const texto = gerarTextoResumo();
     navigator.clipboard.writeText(texto);
     toast.success('Resumo copiado para a área de transferência!');
+  };
+
+  const gerarNotacaoCompacta = () => {
+    let partes: string[] = [];
+    
+    // Para cada efeito
+    detalhes.efeitosDetalhados.forEach((ef: any) => {
+      let linha = `${ef.efeitoBase.nome}`;
+      
+      // Grau
+      linha += ` ${ef.efeito.grau}`;
+      
+      // Input customizado (ex: Imunidade a Fogo)
+      if (ef.efeito.inputCustomizado) {
+        linha += ` [${ef.efeito.inputCustomizado}]`;
+      }
+      
+      // Configuração (ex: Patamar 3)
+      if (ef.efeito.configuracaoSelecionada && ef.efeitoBase.configuracoes) {
+        const config = ef.efeitoBase.configuracoes.opcoes.find((c: any) => c.id === ef.efeito.configuracaoSelecionada);
+        if (config && config.modificadorCusto !== 0) {
+          linha += ` (${config.nome} ${config.modificadorCusto > 0 ? '+' : ''}${config.modificadorCusto})`;
+        } else if (config) {
+          linha += ` (${config.nome})`;
+        }
+      }
+      
+      // Modificações locais
+      if (ef.efeito.modificacoesLocais.length > 0) {
+        const mods = ef.efeito.modificacoesLocais.map((mod: any) => {
+          const modBase = MODIFICACOES.find(m => m.id === mod.modificacaoBaseId);
+          let modTexto = modBase?.nome || mod.modificacaoBaseId;
+          
+          if (mod.grauModificacao && mod.grauModificacao > 1) {
+            modTexto += ` ${mod.grauModificacao}`;
+          }
+          
+          // Calcular custo da modificação
+          const grauMod = mod.grauModificacao || 1;
+          const custoMod = modBase ? (modBase.custoFixo + modBase.custoPorGrau * grauMod) : 0;
+          
+          if (custoMod !== 0) {
+            modTexto += ` ${custoMod > 0 ? '+' : ''}${custoMod}`;
+          }
+          
+          if (mod.parametros?.descricao) {
+            modTexto += ` (${mod.parametros.descricao})`;
+          }
+          
+          return modTexto;
+        }).join(', ');
+        
+        linha += `. ${mods}`;
+      }
+      
+      // Custo total do efeito
+      linha += ` = ${ef.custoTotal} PdA`;
+      
+      partes.push(linha);
+    });
+    
+    // Modificações globais
+    if (poder.modificacoesGlobais.length > 0) {
+      const modsGlobais = poder.modificacoesGlobais.map(mod => {
+        const modBase = MODIFICACOES.find(m => m.id === mod.modificacaoBaseId);
+        let modTexto = modBase?.nome || mod.modificacaoBaseId;
+        
+        if (mod.grauModificacao && mod.grauModificacao > 1) {
+          modTexto += ` ${mod.grauModificacao}`;
+        }
+        
+        const grauMod = mod.grauModificacao || 1;
+        const custoMod = modBase ? (modBase.custoFixo + modBase.custoPorGrau * grauMod) : 0;
+        
+        if (custoMod !== 0) {
+          modTexto += ` ${custoMod > 0 ? '+' : ''}${custoMod}`;
+        }
+        
+        return modTexto;
+      }).join(', ');
+      
+      partes.push(`[GLOBAL: ${modsGlobais}]`);
+    }
+    
+    return partes.join('\n');
   };
 
   const gerarTextoResumo = () => {
@@ -221,6 +306,31 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
               </p>
             </div>
           </div>
+        </div>
+
+        {/* Notação Compacta */}
+        <div className="bg-gradient-to-r from-gray-50 to-slate-50 dark:from-gray-900/30 dark:to-slate-900/30 rounded-lg p-4 border-l-4 border-slate-500">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-2xl">📝</span>
+            <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">
+              Notação Compacta
+            </h3>
+            <Badge variant="secondary" size="sm">Build String</Badge>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <pre className="text-sm font-mono text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+              {gerarNotacaoCompacta()}
+            </pre>
+          </div>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(gerarNotacaoCompacta());
+              toast.success('Notação compacta copiada!');
+            }}
+            className="mt-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 flex items-center gap-1"
+          >
+            📋 Copiar notação
+          </button>
         </div>
 
         {/* Lista de Efeitos com visual aprimorado */}
