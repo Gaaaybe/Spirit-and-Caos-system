@@ -176,7 +176,8 @@
     "custoPorGrau": 2,
     "descricao": "Permite que você mude o descritor do seu efeito (como de fogo para gelo, ou de sônico para elétrico) como uma ação livre.",
     "requerParametros": true,
-    "tipoParametro": "select",
+    "tipoParametro": "texto",
+    "placeholder": "Ex: Fogo, Gelo, Eletricidade",
     "configuracoes": {
       "tipo": "select",
       "label": "Abrangência dos Descritores",
@@ -1591,5 +1592,25 @@
     "requerParametros": false,
     "categoria": "Mudar Efeito",
     "observacoes": "Apenas para o efeito Mudar Efeito. Limitado a alterar descritores."
+  },
+    {
+    "id": "dominio-iniciante",
+    "nome": "Domínio Iniciante",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 1,
+    "descricao": "Extra obrigatório para poderes cujo dominio estejam iniciante (Modificação global).",
+    "requerParametros": false,
+    "categoria": "Dominio"
+  },
+      {
+    "id": "dominio-mestre",
+    "nome": "Domínio Mestre",
+    "tipo": "falha",
+    "custoFixo": 0,
+    "custoPorGrau": -1,
+    "descricao": "Extra obrigatório para poderes cujo dominio estejam mestre (Modificação global).",
+    "requerParametros": false,
+    "categoria": "Dominio"
   }
 ]
