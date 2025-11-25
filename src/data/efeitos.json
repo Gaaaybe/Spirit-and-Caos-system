@@ -13,7 +13,41 @@
     "tipoInput": "texto",
     "labelInput": "Qual condição?",
     "categorias": ["Ataque", "Debuff", "Suporte"],
-    "exemplos": "Envenenar, paralisar, queimar"
+    "exemplos": "Envenenar, paralisar, queimar",
+    "configuracoes":{
+      "tipo":"select",
+      "label": "Patamar de Afligir",
+      "opcoes":[
+        {
+          "id": "fracas",
+          "nome": "Fraca - Patamar 1",
+          "grauMinimo": 1,
+          "modificadorCusto": 0,
+          "descricao": "Condições Fracas (Apenas para afligir de grau 1 ou mais)."
+        },
+        {
+          "id": "medias",
+          "nome": "Medias - Patamar 2",
+          "grauMinimo": 3,
+          "modificadorCusto": 1,
+          "descricao": "Condições Medias (Apenas para afligir de grau 3 ou mais)."
+        },
+        {
+          "id": "fortes",
+          "nome": "Fortes - Patamar 3",
+          "grauMinimo": 6,
+          "modificadorCusto": 2,
+          "descricao": "Condições Fortes (Apenas para afligir de grau 6 ou mais)."
+        },
+        {
+          "id": "extremas",
+          "nome": "Extremas - Patamar 4",
+          "grauMinimo": 7,
+          "modificadorCusto": 3,
+          "descricao": "Condições Extremas (Apenas para afligir de grau 7 ou mais)."
+        }
+      ]
+    }
   },
   {
     "id": "dano",
@@ -32,7 +66,7 @@
     "id": "enfraquecer",
     "nome": "Enfraquecer",
     "custoBase": 1,
-    "descricao": "Você reduz temporariamente atributos, perícias, PV, PE, dano, RD ou características críticas do alvo. O tipo de enfraquecimento determina o custo base. Atributos: bônus +3 (grau 1), +5 (grau 2), +10 (grau 3), depois +15/grau. Perícias: mesmo bônus que atributos. PV: reduz PV máximos temporariamente. PE: apenas em personagens de jogador. Dano: deve especificar fonte (domínio ou tipo de arma). RD: reduz defesa. Crítico-Multiplicador: -1 a cada 2 graus (mínimo x0 se ameaça já for 20). Crítico-Margem: -1 a cada 2 graus (não pode reduzir abaixo de 20).",
+    "descricao": "Você reduz temporariamente atributos, perícias, PV, PE, dano, RD ou características críticas do alvo. O tipo de enfraquecimento determina o custo base.",
     "parametrosPadrao": {
       "acao": 1,
       "alcance": 1,
@@ -48,13 +82,13 @@
           "id": "pericia",
           "nome": "Perícia",
           "modificadorCusto": 0,
-          "descricao": "Reduz perícia do alvo. Bônus: +3 (grau 1), +5 (grau 2), +10 (grau 3), +15 por grau adicional"
+          "descricao": "Você tem uma quantidade padrão de -3, para redução que pode ser distribuído entre os atributos do alvo (Você deve definir quais atributos esse efeito enfraquece ao compraresse efeito), no grau 2 -5, no grau 3 -10, depoisdisso aumentará em 15 por grau desse efeito,sendo grau 4 (-25) e assim por diante. Ao escolher enfraquecer atributo."
         },
         {
           "id": "pe",
           "nome": "Pontos de Energia (PE)",
-          "modificadorCusto": 0,
-          "descricao": "Reduz PE temporariamente. Apenas funciona em personagens de jogador"
+          "modificadorCusto": 2,
+          "descricao": "Este efeito permite enfraquecer os Pontos de Energia (PE) de um alvo. Fórmula de Enfraquecimento: O alvo perde uma quantidade de PE Maximo igual a 4 × Grau do efeito.(Exemplo: Grau 1 = 4 PE; Grau 5 = 20 PE; Grau10 = 40 PE).A quantidade de PE Enfraquecida é fixa pela fórmula. Este efeito não pode ser alvo de qualquer modificador que altere valores numéricos."
         },
         {
           "id": "critico-multiplicador",
@@ -72,7 +106,7 @@
           "id": "atributo",
           "nome": "Atributo",
           "modificadorCusto": 1,
-          "descricao": "Reduz atributo do alvo. Bônus: +3 (grau 1), +5 (grau 2), +10 (grau 3), +15 por grau adicional"
+          "descricao": "Você tem uma quantidade padrão de -3, para redução que pode ser distribuído entre os atributos do alvo (Você deve definir quais atributos esse efeito enfraquece ao compraresse efeito), no grau 2 -5, no grau 3 -10, depoisdisso aumentará em 15 por grau desse efeito,sendo grau 4 (-25) e assim por diante. Ao escolher enfraquecer atributo."
         },
         {
           "id": "dano",
@@ -103,7 +137,7 @@
     "id": "fortalecer",
     "nome": "Fortalecer",
     "custoBase": 1,
-    "descricao": "Você concede bônus temporários em atributos, perícias, PV, PE, dano, RD ou características críticas do alvo. O tipo de fortalecimento determina o custo base. Atributos/Perícias: bônus +3 (grau 1), +5 (grau 2), +10 (grau 3), depois +15/grau. PV: concede PV temporários (rolagem de cura conforme tabela). PE: aumenta PE temporariamente. Dano: +2 (grau 1), dobra a cada grau até +1024 (grau 10). RD: +2 (grau 1), dobra a cada grau até +1024 (grau 10). Crítico-Multiplicador: +1 a cada 2 graus (custo dobra para aumentos subsequentes no mesmo item: +1, +2, +4...). Crítico-Margem: +1 a cada 2 graus (custo dobra: +1, +2, +4...). Alcance: +2 metros por grau. Ações: +1 ação (grau 2), +2 ações (grau 6), +3 ações (grau 10).",
+    "descricao": "Você concede bônus temporários em atributos, perícias, PV, PE, dano, RD ou características críticas do alvo. O tipo de fortalecimento determina o custo base.",
     "parametrosPadrao": {
       "acao": 3,
       "alcance": 0,
@@ -124,8 +158,8 @@
         {
           "id": "pe",
           "nome": "Pontos de Energia (PE)",
-          "modificadorCusto": 0,
-          "descricao": "Aumenta PE temporariamente. Apenas funciona em personagens de jogador"
+          "modificadorCusto": 2,
+          "descricao": "Este efeito permite Fortalecer os Pontos de Energia (PE) de um alvo. Fórmula de Fortalecimento: O alvo ganha uma quantidade de PE Temporario (Se permanentes esses PE recuperam totalmente num descanso) igual a 4 × Grau do efeito.(Exemplo: Grau 1 = 4 PE; Grau 5 = 20 PE; Grau10 = 40 PE).A quantidade de PE Fortalecida é fixa pela fórmula. Este efeito não pode ser alvo de qualquer modificador que altere valores numéricos."
         },
         {
           "id": "critico-multiplicador",
@@ -185,7 +219,7 @@
   {
     "id": "nulificar",
     "nome": "Nulificar",
-    "custoBase": 1,
+    "custoBase": 2,
     "descricao": "Pode contra-atacar efeitos específicos de um descritor ou domínio, como fogo, efeitos mentais, domínios, etc. Permite cancelar ou neutralizar poderes e técnicas adversários.",
     "parametrosPadrao": {
       "acao": 1,
@@ -258,7 +292,7 @@
   {
     "id": "camuflagem",
     "nome": "Camuflagem",
-    "custoBase": 2,
+    "custoBase": 3,
     "descricao": "Você ganha camuflagem total contra um sentido específico, embora ainda seja detectável por outros sentidos (incluindo outros sentidos do mesmo tipo; assim, você pode ter camuflagem contra visão normal, mas não contra qualquer outro sentido visual, como térmica). Cada grau adicional concede camuflagem contra outro sentido; 2 graus concedem camuflagem contra um tipo inteiro de sentido. Camuflagem contra sentidos visuais custam o dobro (2 graus para um sentido visual, 4 para todos os sentidos visuais). Assim, com Camuflagem 5, você pode ter camuflagem contra todos os sentidos visuais (4 graus) e contra audição normal (1 grau), por exemplo. Você não pode ter camuflagem contra sentidos do tato, uma vez que isso exige ser intangível.",
     "parametrosPadrao": {
       "acao": 3,
@@ -379,7 +413,7 @@
   {
     "id": "leitura-mental",
     "nome": "Leitura Mental",
-    "custoBase": 2,
+    "custoBase": 3,
     "descricao": "Você pode ler a mente de outro personagem. Faça um teste de efeito oposto por Vontade do alvo. O nível de sucesso determina o nível de contato, limitado pelo grau do efeito. Nível 1 (Grau 1+): Pensamentos superficiais - lê o que o alvo está pensando agora, transcende idiomas. Nível 2 (Grau 3+): Pensamentos pessoais - pode investigar mais fundo, fazer perguntas e receber respostas. Nível 3 (Grau 6+): Memória - pode ler lembranças e memórias exatas do alvo, uma por rodada. Nível 4 (Grau 9+): Subconsciente - pode ler memórias reprimidas, traumas profundos, outras personalidades. Se perder o teste oposto, não pode ler a mente. Com 2+ falhas, tentativas extras na mesma cena exigem inspiração. Para nível maior de contato, precisa de nova ação padrão e novo teste.",
     "parametrosPadrao": {
       "acao": 1,
@@ -392,7 +426,7 @@
   {
     "id": "sentidos",
     "nome": "Sentidos",
-    "custoBase": 1,
+    "custoBase": 2,
     "descricao": "Seus sentidos são melhores, ou você tem sentidos adicionais. Cada grau permite escolher efeitos da lista: Acurado (2/4 graus), À Distância (1), Aguçado (1-2), Analítico (1-2), Contra-Ataca Camuflagem (2-5), Contra-Ataca Ilusão (4), Detecção (2), Elo de Comunicação (1), Estendido (3), Infravisão (1), Penetra Camuflagem (5), Percepção (1-2), Pós-cognição (6), Precognição (7), Rádio (1), Radial (1-2), Rápido (1+), Rastrear (2), Sentido de Direção (1), Sentido de Distância (1), Sentido de Perigo (1), Sentido de Tempo (1), Ultra-audição (1), Ultravisão (1), Visão Microscópica (2-8), Visão na Penumbra (1), Visão no Escuro (3-6). Combine efeitos conforme necessário, respeitando o custo total.",
     "parametrosPadrao": {
       "acao": 5,
@@ -550,7 +584,7 @@
   {
     "id": "voo",
     "nome": "Voo",
-    "custoBase": 2,
+    "custoBase": 3,
     "descricao": "Você pode voar, incluindo flutuar em um mesmo lugar. Você tem um grau de velocidade e deslocamento de voo igual ao seu grau neste efeito.",
     "parametrosPadrao": {
       "acao": 3,
@@ -563,7 +597,7 @@
   {
     "id": "ambiente",
     "nome": "Ambiente",
-    "custoBase": 2,
+    "custoBase": 3,
     "descricao": "Você pode mudar o ambiente: aumentar ou diminuir a temperatura, criar luz, fazer chover e assim por diante. Seu Ambiente afeta um raio pelo grau desse efeito, ao seu redor. Cada grau adicional amplia o raio em um Grau de distância. Cada efeito abaixo é um Ambiente separado (use Efeitos Alternativos ou some custos/use Seletivo para múltiplos simultâneos). Calor/Frio: 2 PdA = intenso, 4 PdA = extremo. Impedir Movimento: 2 PdA = terreno difícil com teste Atletismo, 4 PdA = sem teste. Luz: 2 PdA = reduz camuflagem (total→parcial→nenhuma), 4 PdA = luz solar (elimina camuflagem de escuridão). Visibilidade: 2 PdA = Enfraquecer Percepção pelo grau do efeito.",
     "parametrosPadrao": {
       "acao": 1,
@@ -585,7 +619,7 @@
         {
           "id": "calor-frio-extremo",
           "nome": "Calor ou Frio (Extremo)",
-          "modificadorCusto": 2,
+          "modificadorCusto": 3,
           "descricao": "Cria calor ou frio extremo na área (escolha um ao comprar)"
         },
         {
@@ -597,7 +631,7 @@
         {
           "id": "impedir-movimento-total",
           "nome": "Impedir Movimento (sem teste)",
-          "modificadorCusto": 2,
+          "modificadorCusto": 3,
           "descricao": "Terreno difícil sem possibilidade de teste para se livrar"
         },
         {
@@ -609,7 +643,7 @@
         {
           "id": "luz-total",
           "nome": "Luz (Luz Solar)",
-          "modificadorCusto": 2,
+          "modificadorCusto": 3,
           "descricao": "Luz intensa como dia ensolarado, elimina toda camuflagem por escuridão"
         },
         {
@@ -836,7 +870,7 @@
   {
     "id": "mover-alvo",
     "nome": "Mover Alvo",
-    "custoBase": 2,
+    "custoBase": 3,
     "descricao": "Você pode mover alvos sem tocar neles. Mover Alvo não tem ação/reação - objeto em movimento não arrasta personagem movendo-o. Não conta como 'contato físico' ou 'toque' para efeitos que exijam. Para mover alvos vivos, necessário teste de efeito com resistência (apenas se alvo não quiser). Pode mover objetos e criaturas telecineticamente. Peso/tamanho movido depende do grau do efeito.",
     "parametrosPadrao": {
       "acao": 1,
@@ -896,8 +930,8 @@
         {
           "id": "energia",
           "nome": "Energia (PE)",
-          "modificadorCusto": 4,
-          "descricao": "Recupera PE = grau do custo. Deve ter 2+ falhas verdadeiras. Efeitos colaterais duram 1+ dia. Não fortalecível"
+          "modificadorCusto": 5,
+          "descricao": "Recupera uma quantidade de PE igual a 4 × Grau do efeito. Deve ter 2+ falhas verdadeiras. Efeitos colaterais duram 1+ dia. Não fortalecível"
         }
       ]
     }
@@ -905,7 +939,7 @@
   {
     "id": "membros-extras",
     "nome": "Membros Extras",
-    "custoBase": 1,
+    "custoBase": 5,
     "descricao": "O alvo tem membros manipuladores extras, como braços, tentáculos ou até mesmo cabelo ou cauda preênseis. Cada grau neste efeito concede um membro extra.",
     "parametrosPadrao": {
       "acao": 5,
