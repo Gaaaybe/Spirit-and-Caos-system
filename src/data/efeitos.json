@@ -426,7 +426,7 @@
   {
     "id": "sentidos",
     "nome": "Sentidos",
-    "custoBase": 2,
+    "custoBase": 4,
     "descricao": "Seus sentidos são melhores, ou você tem sentidos adicionais. Cada grau permite escolher efeitos da lista: Acurado (2/4 graus), À Distância (1), Aguçado (1-2), Analítico (1-2), Contra-Ataca Camuflagem (2-5), Contra-Ataca Ilusão (4), Detecção (2), Elo de Comunicação (1), Estendido (3), Infravisão (1), Penetra Camuflagem (5), Percepção (1-2), Pós-cognição (6), Precognição (7), Rádio (1), Radial (1-2), Rápido (1+), Rastrear (2), Sentido de Direção (1), Sentido de Distância (1), Sentido de Perigo (1), Sentido de Tempo (1), Ultra-audição (1), Ultravisão (1), Visão Microscópica (2-8), Visão na Penumbra (1), Visão no Escuro (3-6). Combine efeitos conforme necessário, respeitando o custo total.",
     "parametrosPadrao": {
       "acao": 5,
@@ -528,7 +528,7 @@
   {
     "id": "movimentacao",
     "nome": "Movimentação",
-    "custoBase": 2,
+    "custoBase": 4,
     "descricao": "Você tem uma forma especial de movimento. Para cada grau neste efeito, escolha uma das opções: Adaptação ao Ambiente (não sofre penalidades em ambiente específico), Andar na Água (2 graus = não afunda mesmo caído), Balançar-se (usa linhas para mover-se), Deslizar (move-se caído sem penalidades), Escalar Paredes (velocidade –4, +1 grau = velocidade total sem vulnerável), Estabilidade (reduz penalidade de obstáculos), Movimento Dimensional (5 = 2 dimensões, 8 = grupo, 13 = qualquer), Permear (2 = vel –4, 4 = vel –1, 6 = vel normal através de sólidos), Queda Segura (cai sem ferir), Sem Rastros (não deixa pegadas, +graus = outros sentidos), Viagem Espacial (velocidade ×10 por grau no espaço), Viagem Temporal (5 = 1 ponto fixo, 10 = passado OU futuro, 13 = qualquer tempo).",
     "parametrosPadrao": {
       "acao": 3,
