@@ -94,13 +94,15 @@
           "id": "critico-multiplicador",
           "nome": "Crítico - Multiplicador",
           "modificadorCusto": 0,
-          "descricao": "Reduz multiplicador de crítico do item. Redução -1 a cada 2 graus. Mínimo x0 (se ameaça já for 20)"
+          "custoProgressivo": "dobrado",
+          "descricao": "Reduz multiplicador de crítico em -1 a cada 2 graus (ex: x3→x2→x1). Custo dobra: grau 1-2 (+0/grau), grau 3-4 (+0/grau), grau 5-6 (+0/grau), etc. Mínimo x0"
         },
         {
           "id": "critico-margem",
           "nome": "Crítico - Margem",
           "modificadorCusto": 0,
-          "descricao": "Reduz margem de crítico. Redução -1 a cada 2 graus. Não pode reduzir abaixo de 20"
+          "custoProgressivo": "dobrado",
+          "descricao": "Reduz margem de crítico em +1 a cada 2 graus (ex: 19-20→20). Custo dobra: grau 1-2 (+0/grau), grau 3-4 (+0/grau), grau 5-6 (+0/grau), etc. Não reduz abaixo de 20"
         },
         {
           "id": "atributo",
@@ -165,13 +167,15 @@
           "id": "critico-multiplicador",
           "nome": "Crítico - Multiplicador",
           "modificadorCusto": 0,
-          "descricao": "Aumenta multiplicador de crítico. +1 a cada 2 graus. Custo dobra para aumentos subsequentes (+1, +2, +4...)"
+          "custoProgressivo": "dobrado",
+          "descricao": "Aumenta multiplicador de crítico em +1 a cada 2 graus. Custo adicional dobra: grau 1-2 (+1/grau), grau 3-4 (+2/grau), grau 5-6 (+4/grau), etc."
         },
         {
           "id": "critico-margem",
           "nome": "Crítico - Margem",
           "modificadorCusto": 0,
-          "descricao": "Aumenta margem de crítico. +1 a cada 2 graus. Custo dobra para aumentos subsequentes (+1, +2, +4...)"
+          "custoProgressivo": "dobrado",
+          "descricao": "Aumenta margem de crítico em -1 a cada 2 graus (ex: 20→19-20→18-20). Custo adicional dobra: grau 1-2 (+1/grau), grau 3-4 (+2/grau), grau 5-6 (+4/grau), etc."
         },
         {
           "id": "alcance",

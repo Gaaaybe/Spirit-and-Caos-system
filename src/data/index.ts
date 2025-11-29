@@ -11,6 +11,7 @@ export interface ConfiguracaoEfeito {
   modificadorCusto: number; // +0, +2, +5, etc. (somado ao custoBase)
   descricao: string;
   grauMinimo?: number; // ex: grau 2+ para patamar 1
+  custoProgressivo?: 'dobrado'; // Indica se o custo dobra a cada incremento (para crítico)
 }
 
 export interface Efeito {

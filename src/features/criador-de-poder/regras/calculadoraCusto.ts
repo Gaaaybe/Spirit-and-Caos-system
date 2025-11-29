@@ -8,7 +8,7 @@ export interface ModificacaoAplicada {
   id: string;
   modificacaoBaseId: string;
   escopo: 'global' | 'local';
-  parametros?: Record<string, any>;
+  parametros?: Record<string, unknown>;
   grauModificacao?: number; // Grau da própria modificação (ex: Área grau 3)
   nota?: string;
 }
@@ -67,7 +67,17 @@ export function calcularCustoPorGrau(
       opt => opt.id === efeito.configuracaoSelecionada
     );
     if (configuracao) {
-      custoPorGrau += configuracao.modificadorCusto;
+      // Se tem custo progressivo, calcula o modificador baseado no número de aumentos
+      if (configuracao.custoProgressivo === 'dobrado') {
+        // Determina qual "aumento" estamos (1-2 = 1º, 3-4 = 2º, 5-6 = 3º, etc)
+        // O modificador dobra: 1º = +1, 2º = +2, 3º = +4, 4º = +8...
+        const numeroAumento = Math.ceil(efeito.grau / 2);
+        const modificadorProgressivo = Math.pow(2, numeroAumento - 1);
+        custoPorGrau += configuracao.modificadorCusto + modificadorProgressivo;
+      } else {
+        // Custo normal (fixo)
+        custoPorGrau += configuracao.modificadorCusto;
+      }
     }
   }
   
@@ -81,7 +91,7 @@ export function calcularCustoPorGrau(
       // Aplica modificador de custo da configuração selecionada (ex: Efeito Colateral Menor = -1)
       if (modAplicada.parametros?.configuracaoSelecionada && modBase.configuracoes) {
         const configuracao = modBase.configuracoes.opcoes.find(
-          opt => opt.id === modAplicada.parametros.configuracaoSelecionada
+          opt => opt.id === modAplicada.parametros?.configuracaoSelecionada
         );
         if (configuracao) {
           custoPorGrauMod += configuracao.modificadorCusto;
@@ -102,7 +112,7 @@ export function calcularCustoPorGrau(
       // Aplica modificador de custo da configuração selecionada (ex: Efeito Colateral Menor = -1)
       if (modAplicada.parametros?.configuracaoSelecionada && modBase.configuracoes) {
         const configuracao = modBase.configuracoes.opcoes.find(
-          opt => opt.id === modAplicada.parametros.configuracaoSelecionada
+          opt => opt.id === modAplicada.parametros?.configuracaoSelecionada
         );
         if (configuracao) {
           custoPorGrauMod += configuracao.modificadorCusto;
@@ -144,7 +154,7 @@ export function calcularCustoFixo(
       // Aplica modificador de custo da configuração selecionada
       if (modAplicada.parametros?.configuracaoSelecionada && modBase.configuracoes) {
         const configuracao = modBase.configuracoes.opcoes.find(
-          opt => opt.id === modAplicada.parametros.configuracaoSelecionada
+          opt => opt.id === modAplicada.parametros?.configuracaoSelecionada
         );
         if (configuracao) {
           custoFixoMod += configuracao.modificadorCusto;
@@ -164,7 +174,7 @@ export function calcularCustoFixo(
       // Aplica modificador de custo da configuração selecionada
       if (modAplicada.parametros?.configuracaoSelecionada && modBase.configuracoes) {
         const configuracao = modBase.configuracoes.opcoes.find(
-          opt => opt.id === modAplicada.parametros.configuracaoSelecionada
+          opt => opt.id === modAplicada.parametros?.configuracaoSelecionada
         );
         if (configuracao) {
           custoFixoMod += configuracao.modificadorCusto;
@@ -292,7 +302,7 @@ export function calcularCustoPoder(
 export function calcularPETotal(
   poder: Poder,
   todosEfeitos: Efeito[],
-  tabelaUniversal: any[]
+  tabelaUniversal: Array<{ grau: number; pe: number }>
 ): number {
   if (poder.efeitos.length === 0) return 0;
   
@@ -322,7 +332,7 @@ export function calcularPETotal(
 export function calcularEspacosTotal(
   poder: Poder,
   todosEfeitos: Efeito[],
-  tabelaUniversal: any[]
+  tabelaUniversal: Array<{ grau: number; espacos: number }>
 ): number {
   if (poder.efeitos.length === 0) return 0;
   
