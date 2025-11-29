@@ -52,8 +52,13 @@ describe('Validação dos Dados de Modificações', () => {
   it('modificações com parâmetros devem ter configurações ou opções', () => {
     const comParametros = modificacoes.filter(m => m.requerParametros)
     comParametros.forEach(mod => {
-      // Se requer parâmetros, deve ter configurações, opcoes, ou tipoParametro
-      const temConfiguracoes = 'configuracoes' in mod && Array.isArray(mod.configuracoes) && mod.configuracoes.length > 0
+      // Se requer parâmetros, deve ter configurações (objeto com opcoes), opcoes (array), ou tipoParametro
+      const temConfiguracoes = 'configuracoes' in mod && 
+        typeof mod.configuracoes === 'object' && 
+        mod.configuracoes !== null &&
+        'opcoes' in mod.configuracoes &&
+        Array.isArray(mod.configuracoes.opcoes) && 
+        mod.configuracoes.opcoes.length > 0
       const temOpcoes = 'opcoes' in mod && Array.isArray(mod.opcoes) && mod.opcoes.length > 0
       const temTipoParametro = 'tipoParametro' in mod && typeof mod.tipoParametro === 'string'
       

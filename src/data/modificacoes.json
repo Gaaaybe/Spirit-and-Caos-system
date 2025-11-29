@@ -1656,5 +1656,75 @@
     "descricao": "Extra obrigatório para poderes cujo dominio estejam mestre (Modificação global).",
     "requerParametros": false,
     "categoria": "Dominio"
+  },
+  {
+    "id": "duracao-permanente",
+    "nome": "Duração: Permanente",
+    "tipo": "falha",
+    "custoFixo": 0,
+    "custoPorGrau": -1,
+    "descricao": "O efeito se torna permanente e não pode ser desligado. Requer que a duração base seja Ativado. Efeitos permanentes devem ser provenientes do personagem.",
+    "requerParametros": false,
+    "observacoes": "Para aplicar em outros alvos, use Efeito Duradouro com Condição de Remoção.",
+    "categoria": "Duração"
+  },
+  {
+    "id": "efeito-duradouro",
+    "nome": "Efeito Duradouro",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 1,
+    "descricao": "O efeito se torna independente do criador após ser aplicado. Permanece no alvo mesmo que o criador morra. Requer Condição de Remoção. Ideal para venenos, doenças, maldições e bênçãos duradouras.",
+    "requerParametros": true,
+    "observacoes": "Deve ser combinado com uma Condição de Remoção. Efeitos duradouros podem ser nulificados ou recuperados com as modificações corretas.",
+    "categoria": "Duração",
+    "configuracoes": {
+      "tipo": "select",
+      "label": "Condição de Remoção",
+      "opcoes": [
+        {
+          "id": "tempo-definido-1",
+          "nome": "Tempo Definido 1 (5x Grau de Tempo)",
+          "modificadorCusto": 1,
+          "descricao": "O efeito dura por um período específico: 5 × Grau de Tempo do efeito. Para efeitos instantâneos (como dano), repete a cada hora até o tempo acabar."
+        },
+        {
+          "id": "tempo-definido-2",
+          "nome": "Tempo Definido 2 (25x Grau de Tempo)",
+          "modificadorCusto": 2,
+          "descricao": "O efeito dura por um período específico: 25 × Grau de Tempo do efeito. Para efeitos instantâneos (como dano), repete a cada hora até o tempo acabar."
+        },
+        {
+          "id": "tempo-definido-3",
+          "nome": "Tempo Definido 3 (125x Grau de Tempo)",
+          "modificadorCusto": 3,
+          "descricao": "O efeito dura por um período específico: 125 × Grau de Tempo do efeito. Para efeitos instantâneos (como dano), repete a cada hora até o tempo acabar."
+        },
+        {
+          "id": "tempo-definido-4",
+          "nome": "Tempo Definido 4 (625x Grau de Tempo)",
+          "modificadorCusto": 4,
+          "descricao": "O efeito dura por um período específico: 625 × Grau de Tempo do efeito. Para efeitos instantâneos (como dano), repete a cada hora até o tempo acabar."
+        },
+        {
+          "id": "tempo-definido-5",
+          "nome": "Tempo Definido 5 (3125x Grau de Tempo)",
+          "modificadorCusto": 5,
+          "descricao": "O efeito dura por um período específico: 3125 × Grau de Tempo do efeito. Para efeitos instantâneos (como dano), repete a cada hora até o tempo acabar."
+        },
+        {
+          "id": "condicao-neutra",
+          "nome": "Condição Customizada (Neutra)",
+          "modificadorCusto": 0,
+          "descricao": "Condição tematicamente diferente mas de dificuldade similar à padrão. Ex: termina se imerso em água, se exposto à luz solar, etc."
+        },
+        {
+          "id": "condicao-dificil",
+          "nome": "Condição Customizada (Difícil)",
+          "modificadorCusto": 1,
+          "descricao": "Condição significativamente mais difícil de cumprir. Por Ação Específica: 'Beber um antídoto', 'Completar ritual sob lua cheia'. Por Contra-Efeito: 'Ser alvo de Restaurar Maldição', 'Receber cura divina'."
+        }
+      ]
+    }
   }
 ]

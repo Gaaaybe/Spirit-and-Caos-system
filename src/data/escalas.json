@@ -78,33 +78,34 @@
   },
   "duracao": {
     "nome": "Duração",
-    "descricao": "Quanto tempo o efeito dura",
+    "descricao": "Quanto tempo o efeito dura. Mover um passo para baixo custa +1/grau, para cima reduz -1/grau",
     "escala": [
       {
         "valor": 0,
         "nome": "Instantâneo",
-        "descricao": "O efeito acontece e termina imediatamente (mas consequências podem persistir)"
+        "descricao": "Exige ação padrão e se extingue após ser usado, mantendo o resultado"
       },
       {
         "valor": 1,
-        "nome": "Mantida (Concentração)",
-        "descricao": "Dura enquanto você mantiver concentração ativa"
+        "nome": "Manutenção (Concentração)",
+        "descricao": "Exige ação padrão por turno para manter"
       },
       {
         "valor": 2,
-        "nome": "Mantida (Sustentada)",
-        "descricao": "Dura enquanto você mantiver o poder ativo (sem precisar de concentração total)"
+        "nome": "Manutenção (Sustentada)",
+        "descricao": "Exige ação livre por turno para manter"
       },
       {
         "valor": 3,
         "nome": "Ativado",
-        "descricao": "Você ativa e o efeito dura uma cena/encontro sem precisar manutenção"
+        "descricao": "Não exige ação para manter; funciona como liga/desliga"
       },
       {
         "valor": 4,
         "nome": "Permanente",
-        "descricao": "O efeito é permanente e não pode ser desativado",
-        "custoEquivalente": 3
+        "descricao": "Sempre ativo, não pode ser desligado. Requer duração Ativado + modificação Permanente (-1/grau)",
+        "custoEquivalente": 3,
+        "observacoes": "Não se encaixa na escala normal. Aplica-se a partir de Ativado com modificação especial."
       }
     ]
   }
