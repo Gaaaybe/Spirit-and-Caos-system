@@ -871,10 +871,9 @@
     "tipo": "extra",
     "custoFixo": 0,
     "custoPorGrau": 1,
-    "descricao": "Você pode somar seu modificador de atributo ao dano final. A fonte do bônus depende da natureza do poder: Poderes Espirituais usam atributos mentais (Intelecto, Presença, Vontade). Técnicas usam atributos físicos (Força, Agilidade, Vigor).",
-    "requerParametros": true,
-    "tipoParametro": "select",
-    "opcoes": ["Força", "Agilidade", "Vigor", "Intelecto", "Presença", "Vontade"],
+    "descricao": "Você pode somar seu modificador de atributo ao dano final. A fonte do bônus depende da natureza do poder: Poderes Espirituais usam atributos mentais. Técnicas usam atributos físicos.",
+    "requerParametros": false,
+
     "categoria": "Combate",
     "observacoes": "Apenas para poderes que causam dano."
   },
