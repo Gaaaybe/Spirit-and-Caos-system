@@ -36,7 +36,7 @@ export function CriadorDePoder() {
   } = usePoderCalculator();
 
   const { salvarPoder, buscarPoder } = useBibliotecaPoderes();
-  const { validarParaSalvar, validarNome } = usePoderValidation();
+  const { validarParaSalvar, validarNome, getFirstError } = usePoderValidation();
 
   const [modalSeletorEfeito, setModalSeletorEfeito] = useState(false);
   const [modalSeletorModificacao, setModalSeletorModificacao] = useState(false);
@@ -53,11 +53,7 @@ export function CriadorDePoder() {
     // Validação em tempo real
     if (novoNome.length > 0) {
       const resultado = validarNome(novoNome);
-      if (!resultado.isValid) {
-        setErroNome(resultado.errors[0].message);
-      } else {
-        setErroNome('');
-      }
+      setErroNome(getFirstError(resultado) || '');
     } else {
       setErroNome('');
     }
@@ -84,18 +80,18 @@ export function CriadorDePoder() {
     // Validação usando Zod
     const resultado = validarParaSalvar(poder);
     
+  const handleSalvar = async () => {
+    // Validação usando Zod
+    const resultado = validarParaSalvar(poder);
+    
     if (!resultado.isValid) {
       // Mostra o primeiro erro encontrado
-      const primeiroErro = resultado.errors[0];
-      toast.error(primeiroErro.message);
+      const erro = getFirstError(resultado);
+      if (erro) toast.error(erro);
       return;
     }
     
-    setSalvando(true);
-    // Simula um pequeno delay para feedback visual
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
-    // Verifica se já existe na biblioteca
+    setSalvando(true);existe na biblioteca
     const poderExistente = buscarPoder(poder.id);
     salvarPoder(poder);
     

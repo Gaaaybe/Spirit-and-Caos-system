@@ -63,16 +63,9 @@ export const poderParcialSchema = poderSchema.partial({
 
 /**
  * Schema para validar dados antes de salvar na biblioteca
+ * (Reutiliza o schema principal que já contém todas as validações necessárias)
  */
-export const poderParaSalvarSchema = poderSchema.refine(
-  (data) => {
-    // Validações customizadas
-    return data.efeitos.length > 0 && data.nome !== 'Novo Poder';
-  },
-  {
-    message: 'Poder deve ter um nome único e pelo menos um efeito para ser salvo',
-  }
-);
+export const poderParaSalvarSchema = poderSchema;
 
 /**
  * Type inference a partir dos schemas

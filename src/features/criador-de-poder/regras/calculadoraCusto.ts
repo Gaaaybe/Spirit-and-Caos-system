@@ -189,6 +189,48 @@ export function calcularCustoFixo(
 }
 
 /**
+ * Calcula os piores parâmetros (mais restritivos) entre todos os efeitos
+ * REGRA: "Pior" = MENOR valor (mais restritivo)
+ */
+export function calcularParametrosPadrao(
+  efeitos: EfeitoAplicado[],
+  todosEfeitos: Efeito[]
+): {
+  acao: number;
+  alcance: number;
+  duracao: number;
+} {
+  if (efeitos.length === 0) {
+    return { acao: 0, alcance: 0, duracao: 0 };
+  }
+
+  const acoes = efeitos.map(ef => {
+    const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
+    return efBase?.parametrosPadrao.acao ?? 0;
+  });
+  
+  const alcances = efeitos.map(ef => {
+    const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
+    return efBase?.parametrosPadrao.alcance ?? 0;
+  });
+  
+  const duracoes = efeitos.map(ef => {
+    const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
+    return efBase?.parametrosPadrao.duracao ?? 0;
+  });
+
+  const acaoMin = Math.min(...acoes);
+  const alcanceMin = Math.min(...alcances);
+  const duracaoMin = Math.min(...duracoes);
+
+  return {
+    acao: acaoMin,
+    alcance: alcanceMin,
+    duracao: duracaoMin,
+  };
+}
+
+/**
  * RN-02: Calcula o custo total de PdA de um Efeito
  * 
  * CustoEfeito = (CustoPorGrau_Final × Grau_Efeito) + CustoFixo_Final

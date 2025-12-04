@@ -3,6 +3,7 @@ import { MODIFICACOES } from '../../../data';
 import { useState, useMemo } from 'react';
 import { useFavoritos, useCustomItems } from '../../../shared/hooks';
 import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
+import { useModificacaoFilter, OrdenacaoTipo } from '../hooks/useModificacaoFilter';
 import type { Modificacao } from '../../../data';
 
 interface SeletorModificacaoProps {
@@ -12,8 +13,6 @@ interface SeletorModificacaoProps {
   titulo?: string;
 }
 
-type OrdenacaoTipo = 'nome-asc' | 'nome-desc' | 'custo-asc' | 'custo-desc' | 'categoria';
-
 export function SeletorModificacao({ 
   isOpen, 
   onClose, 
@@ -22,69 +21,30 @@ export function SeletorModificacao({
 }: SeletorModificacaoProps) {
   const { isFavoritoModificacao, toggleFavoritoModificacao } = useFavoritos();
   const { customModificacoes, addCustomModificacao } = useCustomItems();
-  const [busca, setBusca] = useState('');
-  const [tipoFiltro, setTipoFiltro] = useState<string>('');
-  const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
-  const [favoritosOnly, setFavoritosOnly] = useState(false);
-  const [ordenacao, setOrdenacao] = useState<OrdenacaoTipo>('nome-asc');
-  const [modSelecionada, setModSelecionada] = useState<string | null>(null);
-  const [parametros, setParametros] = useState<Record<string, string | number>>({});
-  const [configuracaoSelecionada, setConfiguracaoSelecionada] = useState<string>('');
-  const [showFormCustom, setShowFormCustom] = useState(false);
-
+  
   // Combina modificações base com customizadas
   const todasModificacoes = useMemo(
     () => [...MODIFICACOES, ...customModificacoes],
     [customModificacoes]
   );
 
-  // Categorias únicas
-  const categorias = useMemo(() => {
-    const cats = new Set(todasModificacoes.map(m => m.categoria));
-    return Array.from(cats).sort();
-  }, [todasModificacoes]);
+  const {
+    busca, setBusca,
+    tipoFiltro, setTipoFiltro,
+    categoriaFiltro, setCategoriaFiltro,
+    favoritosOnly, setFavoritosOnly,
+    ordenacao, setOrdenacao,
+    modificacoesFiltradas,
+    categorias,
+    limparFiltros
+  } = useModificacaoFilter(todasModificacoes);
 
-  // Filtrar e ordenar modificações
-  const modificacoesFiltradas = useMemo(() => {
-    const resultado = todasModificacoes.filter(mod => {
-      const matchBusca = busca === '' ||
-                         mod.nome.toLowerCase().includes(busca.toLowerCase()) ||
-                         mod.descricao.toLowerCase().includes(busca.toLowerCase()) ||
-                         (mod.categoria && mod.categoria.toLowerCase().includes(busca.toLowerCase()));
-      const matchTipo = !tipoFiltro || mod.tipo === tipoFiltro;
-      const matchCategoria = !categoriaFiltro || mod.categoria === categoriaFiltro;
-      const matchFavorito = !favoritosOnly || isFavoritoModificacao(mod.id);
-      return matchBusca && matchTipo && matchCategoria && matchFavorito;
-    });
-
-    // Ordenar
-    resultado.sort((a, b) => {
-      switch (ordenacao) {
-        case 'nome-asc':
-          return a.nome.localeCompare(b.nome);
-        case 'nome-desc':
-          return b.nome.localeCompare(a.nome);
-        case 'custo-asc':
-          return (Math.abs(a.custoFixo) + Math.abs(a.custoPorGrau)) - (Math.abs(b.custoFixo) + Math.abs(b.custoPorGrau));
-        case 'custo-desc':
-          return (Math.abs(b.custoFixo) + Math.abs(b.custoPorGrau)) - (Math.abs(a.custoFixo) + Math.abs(a.custoPorGrau));
-        case 'categoria':
-          return a.categoria.localeCompare(b.categoria);
-        default:
-          return 0;
-      }
-    });
-
-    return resultado;
-  }, [todasModificacoes, busca, tipoFiltro, categoriaFiltro, ordenacao, favoritosOnly, isFavoritoModificacao]);
+  const [modSelecionada, setModSelecionada] = useState<string | null>(null);
+  const [parametros, setParametros] = useState<Record<string, string | number>>({});
+  const [configuracaoSelecionada, setConfiguracaoSelecionada] = useState<string>('');
+  const [showFormCustom, setShowFormCustom] = useState(false);
 
   const modBase = modSelecionada ? todasModificacoes.find(m => m.id === modSelecionada) : null;
-
-  const limparFiltros = () => {
-    setBusca('');
-    setTipoFiltro('');
-    setCategoriaFiltro('');
-  };
 
   const handleSelecionar = () => {
     if (!modSelecionada) return;

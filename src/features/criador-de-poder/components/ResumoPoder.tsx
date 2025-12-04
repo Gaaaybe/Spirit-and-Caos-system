@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast } from '../../../shared/ui';
-import { Poder } from '../regras/calculadoraCusto';
-import { MODIFICACOES, obterNomeParametro, buscarGrauNaTabela } from '../../../data';
+import { Poder, ModificacaoAplicada } from '../regras/calculadoraCusto';
+import { MODIFICACOES, obterNomeParametro, buscarGrauNaTabela, Modificacao } from '../../../data';
 import { useCustomItems } from '../../../shared/hooks';
 import type { DetalhesPoder } from '../types';
 
@@ -18,87 +18,45 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     () => [...MODIFICACOES, ...customModificacoes],
     [customModificacoes]
   );
-  
-  const copiarResumo = () => {
-    const texto = gerarTextoResumo();
-    navigator.clipboard.writeText(texto);
-    toast.success('Resumo copiado para a área de transferência!');
-  };
 
-  const gerarNotacaoCompacta = () => {
-    const partes: string[] = [];
+  const formatarModificacaoString = (mod: ModificacaoAplicada, modBase?: Modificacao) => {
+    let modTexto = modBase?.nome || mod.modificacaoBaseId;
     
-    // Para cada efeito
-    detalhes.efeitosDetalhados.forEach((efDet) => {
-      if (!efDet) return;
-      const ef = efDet;
-      let linha = `${ef.efeitoBase.nome}`;
-      
-      // Grau
-      linha += ` ${ef.efeito.grau}`;
-      
-      // Input customizado (ex: Imunidade a Fogo)
-      if (ef.efeito.inputCustomizado) {
-        linha += ` [${ef.efeito.inputCustomizado}]`;
-      }
-      
-      // Configuração (ex: Patamar 3)
-      if (ef.efeito.configuracaoSelecionada && ef.efeitoBase.configuracoes) {
-        const config = ef.efeitoBase.configuracoes.opcoes.find(c => c.id === ef.efeito.configuracaoSelecionada);
-        if (config && config.modificadorCusto !== 0) {
-          linha += ` (${config.nome} ${config.modificadorCusto > 0 ? '+' : ''}${config.modificadorCusto})`;
-        } else if (config) {
-          linha += ` (${config.nome})`;
+    if (mod.grauModificacao && mod.grauModificacao > 1) {
+      modTexto += ` ${mod.grauModificacao}`;
+    }
+    
+    // Calcular custo da modificação (incluindo configuração)
+    const grauMod = mod.grauModificacao || 1;
+    let custoPorGrauMod = modBase?.custoPorGrau || 0;
+    let custoFixoMod = modBase?.custoFixo || 0;
+    
+    // Adiciona modificador de configuração se houver
+    if (mod.parametros?.configuracaoSelecionada && modBase?.configuracoes) {
+      const config = modBase.configuracoes.opcoes.find(c => c.id === mod.parametros?.configuracaoSelecionada);
+      if (config) {
+        if (config.modificadorCusto !== undefined) {
+          custoPorGrauMod += config.modificadorCusto;
+        }
+        if (config.modificadorCustoFixo !== undefined) {
+          custoFixoMod += config.modificadorCustoFixo;
         }
       }
-      
+    }
+    
+    const custoMod = custoFixoMod + (custoPorGrauMod * grauMod);
+    
+    if (custoMod !== 0) {
+      modTexto += ` ${custoMod > 0 ? '+' : ''}${custoMod}`;
+    }
+    
+    // Adiciona nome da configuração se houver
+    if (mod.parametros?.configuracaoSelecionada && modBase?.configuracoes) {
       // Modificações locais
       if (ef.efeito.modificacoesLocais.length > 0) {
         const mods = ef.efeito.modificacoesLocais.map((mod) => {
           const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
-          let modTexto = modBase?.nome || mod.modificacaoBaseId;
-          
-          if (mod.grauModificacao && mod.grauModificacao > 1) {
-            modTexto += ` ${mod.grauModificacao}`;
-          }
-          
-          // Calcular custo da modificação (incluindo configuração)
-          const grauMod = mod.grauModificacao || 1;
-          let custoPorGrauMod = modBase?.custoPorGrau || 0;
-          let custoFixoMod = modBase?.custoFixo || 0;
-          
-          // Adiciona modificador de configuração se houver
-          if (mod.parametros?.configuracaoSelecionada && modBase?.configuracoes) {
-            const config = modBase.configuracoes.opcoes.find(c => c.id === mod.parametros?.configuracaoSelecionada);
-            if (config) {
-              if (config.modificadorCusto !== undefined) {
-                custoPorGrauMod += config.modificadorCusto;
-              }
-              if (config.modificadorCustoFixo !== undefined) {
-                custoFixoMod += config.modificadorCustoFixo;
-              }
-            }
-          }
-          
-          const custoMod = custoFixoMod + (custoPorGrauMod * grauMod);
-          
-          if (custoMod !== 0) {
-            modTexto += ` ${custoMod > 0 ? '+' : ''}${custoMod}`;
-          }
-          
-          // Adiciona nome da configuração se houver
-          if (mod.parametros?.configuracaoSelecionada && modBase?.configuracoes) {
-            const config = modBase.configuracoes.opcoes.find(c => c.id === mod.parametros?.configuracaoSelecionada);
-            if (config) {
-              modTexto += ` (${config.nome})`;
-            }
-          }
-          
-          if (mod.parametros?.descricao) {
-            modTexto += ` (${mod.parametros.descricao})`;
-          }
-          
-          return modTexto;
+          return formatarModificacaoString(mod, modBase);
         }).join(', ');
         
         linha += `. ${mods}`;
@@ -114,10 +72,14 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     if (poder.modificacoesGlobais.length > 0) {
       const modsGlobais = poder.modificacoesGlobais.map(mod => {
         const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
-        let modTexto = modBase?.nome || mod.modificacaoBaseId;
-        
-        if (mod.grauModificacao && mod.grauModificacao > 1) {
-          modTexto += ` ${mod.grauModificacao}`;
+        return formatarModificacaoString(mod, modBase);
+      }).join(', ');
+      
+      partes.push(`[GLOBAL: ${modsGlobais}]`);
+    }
+    
+    return partes.join('\n');
+  };      modTexto += ` ${mod.grauModificacao}`;
         }
         
         // Calcular custo da modificação (incluindo configuração)
@@ -218,24 +180,15 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
       if (ef.efeito.configuracaoSelecionada && ef.efeitoBase.configuracoes) {
         const config = ef.efeitoBase.configuracoes.opcoes.find(c => c.id === ef.efeito.configuracaoSelecionada);
         if (config) {
-          texto += `  ${ef.efeitoBase.configuracoes.label}: ${config.nome} (+${config.modificadorCusto} custo)\n`;
-        }
-      }
-      
-      // Parâmetros agora são do PODER, não do efeito individual
-      // (Removido: parâmetros individuais não existem mais)
-      
-      if (dadosGrau) {
-        texto += `  Tabela Universal (Grau ${ef.efeito.grau}):\n`;
-        texto += `    💥 Dano/Cura: ${dadosGrau.dano}\n`;
-        texto += `    📏 Distância: ${dadosGrau.distancia}\n`;
-        texto += `    ⚡ PE: ${dadosGrau.pe}\n`;
-        texto += `    📦 Espaços: ${dadosGrau.espacos}\n`;
-        texto += `    ⚖️ Massa: ${dadosGrau.massa}\n`;
-        texto += `    ⏱️ Tempo: ${dadosGrau.tempo}\n`;
-        texto += `    🚀 Velocidade: ${dadosGrau.velocidade}\n`;
-        texto += `    🏃 Deslocamento: ${dadosGrau.deslocamento}\n`;
-      }
+    // Modificações Globais
+    if (poder.modificacoesGlobais.length > 0) {
+      texto += `MODIFICAÇÕES GLOBAIS:\n`;
+      poder.modificacoesGlobais.forEach(mod => {
+        const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+        const modTexto = formatarModificacaoString(mod, modBase);
+        texto += `- ${modTexto}\n`;
+      });
+      texto += `\n`;
       
       if (ef.efeito.modificacoesLocais.length > 0) {
         texto += `  Modificações:\n`;
@@ -284,17 +237,14 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
               </div>
               
               <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[120px]">
-                <p className="text-espirito-200 text-sm font-medium mb-1">Custo Total</p>
-                <p className="text-5xl font-bold text-white">
-                  {detalhes.custoPdATotal}
-                </p>
-                <p className="text-espirito-200 text-sm font-medium mt-1">PdA</p>
-              </div>
-            </div>
-            
-            {/* Stats Row */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+      if (ef.efeito.modificacoesLocais.length > 0) {
+        texto += `  Modificações:\n`;
+        ef.efeito.modificacoesLocais.forEach((mod) => {
+          const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+          const modTexto = formatarModificacaoString(mod, modBase);
+          texto += `    - ${modTexto}\n`;
+        });
+      }       <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
                 <p className="text-espirito-200 text-xs mb-1">Efeitos</p>
                 <p className="text-2xl font-bold">{poder.efeitos.length}</p>
               </div>

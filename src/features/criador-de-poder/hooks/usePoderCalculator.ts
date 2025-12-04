@@ -5,15 +5,19 @@ import {
   Poder, 
   EfeitoAplicado, 
   ModificacaoAplicada,
-  calcularDetalhesPoder 
+  calcularDetalhesPoder,
+  calcularParametrosPadrao
 } from '../regras/calculadoraCusto';
-
-// Chave do localStorage para auto-save
-const AUTOSAVE_KEY = 'criador-de-poder-autosave';
-const LOAD_PODER_KEY = 'criador-de-poder-carregar';
+import { usePoderPersistence, PODER_PADRAO } from './usePoderPersistence';
 
 export function usePoderCalculator() {
   const { customEfeitos, customModificacoes } = useCustomItems();
+  const { 
+    carregarEstadoInicial, 
+    salvarAutomaticamente, 
+    limparPersistencia, 
+    foiCarregadoDeStorage 
+  } = usePoderPersistence();
 
   // Combina efeitos e modificações base com customizados
   const todosEfeitos = useMemo(
@@ -27,100 +31,17 @@ export function usePoderCalculator() {
 
   // Flag para evitar auto-update de parâmetros ao carregar poder existente
   const isCarregandoPoder = useRef(false);
-  const foiCarregadoDeStorage = useRef(false);
   const primeiroCarregamentoProcessado = useRef(false);
 
-  // Tenta carregar o poder salvo do localStorage
-  const carregarPoderSalvo = (): Poder => {
-    try {
-      // Primeiro, verifica se há um poder pendente para carregar da biblioteca
-      const poderPendente = localStorage.getItem(LOAD_PODER_KEY);
-      if (poderPendente) {
-        localStorage.removeItem(LOAD_PODER_KEY); // Remove após carregar
-        const poder = JSON.parse(poderPendente) as Poder;
-        if (poder.id && Array.isArray(poder.efeitos)) {
-          foiCarregadoDeStorage.current = true; // Marca que foi carregado
-          return poder;
-        }
-      }
-
-      // Se não há poder pendente, tenta carregar o auto-save
-      const salvo = localStorage.getItem(AUTOSAVE_KEY);
-      if (salvo) {
-        const poderSalvo = JSON.parse(salvo) as Poder;
-        // Valida que tem a estrutura correta
-        if (poderSalvo.id && Array.isArray(poderSalvo.efeitos)) {
-          foiCarregadoDeStorage.current = true; // Marca que foi carregado
-          return poderSalvo;
-        }
-      }
-    } catch (error) {
-      console.error('Erro ao carregar poder salvo:', error);
-    }
-    
-    // Retorna poder padrão se não houver nada salvo
-    return {
-      id: Date.now().toString(),
-      nome: 'Novo Poder',
-      descricao: '',
-      efeitos: [],
-      modificacoesGlobais: [],
-      acao: 0,
-      alcance: 0,
-      duracao: 0,
-    };
-  };
-
-  const [poder, setPoder] = useState<Poder>(carregarPoderSalvo);
+  const [poder, setPoder] = useState<Poder>(carregarEstadoInicial);
 
   // Cria uma string de IDs dos efeitos para detectar mudanças reais
   const efeitosIds = poder.efeitos.map(e => e.efeitoBaseId).sort().join(',');
 
-  // Calcula os piores parâmetros (mais restritivos) entre todos os efeitos
-  // REGRA: "Pior" = MENOR valor (mais restritivo)
-  const calcularParametrosPadrao = (efeitos: EfeitoAplicado[]): {
-    acao: number;
-    alcance: number;
-    duracao: number;
-  } => {
-    if (efeitos.length === 0) {
-      return { acao: 0, alcance: 0, duracao: 0 };
-    }
-
-    const acoes = efeitos.map(ef => {
-      const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
-      return efBase?.parametrosPadrao.acao ?? 0;
-    });
-    
-    const alcances = efeitos.map(ef => {
-      const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
-      return efBase?.parametrosPadrao.alcance ?? 0;
-    });
-    
-    const duracoes = efeitos.map(ef => {
-      const efBase = todosEfeitos.find(e => e.id === ef.efeitoBaseId);
-      return efBase?.parametrosPadrao.duracao ?? 0;
-    });
-
-    const acaoMin = Math.min(...acoes);
-    const alcanceMin = Math.min(...alcances);
-    const duracaoMin = Math.min(...duracoes);
-
-    return {
-      acao: acaoMin,
-      alcance: alcanceMin,
-      duracao: duracaoMin,
-    };
-  };
-
   // Auto-save: Salva o poder no localStorage sempre que ele mudar
   useEffect(() => {
-    try {
-      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(poder));
-    } catch (error) {
-      console.error('Erro ao salvar poder automaticamente:', error);
-    }
-  }, [poder]);
+    salvarAutomaticamente(poder);
+  }, [poder, salvarAutomaticamente]);
 
   // Calcula detalhes do poder (memoizado para performance)
   const detalhes = useMemo(() => {
@@ -154,7 +75,7 @@ export function usePoderCalculator() {
       return;
     }
 
-    const parametrosPadrao = calcularParametrosPadrao(poder.efeitos);
+    const parametrosPadrao = calcularParametrosPadrao(poder.efeitos, todosEfeitos);
     
     // Só atualiza se os valores calculados forem diferentes dos atuais
     if (
@@ -169,7 +90,7 @@ export function usePoderCalculator() {
         duracao: parametrosPadrao.duracao,
       }));
     }
-  }, [efeitosIds]);
+  }, [efeitosIds, todosEfeitos]);
 
   // Adiciona um novo efeito ao poder
   const adicionarEfeito = (efeitoBaseId: string, grau: number = 1) => {
@@ -319,25 +240,13 @@ export function usePoderCalculator() {
   // Reseta o poder
   const resetarPoder = () => {
     const novoPoder: Poder = {
+      ...PODER_PADRAO,
       id: Date.now().toString(),
-      nome: 'Novo Poder',
-      descricao: '',
-      efeitos: [],
-      modificacoesGlobais: [],
-      acao: 0,
-      alcance: 0,
-      duracao: 0,
     };
     setPoder(novoPoder);
     // Reseta as flags de carregamento
     primeiroCarregamentoProcessado.current = false;
-    foiCarregadoDeStorage.current = false;
-    // Limpa o auto-save ao resetar
-    try {
-      localStorage.removeItem(AUTOSAVE_KEY);
-    } catch (error) {
-      console.error('Erro ao limpar auto-save:', error);
-    }
+    limparPersistencia();
   };
 
   // Carrega um poder existente

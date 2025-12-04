@@ -126,10 +126,18 @@ export function usePoderValidation() {
     };
   };
 
+  /**
+   * Helper para extrair a primeira mensagem de erro
+   */
+  const getFirstError = (result: ValidationResult): string | undefined => {
+    return result.isValid ? undefined : result.errors[0]?.message;
+  };
+
   return {
     validarPoder,
     validarParaSalvar,
     validarNome,
     validarGrau,
+    getFirstError,
   };
 }
