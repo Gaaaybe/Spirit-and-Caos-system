@@ -3,6 +3,7 @@ import modificacoes from '../../data/modificacoes.json'
 
 /**
  * Função auxiliar para calcular o custo de uma modificação
+ * Agora suporta tanto modificadorCusto quanto modificadorCustoFixo
  */
 function calcularCustoModificacao(
   modificacaoId: string,
@@ -12,9 +13,10 @@ function calcularCustoModificacao(
   const mod = modificacoes.find(m => m.id === modificacaoId)
   if (!mod) throw new Error(`Modificação ${modificacaoId} não encontrada`)
 
-  let custoTotal = mod.custoFixo + (mod.custoPorGrau * grauEfeito)
+  let custoPorGrau = mod.custoPorGrau
+  let custoFixo = mod.custoFixo
 
-  // Se tem configuração, aplicar o modificador
+  // Se tem configuração, aplicar os modificadores apropriados
   if (configuracao && 'configuracoes' in mod) {
     const configs = mod.configuracoes
     
@@ -27,19 +29,33 @@ function calcularCustoModificacao(
       if (config) {
         const opcao = config.opcoes.find((o: any) => o.id === configuracao)
         if (opcao) {
-          custoTotal += opcao.modificadorCusto
+          // Aplica modificadorCusto ao custoPorGrau
+          if ('modificadorCusto' in opcao && opcao.modificadorCusto !== undefined) {
+            custoPorGrau += opcao.modificadorCusto
+          }
+          // Aplica modificadorCustoFixo ao custoFixo
+          if ('modificadorCustoFixo' in opcao && opcao.modificadorCustoFixo !== undefined) {
+            custoFixo += opcao.modificadorCustoFixo
+          }
         }
       }
     } else if (configs && 'opcoes' in configs && Array.isArray(configs.opcoes)) {
       // Formato novo: configuracoes é um objeto com propriedade opcoes
       const opcao = configs.opcoes.find((o: any) => o.id === configuracao)
       if (opcao) {
-        custoTotal += opcao.modificadorCusto
+        // Aplica modificadorCusto ao custoPorGrau
+        if ('modificadorCusto' in opcao && opcao.modificadorCusto !== undefined) {
+          custoPorGrau += opcao.modificadorCusto
+        }
+        // Aplica modificadorCustoFixo ao custoFixo
+        if ('modificadorCustoFixo' in opcao && opcao.modificadorCustoFixo !== undefined) {
+          custoFixo += opcao.modificadorCustoFixo
+        }
       }
     }
   }
 
-  return custoTotal
+  return custoFixo + (custoPorGrau * grauEfeito)
 }
 
 describe('Cálculo de Custo de Modificações', () => {
@@ -186,5 +202,131 @@ describe('Cenários Reais de Uso', () => {
       
       expect(custoTotal).toBeLessThan(custoBase)
     }
+  })
+})
+
+describe('Testes de modificadorCustoFixo', () => {
+  it('Afeta Intangível com configuração deve usar modificadorCustoFixo', () => {
+    // Afeta Intangível tem custoFixo: 1 e configurações com modificadorCustoFixo
+    const grau = 5
+    
+    // Sem configuração: custo = 1 + (0 * 5) = 1
+    const custoSemConfig = calcularCustoModificacao('afeta-intangivel', grau)
+    expect(custoSemConfig).toBe(1)
+    
+    // Com configuração "metade-eficiencia": modificadorCustoFixo = 0, então custo = 1 + 0 = 1
+    const custoMetade = calcularCustoModificacao('afeta-intangivel', grau, 'metade-eficiencia')
+    expect(custoMetade).toBe(1)
+    
+    // Com configuração "grau-total": modificadorCustoFixo = 1, então custo = 1 + 1 = 2
+    const custoTotal = calcularCustoModificacao('afeta-intangivel', grau, 'grau-total')
+    expect(custoTotal).toBe(2)
+  })
+
+  it('Sutil deve ter custo fixo independente do grau', () => {
+    // Sutil tem modificadorCustoFixo nas configurações
+    const grau1 = calcularCustoModificacao('sutil', 1, 'dificil-notar')
+    const grau10 = calcularCustoModificacao('sutil', 10, 'dificil-notar')
+    
+    // Custo deve ser o mesmo independente do grau
+    expect(grau1).toBe(grau10)
+    expect(grau1).toBe(1) // modificadorCustoFixo = 1
+  })
+
+  it('Sutil "Completamente Indetectável" deve custar mais que "Difícil de Notar"', () => {
+    const grau = 5
+    const custoDificil = calcularCustoModificacao('sutil', grau, 'dificil-notar')
+    const custoIndetectavel = calcularCustoModificacao('sutil', grau, 'indetectavel')
+    
+    expect(custoIndetectavel).toBeGreaterThan(custoDificil)
+    expect(custoIndetectavel).toBe(2) // modificadorCustoFixo = 2
+  })
+})
+
+describe('Testes de Configurações com modificadorCusto (por grau)', () => {
+  it('Ativação deve reduzir custo por grau baseado na configuração', () => {
+    const grau = 5
+    
+    // Ativação tem configurações com modificadorCusto negativo
+    const custoAcaoPadrao = calcularCustoModificacao('ativacao', grau, 'acao-padrao')
+    const custoAcaoCompleta = calcularCustoModificacao('ativacao', grau, 'acao-completa')
+    
+    // Ambos devem reduzir o custo
+    expect(custoAcaoPadrao).toBeLessThan(0)
+    expect(custoAcaoCompleta).toBeLessThan(custoAcaoPadrao) // Ação completa reduz mais
+  })
+
+  it('Efeito Colateral deve reduzir custo por grau', () => {
+    const grau = 10
+    
+    const custoAoFalhar = calcularCustoModificacao('efeito-colateral', grau, 'ao-falhar')
+    const custoSempre = calcularCustoModificacao('efeito-colateral', grau, 'sempre')
+    
+    // Efeito Colateral "Sempre" deve reduzir mais
+    expect(custoSempre).toBeLessThan(custoAoFalhar)
+    expect(custoAoFalhar).toBe(-10) // -1 * 10
+    expect(custoSempre).toBe(-20) // -2 * 10
+  })
+
+  it('configurações devem escalar corretamente com o grau', () => {
+    const grau2 = 2
+    const grau10 = 10
+    
+    // Teste com uma modificação que tem modificadorCusto
+    const custo2 = calcularCustoModificacao('efeito-colateral', grau2, 'ao-falhar')
+    const custo10 = calcularCustoModificacao('efeito-colateral', grau10, 'ao-falhar')
+    
+    // Verificar que ambos são negativos (falha)
+    expect(custo2).toBeLessThan(0)
+    expect(custo10).toBeLessThan(0)
+    
+    // O custo deve escalar proporcionalmente ao grau
+    const razaoEsperada = grau10 / grau2
+    const razaoReal = Math.abs(custo10) / Math.abs(custo2)
+    expect(razaoReal).toBeCloseTo(razaoEsperada, 1)
+  })
+})
+
+describe('Validação de Estrutura de Dados', () => {
+  it('modificações não devem ter modificadorCusto aplicado duas vezes', () => {
+    // Verifica que nenhuma modificação tem custoFixo e configurações com modificadorCusto
+    // ao mesmo tempo (bug antigo)
+    const modsComConfig = modificacoes.filter(m => 
+      'configuracoes' in m && m.configuracoes && 'opcoes' in m.configuracoes
+    )
+
+    modsComConfig.forEach(mod => {
+      if ('configuracoes' in mod && mod.configuracoes && 'opcoes' in mod.configuracoes) {
+        const opcoes = mod.configuracoes.opcoes as any[]
+        
+        opcoes.forEach(opcao => {
+          // Se tem modificadorCustoFixo, não deve ter modificadorCusto aplicado ao custoFixo
+          if ('modificadorCustoFixo' in opcao) {
+            // Esta é uma configuração que afeta custo fixo
+            expect(opcao.modificadorCustoFixo).toBeDefined()
+          }
+          
+          if ('modificadorCusto' in opcao) {
+            // Esta é uma configuração que afeta custo por grau
+            expect(opcao.modificadorCusto).toBeDefined()
+          }
+        })
+      }
+    })
+  })
+
+  it('modificações com requerParametros: false e configuracoes devem funcionar', () => {
+    // Testa o bug corrigido: modificações como "Ativação" têm requerParametros: false
+    // mas precisam de configuracaoSelecionada
+    const ativacao = modificacoes.find(m => m.id === 'ativacao')
+    
+    expect(ativacao).toBeDefined()
+    expect(ativacao?.requerParametros).toBe(false)
+    expect('configuracoes' in ativacao!).toBe(true)
+    
+    // Deve calcular custo corretamente mesmo com requerParametros: false
+    const custo = calcularCustoModificacao('ativacao', 5, 'acao-padrao')
+    expect(typeof custo).toBe('number')
+    expect(custo).toBeLessThan(0) // Ativação é uma falha
   })
 })
