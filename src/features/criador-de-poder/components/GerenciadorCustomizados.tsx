@@ -3,6 +3,7 @@ import { Button, Card, Badge, ConfirmDialog, EmptyState } from '../../../shared/
 import { useCustomItems } from '../../../shared/hooks';
 import { FormEfeitoCustomizado } from './FormEfeitoCustomizado';
 import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
+import { Zap, Wrench, Edit2, Trash2, Sparkles, Plus, Minus } from 'lucide-react';
 import type { Efeito, Modificacao } from '../../../data';
 
 export function GerenciadorCustomizados() {
@@ -44,12 +45,12 @@ export function GerenciadorCustomizados() {
     <div className="space-y-6">
       {/* Efeitos Customizados */}
       <section>
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          ⚡ Efeitos Customizados
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Zap className="w-6 h-6 text-yellow-500" /> Efeitos Customizados
         </h2>
         {customEfeitos.length === 0 ? (
           <EmptyState
-            icon="⚡"
+            icon={<Zap className="w-12 h-12 text-gray-400" />}
             title="Nenhum efeito customizado"
             description="Crie seus próprios efeitos no Seletor de Efeitos"
           />
@@ -90,7 +91,7 @@ export function GerenciadorCustomizados() {
                       onClick={() => handleEditEfeito(efeito)}
                       aria-label={`Editar ${efeito.nome}`}
                     >
-                      ✏️
+                      <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"
@@ -98,7 +99,7 @@ export function GerenciadorCustomizados() {
                       onClick={() => setConfirmDeleteEfeito(efeito.id)}
                       aria-label={`Deletar ${efeito.nome}`}
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -110,12 +111,12 @@ export function GerenciadorCustomizados() {
 
       {/* Modificações Customizadas */}
       <section>
-        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          🔧 Modificações Customizadas
+        <h2 className="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <Wrench className="w-6 h-6 text-blue-500" /> Modificações Customizadas
         </h2>
         {customModificacoes.length === 0 ? (
           <EmptyState
-            icon="🔧"
+            icon={<Wrench className="w-12 h-12 text-gray-400" />}
             title="Nenhuma modificação customizada"
             description="Crie suas próprias modificações no Seletor de Modificações"
           />
@@ -130,8 +131,8 @@ export function GerenciadorCustomizados() {
                         {mod.nome}
                       </h3>
                       <Badge variant="success">Customizada</Badge>
-                      <Badge variant={mod.tipo === 'extra' ? 'default' : 'warning'}>
-                        {mod.tipo === 'extra' ? '➕ Extra' : '➖ Falha'}
+                      <Badge variant={mod.tipo === 'extra' ? 'default' : 'warning'} className="flex items-center gap-1">
+                        {mod.tipo === 'extra' ? <><Plus className="w-3 h-3" /> Extra</> : <><Minus className="w-3 h-3" /> Falha</>}
                       </Badge>
                       {mod.custoFixo !== 0 && (
                         <Badge>
@@ -160,7 +161,7 @@ export function GerenciadorCustomizados() {
                       onClick={() => handleEditModificacao(mod)}
                       aria-label={`Editar ${mod.nome}`}
                     >
-                      ✏️
+                      <Edit2 className="w-4 h-4" />
                     </Button>
                     <Button
                       size="sm"
@@ -168,7 +169,7 @@ export function GerenciadorCustomizados() {
                       onClick={() => setConfirmDeleteMod(mod.id)}
                       aria-label={`Deletar ${mod.nome}`}
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   </div>
                 </div>
@@ -230,7 +231,7 @@ export function GerenciadorCustomizados() {
 
       {!temCustomizados && (
         <EmptyState
-          icon="✨"
+          icon={<Sparkles className="w-12 h-12 text-gray-400" />}
           title="Nenhum item customizado ainda"
           description="Comece criando seus próprios efeitos e modificações nos seletores!"
         />

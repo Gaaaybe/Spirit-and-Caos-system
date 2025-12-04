@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, Input } from '../../../shared/ui';
 import type { Modificacao } from '../../../data';
+import { FileText, DollarSign, Tag, Settings, AlertTriangle, Sparkles, Edit } from 'lucide-react';
 
 interface FormModificacaoCustomizadaProps {
   isOpen: boolean;
@@ -41,17 +42,21 @@ export function FormModificacaoCustomizada({
       isOpen={isOpen}
       onClose={onClose}
       title={
-        modificacaoInicial
-          ? '✏️ Editar Modificação Customizada'
-          : '🔧 Criar Modificação Customizada'
+        <span className="flex items-center gap-2">
+          {modificacaoInicial ? (
+            <><Edit className="w-5 h-5" /> Editar Modificação Customizada</>
+          ) : (
+            <><Settings className="w-5 h-5" /> Criar Modificação Customizada</>
+          )}
+        </span>
       }
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* 📝 Informações Básicas */}
+        {/* Informações Básicas */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            📝 Informações Básicas
+            <FileText className="w-4 h-4" /> Informações Básicas
           </h3>
           
           <div>
@@ -81,16 +86,16 @@ export function FormModificacaoCustomizada({
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                        focus:outline-none focus:ring-2 focus:ring-purple-500"
             >
-              <option value="extra">✨ Extra (aumenta custo)</option>
-              <option value="falha">⚠️ Falha (reduz custo)</option>
+              <option value="extra">Extra (aumenta custo)</option>
+              <option value="falha">Falha (reduz custo)</option>
             </select>
           </div>
         </div>
 
-        {/* 💰 Custos */}
+        {/* Custos */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            💰 Custos
+            <DollarSign className="w-4 h-4" /> Custos
           </h3>
           
           <div className="grid grid-cols-2 gap-3">
@@ -121,10 +126,10 @@ export function FormModificacaoCustomizada({
           </div>
         </div>
 
-        {/* 📄 Descrição */}
+        {/* Descrição */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            📄 Descrição
+            <FileText className="w-4 h-4" /> Descrição
           </h3>
           
           <div>
@@ -143,10 +148,10 @@ export function FormModificacaoCustomizada({
           </div>
         </div>
 
-        {/* 🏷️ Categoria */}
+        {/* Categoria */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            🏷️ Categoria
+            <Tag className="w-4 h-4" /> Categoria
           </h3>
           
           <div>
@@ -162,10 +167,10 @@ export function FormModificacaoCustomizada({
           </div>
         </div>
 
-        {/* ⚙️ Configurações */}
+        {/* Configurações */}
         <div className="space-y-3">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
-            ⚙️ Configurações
+            <Settings className="w-4 h-4" /> Configurações
           </h3>
           
           <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg">
@@ -180,7 +185,7 @@ export function FormModificacaoCustomizada({
                 className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
               />
               <label htmlFor="requerParametros" className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                📝 Requer parâmetros adicionais
+                Requer parâmetros adicionais
               </label>
             </div>
           </div>
@@ -188,8 +193,8 @@ export function FormModificacaoCustomizada({
           {/* Observações */}
           {formData.requerParametros && (
             <div className="mt-3">
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300">
-                💡 Observações sobre parâmetros
+              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <FileText className="w-4 h-4" /> Observações sobre parâmetros
               </label>
               <textarea
                 value={formData.observacoes || ''}

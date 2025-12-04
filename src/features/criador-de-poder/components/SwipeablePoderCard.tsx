@@ -1,5 +1,6 @@
 import { Card, CardContent, Badge, Button } from '../../../shared/ui';
 import { useSwipeToDismiss, useIsTouchDevice } from '../../../shared/hooks';
+import { Trash2, FolderOpen, Copy, Download } from 'lucide-react';
 import type { PoderSalvo } from '../types';
 
 interface SwipeablePoderCardProps {
@@ -35,7 +36,7 @@ export function SwipeablePoderCard({
       {/* Botão de deletar revelado ao swipe (apenas touch) */}
       {isTouchDevice && (
         <div className="absolute inset-y-0 right-0 flex items-center justify-end bg-red-600 dark:bg-red-700 px-6">
-          <span className="text-white font-semibold">🗑️ Deletar</span>
+          <span className="text-white font-semibold flex items-center gap-2"><Trash2 className="w-5 h-5" /> Deletar</span>
         </div>
       )}
 
@@ -79,9 +80,9 @@ export function SwipeablePoderCard({
                     onClick={onCarregar}
                     loading={carregandoId === poder.id}
                     loadingText="..."
-                    className="min-w-[90px]"
+                    className="min-w-[90px] flex items-center gap-2"
                   >
-                    📂 Carregar
+                    <FolderOpen className="w-4 h-4" /> Carregar
                   </Button>
                   
                   <Button
@@ -92,7 +93,7 @@ export function SwipeablePoderCard({
                     loading={duplicandoId === poder.id}
                     disabled={duplicandoId !== null && duplicandoId !== poder.id}
                   >
-                    📋
+                    <Copy className="w-4 h-4" />
                   </Button>
                   <Button
                     variant="ghost"
@@ -102,7 +103,7 @@ export function SwipeablePoderCard({
                     loading={exportandoId === poder.id}
                     disabled={exportandoId !== null && exportandoId !== poder.id}
                   >
-                    ⬇️
+                    <Download className="w-4 h-4" />
                   </Button>
                   {!isTouchDevice && (
                     <Button
@@ -114,7 +115,7 @@ export function SwipeablePoderCard({
                       loading={deletandoId === poder.id}
                       disabled={deletandoId !== null && deletandoId !== poder.id}
                     >
-                      🗑️
+                      <Trash2 className="w-4 h-4" />
                     </Button>
                   )}
                 </div>

@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { Save, Info, Sparkles, Lightbulb, FileText, Zap } from 'lucide-react';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Input, Textarea, Select, toast, HelpIcon, Tooltip, ConfirmDialog, InlineHelp, EmptyState } from '../../../shared/ui';
 import { usePoderCalculator } from '../hooks/usePoderCalculator';
 import { usePoderValidation } from '../hooks/usePoderValidation';
@@ -73,13 +74,9 @@ export function CriadorDePoder() {
     await new Promise(resolve => setTimeout(resolve, 300));
     resetarPoder();
     setResetando(false);
-    toast.success('Poder resetado com sucesso! ✨');
+    toast.success('Poder resetado com sucesso!');
   };
 
-  const handleSalvar = async () => {
-    // Validação usando Zod
-    const resultado = validarParaSalvar(poder);
-    
   const handleSalvar = async () => {
     // Validação usando Zod
     const resultado = validarParaSalvar(poder);
@@ -91,16 +88,16 @@ export function CriadorDePoder() {
       return;
     }
     
-    setSalvando(true);existe na biblioteca
+    setSalvando(true);
     const poderExistente = buscarPoder(poder.id);
     salvarPoder(poder);
     
     setSalvando(false);
     
     if (poderExistente) {
-      toast.success(`Poder "${poder.nome}" atualizado com sucesso! 💾`);
+      toast.success(`Poder "${poder.nome}" atualizado com sucesso!`);
     } else {
-      toast.success(`Poder "${poder.nome}" salvo com sucesso! 💾`);
+      toast.success(`Poder "${poder.nome}" salvo com sucesso!`);
     }
   };
 
@@ -150,14 +147,14 @@ export function CriadorDePoder() {
       {poder.efeitos.length > 0 && (
         <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
           <div className="flex items-center gap-2">
-            <span className="text-green-600 dark:text-green-400">💾</span>
+            <Save className="w-4 h-4 text-green-600 dark:text-green-400" />
             <span className="text-sm text-green-700 dark:text-green-300">
               Progresso salvo automaticamente
             </span>
           </div>
-          <span className="text-xs text-green-600 dark:text-green-400" title="Seu trabalho é salvo automaticamente no navegador. Você pode fechar e voltar depois!">
-            ℹ️
-          </span>
+          <Tooltip content="Seu trabalho é salvo automaticamente no navegador. Você pode fechar e voltar depois!">
+            <Info className="w-4 h-4 text-green-600 dark:text-green-400 cursor-help" />
+          </Tooltip>
         </div>
       )}
 
@@ -277,7 +274,7 @@ export function CriadorDePoder() {
                   
                   <InlineHelp
                     type="info"
-                    text="💡 Deixe vazio para cada efeito usar seus próprios parâmetros. Selecione valores para forçar TODOS os efeitos a usarem os mesmos parâmetros (aplicará modificadores)."
+                    text="Deixe vazio para cada efeito usar seus próprios parâmetros. Selecione valores para forçar TODOS os efeitos a usarem os mesmos parâmetros (aplicará modificadores)."
                     dismissible={true}
                     storageKey="parametros-poder-tip"
                   />
@@ -324,12 +321,12 @@ export function CriadorDePoder() {
                         aria-label="Salvar poder na biblioteca"
                         className="w-full sm:w-auto"
                       >
-                        💾<span className="hidden sm:inline ml-1">Salvar</span>
+                        <Save className="w-4 h-4" /><span className="hidden sm:inline ml-2">Salvar</span>
                       </Button>
                     </Tooltip>
                     <Tooltip content="Ver resumo completo com descrição técnica">
-                      <Button variant="outline" size="sm" onClick={() => setModalResumoAberto(true)} aria-label="Ver resumo do poder" className="w-full sm:w-auto">
-                        📋<span className="hidden sm:inline ml-1">Resumo</span>
+                      <Button variant="outline" size="sm" onClick={() => setModalResumoAberto(true)} aria-label="Ver resumo do poder" className="w-full sm:w-auto flex items-center gap-2">
+                        <FileText className="w-4 h-4" /><span className="hidden sm:inline">Resumo</span>
                       </Button>
                     </Tooltip>
                   </>
@@ -343,7 +340,7 @@ export function CriadorDePoder() {
                     aria-label="Resetar poder e começar novo"
                     className="w-full sm:w-auto"
                   >
-                    🔄<span className="hidden sm:inline ml-1">Resetar</span>
+                    <span className="hidden sm:inline">Resetar</span>
                   </Button>
                 </Tooltip>
               </div>
@@ -385,7 +382,7 @@ export function CriadorDePoder() {
                       onClick={() => removerModificacaoGlobal(mod.id)}
                       className="hover:text-red-600"
                     >
-                      ✕
+                      ×
                     </button>
                   </Badge>
                 );
@@ -425,13 +422,13 @@ export function CriadorDePoder() {
 
         {poder.efeitos.length === 0 ? (
           <EmptyState
-            icon="⚡"
+            icon={<Zap className="w-12 h-12 text-espirito-500" />}
             title="Comece criando seu poder!"
             description="Adicione um ou mais efeitos para começar. Você poderá ajustar graus, parâmetros e aplicar modificações depois."
             action={{
               label: 'Adicionar Primeiro Efeito',
               onClick: () => setModalSeletorEfeito(true),
-              icon: '✨'
+              icon: <Sparkles className="w-4 h-4" />
             }}
             tips={[
               'Use Ctrl+E para adicionar efeitos rapidamente',
@@ -467,17 +464,14 @@ export function CriadorDePoder() {
 
       {/* Botões de Ação */}
       {poder.efeitos.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Button 
-            variant="secondary" 
-            fullWidth
-            onClick={() => setModalSeletorModificacao(true)}
-            aria-label="Adicionar modificação global ao poder"
-          >
-            ⚡ Adicionar Modificação Global
-          </Button>
-
-        </div>
+        <Button 
+          variant="secondary"
+          fullWidth
+          onClick={() => setModalSeletorModificacao(true)}
+          aria-label="Adicionar modificação global ao poder"
+        >
+          Adicionar Modificação Global
+        </Button>
       )}
 
       {/* Modals */}

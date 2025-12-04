@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react';
 import { useFavoritos, useCustomItems } from '../../../shared/hooks';
 import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
 import { useModificacaoFilter, OrdenacaoTipo } from '../hooks/useModificacaoFilter';
+import { Sparkles, AlertTriangle, Search, Star, BarChart2, RotateCcw, Settings, Edit3, FileText, DollarSign, Tag, ArrowLeft, Info, Plus } from 'lucide-react';
 import type { Modificacao } from '../../../data';
 
 interface SeletorModificacaoProps {
@@ -83,14 +84,18 @@ export function SeletorModificacao({
             {/* Dica sobre modificações */}
             <InlineHelp
               type="info"
-              text="✨ Extras aumentam o custo mas adicionam funcionalidades. ⚠️ Falhas reduzem o custo mas impõem limitações."
+              text={
+                <span className="flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 inline" /> Extras aumentam o custo mas adicionam funcionalidades. <AlertTriangle className="w-3 h-3 inline ml-1" /> Falhas reduzem o custo mas impõem limitações.
+                </span>
+              }
               dismissible={true}
               storageKey="modificacoes-info"
             />
 
             {/* Busca */}
             <Input
-              placeholder="🔍 Buscar por nome, descrição ou categoria..."
+              placeholder="Buscar por nome, descrição ou categoria..."
               value={busca}
               onChange={(e: any) => setBusca(e.target.value)}
             />
@@ -133,33 +138,30 @@ export function SeletorModificacao({
                     variant={tipoFiltro === 'extra' ? 'primary' : 'ghost'}
                     size="sm"
                     onClick={() => setTipoFiltro('extra')}
-                    className="flex-1"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
-                    ✨ Extras
+                    <Sparkles className="w-4 h-4" /> Extras
                   </Button>
                   <Button
                     variant={tipoFiltro === 'falha' ? 'primary' : 'ghost'}
                     size="sm"
                     onClick={() => setTipoFiltro('falha')}
-                    className="flex-1"
+                    className="flex-1 flex items-center justify-center gap-2"
                   >
-                    ⚠️ Falhas
+                    <AlertTriangle className="w-4 h-4" /> Falhas
                   </Button>
                 </div>
               </div>
               
               {/* Filtro de Favoritos */}
-              <div>
-                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  Filtros
-                </label>
                 <Button
                   variant={favoritosOnly ? 'primary' : 'ghost'}
                   size="sm"
                   onClick={() => setFavoritosOnly(!favoritosOnly)}
                   fullWidth
+                  className="flex items-center justify-center gap-2"
                 >
-                  ⭐ {favoritosOnly ? 'Mostrar Todas' : 'Apenas Favoritos'}
+                  <Star className={`w-4 h-4 ${favoritosOnly ? 'fill-current' : ''}`} /> {favoritosOnly ? 'Mostrar Todas' : 'Apenas Favoritos'}
                 </Button>
               </div>
 
@@ -179,20 +181,20 @@ export function SeletorModificacao({
                   ))}
                 </select>
               </div>
-            </div>
 
             {/* Estatísticas */}
             {(busca || tipoFiltro || categoriaFiltro) && (
               <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
-                <span className="text-sm text-blue-700 dark:text-blue-300">
-                  📊 Mostrando {modificacoesFiltradas.length} de {MODIFICACOES.length} modificações
+                <span className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
+                  <BarChart2 className="w-4 h-4" /> Mostrando {modificacoesFiltradas.length} de {MODIFICACOES.length} modificações
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={limparFiltros}
+                  className="flex items-center gap-2"
                 >
-                  🔄 Resetar
+                  <RotateCcw className="w-4 h-4" /> Resetar
                 </Button>
               </div>
             )}
@@ -200,13 +202,13 @@ export function SeletorModificacao({
             {/* Lista de Modificações */}
             {modificacoesFiltradas.length === 0 ? (
               <EmptyState
-                icon="🔍"
+                icon={<Search className="w-12 h-12 text-gray-400" />}
                 title="Nenhuma modificação encontrada"
                 description="Tente ajustar os filtros ou buscar por outros termos"
                 action={{
                   label: 'Limpar Filtros',
                   onClick: limparFiltros,
-                  icon: '🔄'
+                  icon: <RotateCcw className="w-4 h-4" />
                 }}
               />
             ) : (
@@ -227,14 +229,14 @@ export function SeletorModificacao({
                             {mod.nome}
                           </h4>
                           {mod.configuracoes && (
-                            <span className="text-xs" title="Tem configurações">⚙️</span>
+                            <span className="text-xs" title="Tem configurações"><Settings className="w-3 h-3 text-espirito-500" /></span>
                           )}
                           {mod.requerParametros && (
-                            <span className="text-xs" title="Requer parâmetros">📝</span>
+                            <span className="text-xs" title="Requer parâmetros"><Edit3 className="w-3 h-3" /></span>
                           )}
                         </div>
-                        <Badge variant={mod.tipo === 'extra' ? 'success' : 'warning'} size="sm">
-                          {mod.tipo === 'extra' ? '✨' : '⚠️'}
+                        <Badge variant={mod.tipo === 'extra' ? 'success' : 'warning'} size="sm" className="flex items-center gap-1">
+                          {mod.tipo === 'extra' ? <Sparkles className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
                         </Badge>
                       </div>
                       
@@ -242,22 +244,17 @@ export function SeletorModificacao({
                         {mod.descricao}
                       </p>
                       
-                      <div className="flex items-center justify-between">
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {mod.custoFixo !== 0 && (
-                            <span className={`font-semibold ${mod.custoFixo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                              {mod.custoFixo > 0 ? '+' : ''}{mod.custoFixo} fixo
-                            </span>
-                          )}
-                          {mod.custoPorGrau !== 0 && (
-                            <span className={`font-semibold ${mod.custoPorGrau > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                              {mod.custoPorGrau > 0 ? '+' : ''}{mod.custoPorGrau}/grau
-                            </span>
-                          )}
-                        </div>
-                        <Badge variant="secondary" size="sm">
-                          {mod.categoria}
-                        </Badge>
+                      <div className="flex flex-wrap gap-2 text-xs">
+                        {mod.custoFixo !== 0 && (
+                          <span className={`font-semibold ${mod.custoFixo > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                            {mod.custoFixo > 0 ? '+' : ''}{mod.custoFixo} fixo
+                          </span>
+                        )}
+                        {mod.custoPorGrau !== 0 && (
+                          <span className={`font-semibold ${mod.custoPorGrau > 0 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
+                            {mod.custoPorGrau > 0 ? '+' : ''}{mod.custoPorGrau}/grau
+                          </span>
+                        )}
                       </div>
                     </button>
                     
@@ -271,9 +268,7 @@ export function SeletorModificacao({
                       title={isFavoritoModificacao(mod.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                       aria-label={isFavoritoModificacao(mod.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                     >
-                      <span className="text-xl">
-                        {isFavoritoModificacao(mod.id) ? '⭐' : '☆'}
-                      </span>
+                      <Star className={`w-5 h-5 ${isFavoritoModificacao(mod.id) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`} />
                     </button>
                   </div>
                 ))}
@@ -282,16 +277,15 @@ export function SeletorModificacao({
           </>
         ) : (
           <>
-            {/* Formulário de Parâmetros */}
+            {/* Detalhes da Modificação Selecionada */}
             <div className="space-y-4">
-              {/* Header com botão voltar */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
                     {modBase?.nome}
                   </h3>
-                  <Badge variant={modBase?.tipo === 'extra' ? 'success' : 'warning'} size="sm">
-                    {modBase?.tipo === 'extra' ? '✨ Extra' : '⚠️ Falha'}
+                  <Badge variant={modBase?.tipo === 'extra' ? 'success' : 'warning'} size="sm" className="flex items-center gap-1">
+                    {modBase?.tipo === 'extra' ? <><Sparkles className="w-3 h-3" /> Extra</> : <><AlertTriangle className="w-3 h-3" /> Falha</>}
                   </Badge>
                 </div>
                 <Button
@@ -302,8 +296,9 @@ export function SeletorModificacao({
                     setConfiguracaoSelecionada('');
                     setParametros({});
                   }}
+                  className="flex items-center gap-2"
                 >
-                  ← Voltar
+                  <ArrowLeft className="w-4 h-4" /> Voltar
                 </Button>
               </div>
 
@@ -316,8 +311,8 @@ export function SeletorModificacao({
                 <div className="space-y-3">
                   {/* Descrição */}
                   <div>
-                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      📝 Descrição:
+                    <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2">
+                      <FileText className="w-4 h-4" /> Descrição:
                     </p>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {modBase?.descricao}
@@ -327,8 +322,8 @@ export function SeletorModificacao({
                   {/* Informações de Custo e Categoria */}
                   <div className="flex flex-wrap items-center gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                        💰 CUSTO:
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <DollarSign className="w-3 h-3" /> CUSTO:
                       </span>
                       <div className="flex gap-2">
                         {modBase?.custoFixo !== 0 && (
@@ -345,8 +340,8 @@ export function SeletorModificacao({
                     </div>
                     
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                        🏷️ CATEGORIA:
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <Tag className="w-3 h-3" /> CATEGORIA:
                       </span>
                       <Badge variant="secondary" size="sm">
                         {modBase?.categoria}
@@ -360,7 +355,7 @@ export function SeletorModificacao({
               {modBase?.configuracoes && (
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3">
                   <div className="flex items-start gap-2">
-                    <span className="text-2xl">⚙️</span>
+                    <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     <div className="flex-1">
                       <p className="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">
                         Esta modificação possui variações
@@ -409,8 +404,8 @@ export function SeletorModificacao({
                                 </p>
                               )}
                               {config.grauMinimo && (
-                                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1">
-                                  ⚠️ Grau mínimo: {config.grauMinimo}
+                                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1 flex items-center gap-1">
+                                  <AlertTriangle className="w-3 h-3" /> Grau mínimo: {config.grauMinimo}
                                 </p>
                               )}
                             </button>
@@ -440,8 +435,8 @@ export function SeletorModificacao({
                         showValue={true}
                       />
                       {modBase.detalhesGrau && (
-                        <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                          ℹ️ {modBase.detalhesGrau}
+                        <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 p-2 rounded flex items-start gap-2">
+                          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" /> {modBase.detalhesGrau}
                         </p>
                       )}
                       <p className="text-sm text-gray-600 dark:text-gray-400">
@@ -487,8 +482,8 @@ export function SeletorModificacao({
               {/* Resumo do que será adicionado */}
               {(configuracaoSelecionada || Object.keys(parametros).length > 0) && (
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                  <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-2">
-                    📋 Resumo da Modificação:
+                  <p className="text-xs font-semibold text-blue-800 dark:text-blue-200 mb-2 flex items-center gap-2">
+                    <FileText className="w-4 h-4" /> Resumo da Modificação:
                   </p>
                   <div className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
                     <p>
@@ -521,13 +516,14 @@ export function SeletorModificacao({
                   (modBase?.configuracoes && !configuracaoSelecionada) ||
                   (modBase?.requerParametros && Object.keys(parametros).length === 0)
                 }
+                className="flex items-center justify-center gap-2"
               >
-                ✨ Adicionar Modificação
+                <Sparkles className="w-4 h-4" /> Adicionar Modificação
               </Button>
               
               {modBase?.configuracoes && !configuracaoSelecionada && (
-                <p className="text-sm text-orange-600 dark:text-orange-400 text-center">
-                  ⚠️ Selecione uma configuração para continuar
+                <p className="text-sm text-orange-600 dark:text-orange-400 text-center flex items-center justify-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Selecione uma configuração para continuar
                 </p>
               )}
             </div>
@@ -536,8 +532,8 @@ export function SeletorModificacao({
       </div>
 
       <ModalFooter>
-        <Button variant="secondary" onClick={() => setShowFormCustom(true)}>
-          + Criar Modificação Customizada
+        <Button variant="secondary" onClick={() => setShowFormCustom(true)} className="flex items-center gap-2">
+          <Plus className="w-4 h-4" /> Criar Modificação Customizada
         </Button>
         <Button variant="ghost" onClick={onClose}>
           Fechar

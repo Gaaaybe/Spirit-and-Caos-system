@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Info, Lightbulb, AlertTriangle, FileText, X } from 'lucide-react';
 
 interface InlineHelpProps {
   text: string;
@@ -34,25 +35,25 @@ export function InlineHelp({
       bg: 'bg-blue-50 dark:bg-blue-900/20',
       border: 'border-blue-200 dark:border-blue-800',
       text: 'text-blue-700 dark:text-blue-300',
-      icon: 'ℹ️'
+      icon: <Info className="w-4 h-4" />
     },
     tip: {
       bg: 'bg-green-50 dark:bg-green-900/20',
       border: 'border-green-200 dark:border-green-800',
       text: 'text-green-700 dark:text-green-300',
-      icon: '💡'
+      icon: <Lightbulb className="w-4 h-4" />
     },
     warning: {
       bg: 'bg-yellow-50 dark:bg-yellow-900/20',
       border: 'border-yellow-200 dark:border-yellow-800',
       text: 'text-yellow-700 dark:text-yellow-300',
-      icon: '⚠️'
+      icon: <AlertTriangle className="w-4 h-4" />
     },
     example: {
       bg: 'bg-purple-50 dark:bg-purple-900/20',
       border: 'border-purple-200 dark:border-purple-800',
       text: 'text-purple-700 dark:text-purple-300',
-      icon: '📝'
+      icon: <FileText className="w-4 h-4" />
     }
   };
 
@@ -68,7 +69,7 @@ export function InlineHelp({
           className="flex-shrink-0 opacity-60 hover:opacity-100 transition-opacity"
           aria-label="Dispensar"
         >
-          ✕
+          <X className="w-4 h-4" />
         </button>
       )}
     </div>

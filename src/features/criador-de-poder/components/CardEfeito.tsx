@@ -1,6 +1,10 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge, Button, Slider, Select, Input } from '../../../shared/ui';
 import { MODIFICACOES, buscarGrauNaTabela } from '../../../data';
 import { useState, useMemo } from 'react';
+import { 
+  ChevronRight, ChevronDown, Settings, Sparkles, AlertTriangle, Trash2, 
+  Swords, Ruler, Zap, Package, Weight, Clock, Rocket, Move, AlertCircle, X 
+} from 'lucide-react';
 import { useCustomItems } from '../../../shared/hooks';
 import { SeletorModificacao } from './SeletorModificacao';
 import type { EfeitoDetalhado } from '../types';
@@ -33,6 +37,7 @@ export function CardEfeito({
   const { efeito, efeitoBase, custoPorGrau, custoFixo, custoTotal } = efeitoDetalhado;
   const [modalModificacao, setModalModificacao] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   
   // Proteção contra dados inválidos
   if (!efeito || !efeitoBase) {
@@ -44,7 +49,7 @@ export function CardEfeito({
 
   return (
     <>
-      <Card hover>
+      <Card hover className="transition-all duration-300 hover:shadow-xl border-l-4 border-l-espirito-500 dark:border-l-espirito-400">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div className="flex-1">
@@ -52,23 +57,27 @@ export function CardEfeito({
                 <button
                   onClick={() => setIsExpanded(!isExpanded)}
                   className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-transform duration-200"
-                  style={{ transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)' }}
                   title={isExpanded ? 'Recolher' : 'Expandir'}
                 >
-                  ▶
+                  <ChevronRight className={`w-5 h-5 transform transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
                 </button>
                 <div className="flex-1">
-                  <CardTitle>{efeitoBase.nome}</CardTitle>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                  <CardTitle className="flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-espirito-600 dark:text-espirito-400" />
+                    {efeitoBase.nome}
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center gap-2">
                     Grau {efeito.grau} • {efeito.inputCustomizado && `${efeito.inputCustomizado} • `}
                     {custoPorGrau} PdA/grau
                   </p>
                   
                   {/* Configuração selecionada quando colapsado */}
+                  {/* Configuração selecionada quando colapsado */}
                   {!isExpanded && efeito.configuracaoSelecionada && efeitoBase.configuracoes && (
                     <div className="mt-1">
-                      <Badge variant="secondary" size="sm">
-                        ⚙️ {efeitoBase.configuracoes.opcoes.find((c: any) => c.id === efeito.configuracaoSelecionada)?.nome}
+                      <Badge variant="secondary" size="sm" className="flex items-center gap-1">
+                        <Settings className="w-3 h-3" />
+                        {efeitoBase.configuracoes.opcoes.find((c: any) => c.id === efeito.configuracaoSelecionada)?.nome}
                       </Badge>
                     </div>
                   )}
@@ -84,8 +93,10 @@ export function CardEfeito({
                             variant={modBase?.tipo === 'extra' ? 'success' : 'warning'}
                             size="sm"
                             title={modBase?.descricao}
+                            className="flex items-center gap-1"
                           >
-                            {modBase?.tipo === 'extra' ? '✨' : '⚠️'} {modBase?.nome || mod.modificacaoBaseId}
+                            {modBase?.tipo === 'extra' ? <Sparkles className="w-3 h-3" /> : <AlertTriangle className="w-3 h-3" />}
+                            {modBase?.nome || mod.modificacaoBaseId}
                             {mod.grauModificacao && ` (${mod.grauModificacao})`}
                           </Badge>
                         );
@@ -97,16 +108,17 @@ export function CardEfeito({
             </div>
             
             <div className="flex flex-col items-end gap-2">
-              <Badge variant="espirito" size="lg">
+              <Badge variant="espirito" size="lg" className="bg-gradient-to-r from-espirito-600 to-espirito-500 dark:from-espirito-500 dark:to-espirito-400 shadow-lg shadow-espirito-500/30 hover:shadow-xl transition-all flex items-center gap-1">
+                <Weight className="w-4 h-4" />
                 {custoTotal} PdA
               </Badge>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onRemover(efeito.id)}
-                className="text-red-600 hover:text-red-700"
+                className="text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 flex items-center gap-1 hover:bg-red-50 dark:hover:bg-red-950/30 hover:scale-105 transition-all duration-200 group"
               >
-                🗑️ Remover
+                <Trash2 className="w-4 h-4 group-hover:animate-pulse" /> Remover
               </Button>
             </div>
           </div>
@@ -126,64 +138,75 @@ export function CardEfeito({
 
           {/* Informações da Tabela Universal */}
           {dadosGrau && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+            <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40 rounded-lg border border-blue-200/50 dark:border-blue-800/50 shadow-sm">
               {/* Campos Principais - Sempre Visíveis */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">💥 Dano/Cura</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                    <Swords className="w-3 h-3" /> Dano/Cura
+                  </p>
                   <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.dano}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">📏 Distância</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                    <Ruler className="w-3 h-3" /> Distância
+                  </p>
                   <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.distancia}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">⚡ PE</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                    <Zap className="w-3 h-3" /> PE
+                  </p>
                   <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.pe}</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">📦 Espaços</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                    <Package className="w-3 h-3" /> Espaços
+                  </p>
                   <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.espacos}</p>
                 </div>
               </div>
 
               {/* Botão para Expandir/Colapsar */}
               <button
-                onClick={() => {
-                  const detalhes = document.getElementById(`detalhes-tabela-${efeito.id}`);
-                  const icone = document.getElementById(`icone-toggle-${efeito.id}`);
-                  if (detalhes && icone) {
-                    detalhes.classList.toggle('hidden');
-                    icone.textContent = detalhes.classList.contains('hidden') ? '▼' : '▲';
-                  }
-                }}
+                onClick={() => setShowDetails(!showDetails)}
                 className="w-full mt-3 text-xs text-blue-700 dark:text-blue-300 hover:text-blue-900 dark:hover:text-blue-100 font-medium flex items-center justify-center gap-1 transition-colors"
               >
-                <span id={`icone-toggle-${efeito.id}`}>▼</span>
+                {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                 <span>Mais detalhes da Tabela Universal</span>
               </button>
 
               {/* Campos Adicionais - Colapsáveis */}
-              <div id={`detalhes-tabela-${efeito.id}`} className="hidden mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">⚖️ Massa</p>
-                    <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.massa}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">⏱️ Tempo</p>
-                    <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.tempo}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🚀 Velocidade</p>
-                    <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.velocidade}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">🏃 Deslocamento</p>
-                    <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.deslocamento}</p>
+              {showDetails && (
+                <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                        <Weight className="w-3 h-3" /> Massa
+                      </p>
+                      <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.massa}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                        <Clock className="w-3 h-3" /> Tempo
+                      </p>
+                      <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.tempo}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                        <Rocket className="w-3 h-3" /> Velocidade
+                      </p>
+                      <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.velocidade}</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mb-1 flex items-center justify-center gap-1">
+                        <Move className="w-3 h-3" /> Deslocamento
+                      </p>
+                      <p className="font-bold text-blue-900 dark:text-blue-300">{dadosGrau.deslocamento}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -205,8 +228,8 @@ export function CardEfeito({
                   placeholder={efeitoBase.placeholderInput || ''}
                 />
               )}
-              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
-                ⚠️ Este efeito requer especificação
+              <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1 flex items-center gap-1">
+                <AlertCircle className="w-3 h-3" /> Este efeito requer especificação
               </p>
             </div>
           )}
@@ -230,8 +253,8 @@ export function CardEfeito({
                   </p>
                 </div>
               )}
-              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1">
-                ⚙️ Configuração que altera o custo base
+              <p className="text-xs text-purple-700 dark:text-purple-300 mt-1 flex items-center gap-1">
+                <Settings className="w-3 h-3" /> Configuração que altera o custo base
               </p>
             </div>
           )}
@@ -272,7 +295,7 @@ export function CardEfeito({
                         onClick={() => onRemoverModificacao(efeito.id, mod.id)}
                         className="hover:text-red-600"
                       >
-                        ✕
+                        <X className="w-3 h-3" />
                       </button>
                     </Badge>
                   );
@@ -290,8 +313,10 @@ export function CardEfeito({
             size="sm"
             fullWidth
             onClick={() => setModalModificacao(true)}
+            className="hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 dark:hover:from-green-950/20 dark:hover:to-emerald-950/20 transition-all duration-200 group"
           >
-            + Adicionar Modificação
+            <Sparkles className="w-4 h-4 mr-2 group-hover:animate-spin" />
+            Adicionar Modificação
           </Button>
         </CardFooter>
         )}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { CheckCircle, XCircle, AlertTriangle, Info } from 'lucide-react';
 
 interface Toast {
   id: number;
@@ -69,13 +70,13 @@ export function ToastContainer() {
   const getIcon = (type: Toast['type']) => {
     switch (type) {
       case 'success':
-        return '✅';
+        return <CheckCircle className="w-5 h-5" />;
       case 'error':
-        return '❌';
+        return <XCircle className="w-5 h-5" />;
       case 'warning':
-        return '⚠️';
+        return <AlertTriangle className="w-5 h-5" />;
       case 'info':
-        return 'ℹ️';
+        return <Info className="w-5 h-5" />;
     }
   };
 

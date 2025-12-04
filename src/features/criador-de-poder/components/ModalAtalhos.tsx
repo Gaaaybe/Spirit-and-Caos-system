@@ -1,4 +1,5 @@
 import { Modal } from '../../../shared/ui';
+import { Keyboard, Lightbulb } from 'lucide-react';
 
 interface ModalAtalhosProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export function ModalAtalhos({ isOpen, onClose }: ModalAtalhosProps) {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="⌨️ Atalhos de Teclado"
+      title={<span className="flex items-center gap-2"><Keyboard className="w-5 h-5" /> Atalhos de Teclado</span>}
       size="md"
     >
       <div className="space-y-3">
@@ -46,8 +47,9 @@ export function ModalAtalhos({ isOpen, onClose }: ModalAtalhosProps) {
         </div>
 
         <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-blue-700 dark:text-blue-300">
-            💡 <strong>Dica:</strong> Os atalhos com Ctrl/Cmd funcionam mesmo quando você está digitando em campos de texto (exceto Ctrl+E e Ctrl+M).
+          <p className="text-xs text-blue-700 dark:text-blue-300 flex items-start gap-2">
+            <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span><strong>Dica:</strong> Os atalhos com Ctrl/Cmd funcionam mesmo quando você está digitando em campos de texto (exceto Ctrl+E e Ctrl+M).</span>
           </p>
         </div>
       </div>

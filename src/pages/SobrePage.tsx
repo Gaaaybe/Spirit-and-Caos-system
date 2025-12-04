@@ -1,11 +1,14 @@
 import { Card, CardHeader, CardTitle, CardContent, Badge } from '../shared/ui';
+import { BookOpen, Gamepad2, Building2, Calculator, Rocket, Keyboard, User, Lightbulb } from 'lucide-react';
 
 export function SobrePage() {
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>📖 Sobre o Sistema</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="w-5 h-5" /> Sobre o Sistema
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
@@ -19,8 +22,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-              🎮 Como Funciona
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Gamepad2 className="w-5 h-5" /> Como Funciona
             </h3>
             <ol className="list-decimal list-inside space-y-2 text-gray-600 dark:text-gray-400">
               <li>Adicione um ou mais <strong>Efeitos</strong> (ex: Dano, Voo, Afligir)</li>
@@ -32,8 +35,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-              🏗️ Arquitetura de Parâmetros
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Building2 className="w-5 h-5" /> Arquitetura de Parâmetros
             </h3>
             <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
               <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
@@ -48,8 +51,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-              🧮 Sistema de Cálculo
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Calculator className="w-5 h-5" /> Sistema de Cálculo
             </h3>
             <div className="space-y-3">
               <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
@@ -74,8 +77,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-              🚀 Tecnologias
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Rocket className="w-5 h-5" /> Tecnologias
             </h3>
             <div className="flex flex-wrap gap-2">
               <Badge variant="espirito">React 19</Badge>
@@ -88,8 +91,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">
-              ⌨️ Atalhos de Teclado
+            <h3 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <Keyboard className="w-5 h-5" /> Atalhos de Teclado
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className="flex items-center gap-2">
@@ -116,8 +119,8 @@ export function SobrePage() {
           </div>
 
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
-            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
-              👨‍💻 Desenvolvedor
+            <h3 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100 flex items-center gap-2">
+              <User className="w-5 h-5" /> Desenvolvedor
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
               Criado por <strong>Gabriel Menezes</strong> para jogadores de Espírito & Caos
@@ -128,9 +131,10 @@ export function SobrePage() {
           </div>
 
           <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
-            <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              <strong>💡 Dica:</strong> Todos os dados são salvos localmente no seu navegador. 
-              Use a função de exportar/importar para fazer backup dos seus poderes!
+            <p className="text-sm text-yellow-800 dark:text-yellow-200 flex items-start gap-2">
+              <Lightbulb className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span><strong>Dica:</strong> Todos os dados são salvos localmente no seu navegador. 
+              Use a função de exportar/importar para fazer backup dos seus poderes!</span>
             </p>
           </div>
         </CardContent>

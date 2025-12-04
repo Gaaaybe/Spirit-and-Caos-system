@@ -5,6 +5,7 @@ import { SwipeablePoderCard } from '../features/criador-de-poder/components/Swip
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
 import { Poder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useNavigate } from 'react-router-dom';
+import { Library, Sparkles, Upload, Plus } from 'lucide-react';
 
 export function BibliotecaPage() {
   const navigate = useNavigate();
@@ -129,23 +130,23 @@ export function BibliotecaPage() {
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
         <button
           onClick={() => setAbaAtiva('poderes')}
-          className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+          className={`px-4 py-2 font-medium transition-colors border-b-2 flex items-center gap-2 ${
             abaAtiva === 'poderes'
               ? 'border-purple-500 text-purple-600 dark:text-purple-400'
               : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
           }`}
         >
-          📚 Poderes Salvos
+          <Library className="w-4 h-4" /> Poderes Salvos
         </button>
         <button
           onClick={() => setAbaAtiva('customizados')}
-          className={`px-4 py-2 font-medium transition-colors border-b-2 ${
+          className={`px-4 py-2 font-medium transition-colors border-b-2 flex items-center gap-2 ${
             abaAtiva === 'customizados'
               ? 'border-purple-500 text-purple-600 dark:text-purple-400'
               : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
           }`}
         >
-          ✨ Itens Customizados
+          <Sparkles className="w-4 h-4" /> Itens Customizados
         </button>
       </div>
 
@@ -155,7 +156,7 @@ export function BibliotecaPage() {
             <CardHeader>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                  <CardTitle>📚 Biblioteca de Poderes</CardTitle>
+                  <CardTitle className="flex items-center gap-2"><Library className="w-5 h-5" /> Biblioteca de Poderes</CardTitle>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     {poderes.length} {poderes.length === 1 ? 'poder salvo' : 'poderes salvos'}
                   </p>
@@ -175,8 +176,9 @@ export function BibliotecaPage() {
                     loading={importando}
                     loadingText="Importando..."
                     aria-label="Importar poder de arquivo JSON"
+                    className="flex items-center gap-2"
                   >
-                    📥 Importar
+                    <Upload className="w-4 h-4" /> Importar
                   </Button>
                 </div>
               </div>
@@ -191,7 +193,6 @@ export function BibliotecaPage() {
               )}
             </CardContent>
           </Card>
-
           {/* Área de drag and drop */}
           {poderes.length > 0 && (
             <div
@@ -204,8 +205,8 @@ export function BibliotecaPage() {
                   : 'border-gray-300 dark:border-gray-700'
               }`}
             >
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {isDragging ? '📂 Solte o arquivo aqui!' : '📂 Arraste um arquivo JSON para importar'}
+              <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center justify-center gap-2">
+                <Upload className="w-4 h-4" /> {isDragging ? 'Solte o arquivo aqui!' : 'Arraste um arquivo JSON para importar'}
               </p>
             </div>
           )}
@@ -213,7 +214,7 @@ export function BibliotecaPage() {
           {/* Lista de poderes */}
           {poderesFiltrados.length === 0 ? (
             <EmptyState
-              icon="📚"
+              icon={<Library className="w-12 h-12 text-gray-400" />}
               title={poderes.length === 0 ? "Nenhum poder salvo ainda" : "Nenhum poder encontrado"}
               description={
                 poderes.length === 0
@@ -223,7 +224,7 @@ export function BibliotecaPage() {
               action={{
                 label: 'Criar Novo Poder',
                 onClick: () => navigate('/'),
-                icon: '✨'
+                icon: <Plus className="w-4 h-4" />
               }}
             />
           ) : (

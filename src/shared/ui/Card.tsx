@@ -13,7 +13,7 @@ export function Card({
   hover = false,
   ...props 
 }: CardProps) {
-  const baseClasses = "bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl border border-gray-200/80 dark:border-gray-700/50 shadow-md dark:shadow-gray-900/50";
+  const baseClasses = "bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl border border-gray-200/80 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/70";
   
   const paddingClasses = {
     none: '',
@@ -22,7 +22,7 @@ export function Card({
     lg: 'p-5 sm:p-6 md:p-8',
   };
   
-  const hoverClass = hover ? 'hover:shadow-lg hover:scale-[1.01] hover:border-espirito-300 dark:hover:border-espirito-700 transition-all duration-200' : '';
+  const hoverClass = hover ? 'hover:shadow-2xl hover:shadow-espirito-500/10 hover:scale-[1.02] hover:border-espirito-400/50 dark:hover:border-espirito-600/50 transition-all duration-300 hover:-translate-y-1' : '';
   
   return (
     <div 

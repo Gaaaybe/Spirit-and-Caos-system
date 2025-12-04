@@ -1,5 +1,6 @@
 import { Modal, ModalFooter, Button } from './';
 import { useState } from 'react';
+import { AlertTriangle, HelpCircle, Info } from 'lucide-react';
 
 interface ConfirmDialogProps {
   isOpen: boolean;
@@ -37,13 +38,13 @@ export function ConfirmDialog({
   const getIcon = () => {
     switch (variant) {
       case 'danger':
-        return '⚠️';
+        return <AlertTriangle className="w-12 h-12" />;
       case 'warning':
-        return '❓';
+        return <HelpCircle className="w-12 h-12" />;
       case 'info':
-        return 'ℹ️';
+        return <Info className="w-12 h-12" />;
       default:
-        return '❓';
+        return <HelpCircle className="w-12 h-12" />;
     }
   };
 

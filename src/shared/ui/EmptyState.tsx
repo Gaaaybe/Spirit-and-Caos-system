@@ -1,24 +1,26 @@
+import { ReactNode } from 'react';
 import { Button } from './Button';
+import { Package, Lightbulb } from 'lucide-react';
 
 interface EmptyStateProps {
-  icon?: string;
+  icon?: ReactNode;
   title: string;
   description: string;
   action?: {
     label: string;
     onClick: () => void;
-    icon?: string;
+    icon?: ReactNode;
   };
   secondaryAction?: {
     label: string;
     onClick: () => void;
-    icon?: string;
+    icon?: ReactNode;
   };
   tips?: string[];
 }
 
 export function EmptyState({
-  icon = '📦',
+  icon = <Package className="w-16 h-16 text-gray-400" />,
   title,
   description,
   action,
@@ -28,7 +30,7 @@ export function EmptyState({
   return (
     <div className="flex flex-col items-center justify-center py-12 px-4">
       {/* Icon */}
-      <div className="text-6xl mb-4 animate-bounce">
+      <div className="text-6xl mb-4 animate-bounce flex justify-center">
         {icon}
       </div>
 
@@ -47,13 +49,13 @@ export function EmptyState({
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
           {action && (
             <Button onClick={action.onClick} variant="primary">
-              {action.icon && <span className="mr-2">{action.icon}</span>}
+              {action.icon && <span className="mr-2 flex items-center">{action.icon}</span>}
               {action.label}
             </Button>
           )}
           {secondaryAction && (
             <Button onClick={secondaryAction.onClick} variant="outline">
-              {secondaryAction.icon && <span className="mr-2">{secondaryAction.icon}</span>}
+              {secondaryAction.icon && <span className="mr-2 flex items-center">{secondaryAction.icon}</span>}
               {secondaryAction.label}
             </Button>
           )}
@@ -64,8 +66,8 @@ export function EmptyState({
       {tips && tips.length > 0 && (
         <div className="w-full max-w-md mt-4">
           <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
-            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
-              💡 Dicas:
+            <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+              <Lightbulb className="w-4 h-4" /> Dicas:
             </p>
             <ul className="space-y-1 text-sm text-blue-700 dark:text-blue-300">
               {tips.map((tip, index) => (

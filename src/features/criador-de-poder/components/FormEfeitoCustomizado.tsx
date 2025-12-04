@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Modal, Button, Input } from '../../../shared/ui';
 import type { Efeito } from '../../../data';
+import { Edit, Sparkles, Settings, Tag, Lightbulb } from 'lucide-react';
 
 interface FormEfeitoCustomizadoProps {
   isOpen: boolean;
@@ -63,7 +64,15 @@ export function FormEfeitoCustomizado({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={efeitoInicial ? '✏️ Editar Efeito Customizado' : '✨ Criar Efeito Customizado'}
+      title={
+        <span className="flex items-center gap-2">
+          {efeitoInicial ? (
+            <><Edit className="w-5 h-5" /> Editar Efeito Customizado</>
+          ) : (
+            <><Sparkles className="w-5 h-5" /> Criar Efeito Customizado</>
+          )}
+        </span>
+      }
       size="lg"
     >
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -109,7 +118,9 @@ export function FormEfeitoCustomizado({
 
         {/* Parâmetros Padrão */}
         <div>
-          <label className="block text-sm font-medium mb-2">⚙️ Parâmetros Padrão</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+            <Settings className="w-4 h-4" /> Parâmetros Padrão
+          </label>
           <div className="grid grid-cols-3 gap-3">
           <div>
             <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Ação</label>
@@ -164,7 +175,9 @@ export function FormEfeitoCustomizado({
 
         {/* Categorias */}
         <div>
-          <label className="block text-sm font-medium mb-2">🏷️ Categorias</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+            <Tag className="w-4 h-4" /> Categorias
+          </label>
           <div className="flex gap-2 mb-2">
             <Input
               type="text"
@@ -185,7 +198,7 @@ export function FormEfeitoCustomizado({
               size="sm"
               className="shrink-0"
             >
-              ➕ Adicionar
+              Adicionar
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -211,7 +224,9 @@ export function FormEfeitoCustomizado({
 
         {/* Exemplos */}
         <div>
-          <label className="block text-sm font-medium mb-2">💡 Exemplos de Uso</label>
+          <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+            <Lightbulb className="w-4 h-4" /> Exemplos de Uso
+          </label>
           <textarea
             value={formData.exemplos}
             onChange={(e) => setFormData({ ...formData, exemplos: e.target.value })}
@@ -235,7 +250,7 @@ export function FormEfeitoCustomizado({
               className="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
             />
             <label htmlFor="custoProgressivo" className="text-sm font-medium">
-              📈 Custo progressivo (aumenta com o grau)
+              Custo progressivo (aumenta com o grau)
             </label>
           </div>
         </div>

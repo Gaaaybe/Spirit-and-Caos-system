@@ -22,6 +22,37 @@
   }
 }
 
+@layer utilities {
+  /* Animações personalizadas */
+  @keyframes gradient {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  .animate-gradient {
+    background-size: 300% 300%;
+    animation: gradient 6s ease infinite;
+  }
+  
+  .bg-300\% {
+    background-size: 300% 300%;
+  }
+  
+  /* Transição suave para todos os elementos interativos */
+  button, a, input, select, textarea {
+    @apply transition-all duration-200;
+  }
+  
+  /* Scroll suave */
+  * {
+    scroll-behavior: smooth;
+  }
+}
+
 @layer components {
   /* Estilos do Slider customizado */
   .slider::-webkit-slider-thumb {

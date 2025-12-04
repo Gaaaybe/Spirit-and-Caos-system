@@ -3,6 +3,7 @@ import { EFEITOS } from '../../../data';
 import { useState, useMemo } from 'react';
 import { useFavoritos, useCustomItems } from '../../../shared/hooks';
 import { FormEfeitoCustomizado } from './FormEfeitoCustomizado';
+import { Star, Settings, Edit3, Zap, Search, X, BarChart2, Tag, RotateCcw } from 'lucide-react';
 
 interface SeletorEfeitoProps {
   isOpen: boolean;
@@ -184,29 +185,33 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
               variant={filtroCustom === 'favoritos' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFiltroCustom('favoritos')}
+              className="flex items-center gap-2"
             >
-              ⭐ Favoritos
+              <Star className="w-4 h-4" /> Favoritos
             </Button>
             <Button
               variant={filtroCustom === 'com-config' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFiltroCustom('com-config')}
+              className="flex items-center gap-2"
             >
-              ⚙️ Com Configurações
+              <Settings className="w-4 h-4" /> Com Configurações
             </Button>
             <Button
               variant={filtroCustom === 'com-input' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFiltroCustom('com-input')}
+              className="flex items-center gap-2"
             >
-              📝 Requer Input
+              <Edit3 className="w-4 h-4" /> Requer Input
             </Button>
             <Button
               variant={filtroCustom === 'sem-extras' ? 'primary' : 'ghost'}
               size="sm"
               onClick={() => setFiltroCustom('sem-extras')}
+              className="flex items-center gap-2"
             >
-              ⚡ Simples
+              <Zap className="w-4 h-4" /> Simples
             </Button>
           </div>
         </div>
@@ -236,11 +241,10 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
             ))}
           </div>
         </div>
-
         {/* Lista de Efeitos */}
         {efeitosFiltrados.length === 0 ? (
           <EmptyState
-            icon="🔍"
+            icon={<Search className="w-12 h-12 text-gray-400" />}
             title="Nenhum efeito encontrado"
             description={busca 
               ? `Nenhum efeito corresponde à busca "${busca}".`
@@ -251,7 +255,7 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
             action={{
               label: 'Limpar Filtros',
               onClick: limparFiltros,
-              icon: '✕'
+              icon: <X className="w-4 h-4" />
             }}
           />
         ) : (
@@ -260,12 +264,12 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
             <div className="mb-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
               <div className="flex justify-between items-center text-sm">
                 <div className="flex gap-4">
-                  <span className="text-gray-600 dark:text-gray-400">
-                    📊 <strong className="text-gray-900 dark:text-gray-100">{efeitosFiltrados.length}</strong> efeitos encontrados
+                  <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                    <BarChart2 className="w-4 h-4" /> <strong className="text-gray-900 dark:text-gray-100">{efeitosFiltrados.length}</strong> efeitos encontrados
                   </span>
                   {categoriaFiltro && (
-                    <span className="text-gray-600 dark:text-gray-400">
-                      🏷️ Categoria: <strong className="text-espirito-600 dark:text-espirito-400">{categoriaFiltro}</strong>
+                    <span className="text-gray-600 dark:text-gray-400 flex items-center gap-1">
+                      <Tag className="w-4 h-4" /> Categoria: <strong className="text-espirito-600 dark:text-espirito-400">{categoriaFiltro}</strong>
                     </span>
                   )}
                 </div>
@@ -273,8 +277,9 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
                   variant="ghost"
                   size="sm"
                   onClick={limparFiltros}
+                  className="flex items-center gap-2"
                 >
-                  🔄 Resetar
+                  <RotateCcw className="w-4 h-4" /> Resetar
                 </Button>
               </div>
             </div>
@@ -293,16 +298,16 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
                           {efeito.nome}
                         </h4>
                         {efeito.configuracoes && (
-                          <span className="text-xs" title="Tem configurações">⚙️</span>
+                          <span className="text-xs" title="Tem configurações"><Settings className="w-3 h-3 text-espirito-500" /></span>
                         )}
                         {efeito.requerInput && (
-                          <span className="text-xs" title="Requer input">📝</span>
+                          <span className="text-xs" title="Requer input"><Edit3 className="w-3 h-3 text-blue-500" /></span>
                         )}
                       </div>
-                    <Badge variant="espirito" size="sm">
-                      {efeito.custoBase} PdA/grau
-                    </Badge>
-                  </div>
+                      <Badge variant="espirito" size="sm">
+                        {efeito.custoBase} PdA/grau
+                      </Badge>
+                    </div>
                   
                   <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
                     {efeito.descricao}
@@ -325,7 +330,7 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
                   
                   {efeito.exemplos && (
                     <p className="text-xs text-gray-500 dark:text-gray-500 italic mt-2">
-                      💡 {efeito.exemplos}
+                      {efeito.exemplos}
                     </p>
                   )}
                 </button>
@@ -341,7 +346,7 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
                   aria-label={isFavoritoEfeito(efeito.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                 >
                   <span className="text-xl">
-                    {isFavoritoEfeito(efeito.id) ? '⭐' : '☆'}
+                    <Star className={`w-5 h-5 ${isFavoritoEfeito(efeito.id) ? 'fill-yellow-400 text-yellow-400' : 'text-gray-400'}`} />
                   </span>
                 </button>
               </div>

@@ -22,13 +22,13 @@ export function Button({
   className = '',
   ...props 
 }: ButtonProps) {
-  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95";
+  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 hover:scale-105";
   
   const variants = {
-    primary: "bg-gradient-to-r from-espirito-600 to-espirito-500 hover:from-espirito-700 hover:to-espirito-600 text-white focus:ring-espirito-500 shadow-md hover:shadow-lg dark:from-espirito-500 dark:to-espirito-400 dark:hover:from-espirito-600 dark:hover:to-espirito-500",
+    primary: "bg-gradient-to-r from-espirito-600 to-espirito-500 hover:from-espirito-700 hover:to-espirito-600 text-white focus:ring-espirito-500 shadow-lg hover:shadow-xl hover:shadow-espirito-500/50 dark:from-espirito-500 dark:to-espirito-400 dark:hover:from-espirito-600 dark:hover:to-espirito-500 dark:hover:shadow-espirito-400/30",
     secondary: "bg-gray-200 hover:bg-gray-300 text-gray-900 focus:ring-gray-400 shadow-sm hover:shadow-md dark:bg-gray-700/80 dark:hover:bg-gray-600/80 dark:text-gray-100",
-    danger: "bg-gradient-to-r from-caos-600 to-caos-500 hover:from-caos-700 hover:to-caos-600 text-white focus:ring-caos-500 shadow-md hover:shadow-lg dark:from-caos-500 dark:to-caos-400 dark:hover:from-caos-600 dark:hover:to-caos-500",
-    outline: "border-2 border-espirito-600 text-espirito-600 hover:bg-espirito-50 focus:ring-espirito-500 dark:border-espirito-400 dark:text-espirito-400 dark:hover:bg-espirito-950/50",
+    danger: "bg-gradient-to-r from-red-600 to-red-500 hover:from-red-700 hover:to-red-600 text-white focus:ring-red-500 shadow-lg hover:shadow-xl hover:shadow-red-500/50 dark:from-red-500 dark:to-red-400 dark:hover:from-red-600 dark:hover:to-red-500 dark:hover:shadow-red-400/30",
+    outline: "border-2 border-espirito-600 text-espirito-600 hover:bg-espirito-50 hover:border-espirito-700 focus:ring-espirito-500 shadow-sm hover:shadow-md dark:border-espirito-400 dark:text-espirito-400 dark:hover:bg-espirito-950/30 dark:hover:border-espirito-300",
     ghost: "text-gray-700 hover:bg-gray-100/80 focus:ring-gray-400 dark:text-gray-300 dark:hover:bg-gray-800/80",
   };
   
