@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from 'react';
-import { Plus, AlertCircle, RotateCcw } from 'lucide-react';
+import { Plus, AlertCircle, RotateCcw, Move } from 'lucide-react';
 import { Modal, ModalFooter, Button, Input, Slider, Badge } from '../../../shared/ui';
 import { PreviewStats } from './PreviewStats';
 import { AttributeSelector } from './AttributeSelector';
@@ -56,6 +56,9 @@ export function FormCriatura({
 
   // Rastrear role anterior para detectar mudanças
   const previousRole = useRef(formData.role);
+
+  // Estado para posição da imagem (object-position)
+  const [imagePosition, setImagePosition] = useState({ x: 50, y: 50 }); // percentual
 
   // Validação
   const errors = useCreatureValidation(formData);
@@ -179,6 +182,8 @@ export function FormCriatura({
       speedOverride: formData.speedOverride,
       color: formData.color,
       notes: formData.notes,
+      imageUrl: formData.imageUrl,
+      imagePosition: formData.imageUrl ? imagePosition : undefined, // Só salvar se tiver imagem
       attributeDistribution: formData.attributeDistribution,
       saveDistribution: formData.saveDistribution,
       selectedSkills: formData.selectedSkills,
@@ -243,6 +248,80 @@ export function FormCriatura({
                        bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                        focus:ring-2 focus:ring-espirito-500 focus:border-transparent"
             />
+          </div>
+
+          {/* URL da Imagem */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Imagem (URL ou Base64) - Opcional
+            </label>
+            <Input
+              value={formData.imageUrl || ''}
+              onChange={(e) => updateField('imageUrl', e.target.value)}
+              placeholder="https://exemplo.com/imagem.jpg ou data:image/png;base64,..."
+              maxLength={10000}
+            />
+            {formData.imageUrl && (
+              <div className="mt-2 space-y-2">
+                <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800">
+                  <img
+                    src={formData.imageUrl}
+                    alt="Preview"
+                    className="w-full h-32 object-cover"
+                    style={{ objectPosition: `${imagePosition.x}% ${imagePosition.y}%` }}
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      const errorMsg = e.currentTarget.nextElementSibling as HTMLElement;
+                      if (errorMsg) errorMsg.style.display = 'block';
+                    }}
+                  />
+                  <div className="hidden p-3 text-center text-sm text-red-600 dark:text-red-400">
+                    ❌ Erro ao carregar imagem
+                  </div>
+                </div>
+                
+                {/* Controles de Posição */}
+                <div className="bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Move className="w-4 h-4 text-gray-500" />
+                    <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Ajustar Enquadramento</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div>
+                      <label className="text-xs text-gray-600 dark:text-gray-400">Horizontal: {imagePosition.x}%</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosition.x}
+                        onChange={(e) => setImagePosition(prev => ({ ...prev, x: Number(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-600 dark:text-gray-400">Vertical: {imagePosition.y}%</label>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={imagePosition.y}
+                        onChange={(e) => setImagePosition(prev => ({ ...prev, y: Number(e.target.value) }))}
+                        className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setImagePosition({ x: 50, y: 50 })}
+                      className="text-xs text-gray-600 dark:text-gray-400 hover:text-espirito-600 dark:hover:text-espirito-400"
+                    >
+                      Resetar posição
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-gray-500 mt-1">
+              Cole uma URL de imagem ou converta para Base64
+            </p>
           </div>
 
           {/* Nível */}

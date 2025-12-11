@@ -100,8 +100,17 @@ export type CreatureStatus = 'ativo' | 'derrotado' | 'oculto' | 'aliado';
  * Mecânicas especiais de chefes/elites
  */
 export interface BossMechanics {
-  sovereignty: number;          // Pontos de Soberania (ações extras)
+  sovereignty: number;          // Pontos de Soberania Atual
   sovereigntyMax: number;       // Máximo de soberania
+}
+
+/**
+ * Recursos rastreáveis da criatura (valores atuais)
+ */
+export interface CreatureResources {
+  hp: number;                   // PV Atual
+  pe: number;                   // PE Atual
+  sovereignty?: number;         // Soberania atual (se for chefe)
 }
 
 /**
@@ -109,9 +118,9 @@ export interface BossMechanics {
  */
 export interface CreatureStats {
   // Vitalidade e Recursos
-  hp: number;                   // PV Atual
+  hp: number;                   // PV Atual (inicializado com maxHp)
   maxHp: number;                // PV Máximo
-  pe: number;                   // PE Atual
+  pe: number;                   // PE Atual (inicializado com maxPe)
   maxPe: number;                // PE Máximo
   effortUnit: number;           // Custo de Habilidades
   
@@ -213,6 +222,8 @@ export interface Creature {
   color?: string;               // Cor do card no board
   notes?: string;               // Notas do mestre
   status: CreatureStatus;
+  imageUrl?: string;            // URL da imagem ou base64
+  imagePosition?: { x: number; y: number }; // Posição da imagem (object-position %)
   
   // Mecânicas de Chefe
   bossMechanics?: BossMechanics;
@@ -262,6 +273,8 @@ export interface CreatureFormInput {
   // Board
   color?: string;
   notes?: string;
+  imageUrl?: string;            // URL da imagem ou base64
+  imagePosition?: { x: number; y: number }; // Posição da imagem (object-position %)
 }
 
 /**

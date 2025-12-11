@@ -89,7 +89,8 @@ export function calculateCreatureStats(input: CreatureFormInput): CreatureStats 
  * Função pura: Calcular mecânicas de chefe
  */
 export function calculateBossMechanics(
-  role: CreatureRole
+  role: CreatureRole,
+  sovereigntyInput?: number
 ): BossMechanics | undefined {
   const template = getRoleTemplate(role);
   
@@ -97,11 +98,12 @@ export function calculateBossMechanics(
     return undefined;
   }
   
-  // Soberania deve vir do input manual (não calculada)
-  // Retornar apenas indicador de que é chefe
+  // Soberania vem do input manual (máximo é sempre 5)
+  // O valor atual inicia igual ao máximo definido pelo usuário
+  const sovereigntyMax = sovereigntyInput ?? 5;
   return {
-    sovereignty: 1, // Padrão
-    sovereigntyMax: 1, // Padrão
+    sovereignty: sovereigntyMax, // Inicia no máximo
+    sovereigntyMax: sovereigntyMax,
   };
 }
 

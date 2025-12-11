@@ -57,7 +57,9 @@ export function useCreatureBoard() {
     }
     
     // Calcular mecânicas de chefe (se aplicável)
-    const bossMechanics = calculateBossMechanics(input.role);
+    const bossMechanics = calculateBossMechanics(input.role, input.sovereignty);
+    
+    // Soberania já vem inicializada do calculateBossMechanics
     
     // Calcular stats V2 se tiver distribuições
     let statsV2: typeof newCreature.statsV2 = undefined;
@@ -84,6 +86,8 @@ export function useCreatureBoard() {
       },
       color: input.color,
       notes: input.notes,
+      imageUrl: input.imageUrl,
+      imagePosition: input.imagePosition,
       createdAt: Date.now(),
       updatedAt: Date.now(),
       stats,
@@ -158,7 +162,7 @@ export function useCreatureBoard() {
           };
           
           const newStats = calculateCreatureStats(input);
-          const newBossMechanics = calculateBossMechanics(input.role);
+          const newBossMechanics = calculateBossMechanics(input.role, input.sovereignty);
           
           // Calcular stats V2 se tiver distribuições
           let newStatsV2: typeof c.statsV2 = undefined;
@@ -325,6 +329,107 @@ export function useCreatureBoard() {
   }, [creatures]);
 
   /**
+   * Atualizar recursos (HP, PE, Soberania) de uma criatura
+   */
+  const updateResources = useCallback((id: string, updates: {
+    hp?: number;
+    pe?: number;
+    sovereignty?: number;
+  }) => {
+    setCreatures(prev =>
+      prev.map(c => {
+        if (c.id !== id) return c;
+
+        let updatedCreature = { ...c };
+
+        // Atualizar HP
+        if (updates.hp !== undefined) {
+          const hp = Math.max(0, Math.min(updates.hp, c.stats.maxHp));
+          const status = hp === 0 ? 'derrotado' : c.status === 'derrotado' ? 'ativo' : c.status;
+          updatedCreature = {
+            ...updatedCreature,
+            stats: { ...updatedCreature.stats, hp },
+            status,
+          };
+        }
+
+        // Atualizar PE
+        if (updates.pe !== undefined) {
+          const pe = Math.max(0, Math.min(updates.pe, c.stats.maxPe));
+          updatedCreature = {
+            ...updatedCreature,
+            stats: { ...updatedCreature.stats, pe },
+          };
+        }
+
+        // Atualizar Soberania
+        if (updates.sovereignty !== undefined && updatedCreature.bossMechanics) {
+          const sovereignty = Math.max(
+            0,
+            Math.min(updates.sovereignty, updatedCreature.bossMechanics.sovereigntyMax)
+          );
+          updatedCreature = {
+            ...updatedCreature,
+            bossMechanics: {
+              ...updatedCreature.bossMechanics,
+              sovereignty,
+            },
+          };
+        }
+
+        return { ...updatedCreature, updatedAt: Date.now() };
+      })
+    );
+
+    // Atualizar node
+    setNodes(prev =>
+      prev.map(n => {
+        if (n.id === id) {
+          const creature = creatures.find(c => c.id === id);
+          if (!creature) return n;
+
+          let updatedData = { ...creature };
+
+          if (updates.hp !== undefined) {
+            const hp = Math.max(0, Math.min(updates.hp, creature.stats.maxHp));
+            const status = hp === 0 ? 'derrotado' : creature.status === 'derrotado' ? 'ativo' : creature.status;
+            updatedData = {
+              ...updatedData,
+              stats: { ...updatedData.stats, hp },
+              status,
+            };
+          }
+
+          if (updates.pe !== undefined) {
+            const pe = Math.max(0, Math.min(updates.pe, creature.stats.maxPe));
+            updatedData = {
+              ...updatedData,
+              stats: { ...updatedData.stats, pe },
+            };
+          }
+
+          if (updates.sovereignty !== undefined && updatedData.bossMechanics) {
+            const sovereignty = Math.max(
+              0,
+              Math.min(updates.sovereignty, updatedData.bossMechanics.sovereigntyMax)
+            );
+            updatedData = {
+              ...updatedData,
+              bossMechanics: {
+                ...updatedData.bossMechanics,
+                sovereignty,
+              },
+            };
+          }
+
+          return { ...n, data: updatedData };
+        }
+        return n;
+      })
+    );
+  }, [creatures]);
+
+  /**
    * Limpar board
    */
   const clearBoard = useCallback(() => {
@@ -360,6 +465,7 @@ export function useCreatureBoard() {
     // Combate
     updateHp,
     updatePe,
+    updateResources,
     toggleStatus,
     
     // Utilidades

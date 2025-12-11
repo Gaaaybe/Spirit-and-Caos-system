@@ -15,6 +15,7 @@ interface CreatureBoardContextValue {
   updateCreature: (id: string, updates: Partial<Creature> & Partial<CreatureFormInput>) => void;
   updateHp: (id: string, currentHp: number) => void;
   updatePe: (id: string, currentPe: number) => void;
+  updateResources: (id: string, updates: { hp?: number; pe?: number; sovereignty?: number }) => void;
   toggleStatus: (id: string) => void;
   clearBoard: () => void;
 }
