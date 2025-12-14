@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { Book, Search, Filter, Download, Upload, Copy, Trash2, Plus, X } from 'lucide-react';
-import { Card, Button, Input, Select, EmptyState, Badge, ConfirmDialog } from '../../../shared/ui';
+import { Book, Search, Filter, Download, Upload, Copy, Trash2, Plus, X, FileDown } from 'lucide-react';
+import { Card, Button, Input, Select, EmptyState, Badge, ConfirmDialog, toast } from '../../../shared/ui';
 import { useBibliotecaCriaturas } from '../hooks/useBibliotecaCriaturas';
 import { getAllRoles } from '../data/roleTemplates';
 import type { Creature, CreatureRole } from '../types';
@@ -28,6 +28,8 @@ export function BibliotecaCriaturas({ onLoadCreature, onClose }: BibliotecaCriat
     sortCreatures,
     exportLibrary,
     importLibrary,
+    exportCreature,
+    importCreature,
   } = useBibliotecaCriaturas();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -72,18 +74,45 @@ export function BibliotecaCriaturas({ onLoadCreature, onClose }: BibliotecaCriat
     }
   };
 
-  // Handler: Importar arquivo
+  // Handler: Importar biblioteca
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     importLibrary(file)
       .then(() => {
-        alert('Biblioteca importada com sucesso!');
+        toast.success('Biblioteca importada com sucesso!');
       })
       .catch((error) => {
-        alert(`Erro ao importar: ${error.message}`);
+        toast.error(`Erro ao importar: ${error.message}`);
       });
+  };
+
+  // Handler: Importar criatura individual
+  const handleImportCreature = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      await importCreature(file);
+      toast.success('Criatura importada com sucesso!');
+      // Limpar input
+      event.target.value = '';
+    } catch (error) {
+      console.error('Erro ao importar:', error);
+      toast.error('Erro ao importar criatura. Verifique o formato.');
+    }
+  };
+
+  // Handler: Exportar criatura individual
+  const handleExportCreature = (id: string, name: string) => {
+    try {
+      exportCreature(id);
+      toast.success(`Criatura "${name}" exportada!`);
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      toast.error('Erro ao exportar criatura.');
+    }
   };
 
   if (isLoading) {
@@ -169,12 +198,25 @@ export function BibliotecaCriaturas({ onLoadCreature, onClose }: BibliotecaCriat
           </button>
 
           <label className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
-                          rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer">
+                          rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                 title="Importar biblioteca">
             <Upload className="w-4 h-4 text-gray-700 dark:text-gray-300" />
             <input
               type="file"
               accept=".json"
               onChange={handleImport}
+              className="hidden"
+            />
+          </label>
+
+          <label className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 
+                          rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                 title="Importar criatura">
+            <Plus className="w-4 h-4 text-gray-700 dark:text-gray-300" />
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportCreature}
               className="hidden"
             />
           </label>
@@ -197,6 +239,7 @@ export function BibliotecaCriaturas({ onLoadCreature, onClose }: BibliotecaCriat
                 creature={creature}
                 onLoad={() => handleLoad(creature.id)}
                 onDuplicate={() => duplicateCreature(creature.id)}
+                onExport={() => handleExportCreature(creature.id, creature.name)}
                 onDelete={() => {
                   setDeleteTarget({ id: creature.id, name: creature.name });
                 }}
@@ -226,10 +269,11 @@ interface CreatureLibraryCardProps {
   creature: Creature;
   onLoad: () => void;
   onDuplicate: () => void;
+  onExport: () => void;
   onDelete: () => void;
 }
 
-function CreatureLibraryCard({ creature, onLoad, onDuplicate, onDelete }: CreatureLibraryCardProps) {
+function CreatureLibraryCard({ creature, onLoad, onDuplicate, onExport, onDelete }: CreatureLibraryCardProps) {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       {/* Imagem */}
@@ -294,6 +338,13 @@ function CreatureLibraryCard({ creature, onLoad, onDuplicate, onDelete }: Creatu
             title="Duplicar"
           >
             <Copy className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onExport}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded transition-colors"
+            title="Exportar"
+          >
+            <FileDown className="w-4 h-4" />
           </button>
           <button
             onClick={onDelete}

@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge, Button, Sl
 import { MODIFICACOES, buscarGrauNaTabela } from '../../../data';
 import { useState, useMemo } from 'react';
 import { 
-  ChevronRight, ChevronDown, Settings, Sparkles, AlertTriangle, Trash2, 
+  ChevronRight, ChevronDown, ChevronUp, Settings, Sparkles, AlertTriangle, Trash2, 
   Swords, Ruler, Zap, Package, Weight, Clock, Rocket, Move, AlertCircle, X 
 } from 'lucide-react';
 import { useCustomItems } from '../../../shared/hooks';

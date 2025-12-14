@@ -5,11 +5,19 @@ import { SwipeablePoderCard } from '../features/criador-de-poder/components/Swip
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
 import { Poder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useNavigate } from 'react-router-dom';
-import { Library, Sparkles, Upload, Plus } from 'lucide-react';
+import { Library, Sparkles, Upload, Plus, Download } from 'lucide-react';
 
 export function BibliotecaPage() {
   const navigate = useNavigate();
-  const { poderes, deletarPoder, duplicarPoder, exportarPoder, importarPoder } = useBibliotecaPoderes();
+  const { 
+    poderes, 
+    deletarPoder, 
+    duplicarPoder, 
+    exportarPoder, 
+    importarPoder,
+    exportarBiblioteca,
+    importarBiblioteca,
+  } = useBibliotecaPoderes();
   const [busca, setBusca] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [importando, setImportando] = useState(false);
@@ -116,6 +124,35 @@ export function BibliotecaPage() {
     }
   };
 
+  const handleExportarBiblioteca = () => {
+    try {
+      exportarBiblioteca();
+      toast.success('Biblioteca exportada com sucesso!');
+    } catch {
+      toast.error('Erro ao exportar biblioteca');
+    }
+  };
+
+  const handleImportarBiblioteca = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImportando(true);
+    try {
+      await importarBiblioteca(file);
+      await new Promise(resolve => setTimeout(resolve, 400));
+      toast.success('Biblioteca importada com sucesso!');
+      
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch {
+      toast.error('Erro ao importar biblioteca. Verifique se é um JSON válido.');
+    } finally {
+      setImportando(false);
+    }
+  };
+
   const formatarData = (data: string) => {
     return new Date(data).toLocaleDateString('pt-BR', {
       day: '2-digit',
@@ -168,17 +205,46 @@ export function BibliotecaPage() {
                     accept=".json"
                     onChange={handleFileSelect}
                     className="hidden"
+                    id="import-poder-individual"
                   />
+                  <input
+                    type="file"
+                    accept=".json"
+                    onChange={handleImportarBiblioteca}
+                    className="hidden"
+                    id="import-biblioteca"
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleExportarBiblioteca}
+                    disabled={poderes.length === 0}
+                    aria-label="Exportar biblioteca completa"
+                    className="flex items-center gap-2"
+                  >
+                    <Download className="w-4 h-4" /> Exportar Tudo
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('import-biblioteca')?.click()}
+                    loading={importando}
+                    loadingText="Importando..."
+                    aria-label="Importar biblioteca completa"
+                    className="flex items-center gap-2"
+                  >
+                    <Upload className="w-4 h-4" /> Importar Tudo
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRef.current?.click()}
                     loading={importando}
                     loadingText="Importando..."
-                    aria-label="Importar poder de arquivo JSON"
+                    aria-label="Importar poder individual de arquivo JSON"
                     className="flex items-center gap-2"
                   >
-                    <Upload className="w-4 h-4" /> Importar
+                    <Plus className="w-4 h-4" /> Importar Poder
                   </Button>
                 </div>
               </div>

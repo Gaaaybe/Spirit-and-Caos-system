@@ -94,7 +94,19 @@ export function useBibliotecaPoderes() {
   // Importar de JSON
   const importarPoder = (jsonString: string) => {
     try {
-      const poder = JSON.parse(jsonString) as Poder;
+      const parsed = JSON.parse(jsonString);
+      
+      // Validar se é um array (biblioteca) ao invés de um poder individual
+      if (Array.isArray(parsed)) {
+        throw new Error('Arquivo contém uma biblioteca. Use "Importar Tudo" para bibliotecas.');
+      }
+      
+      // Validar se tem as propriedades básicas de um poder
+      if (!parsed || typeof parsed !== 'object' || !parsed.nome) {
+        throw new Error('Formato de poder inválido');
+      }
+      
+      const poder = parsed as Poder;
       const agora = new Date().toISOString();
       const poderImportado: PoderSalvo = {
         ...poder,
@@ -107,8 +119,66 @@ export function useBibliotecaPoderes() {
       return poderImportado;
     } catch (error) {
       console.error('Erro ao importar poder:', error);
+      if (error instanceof Error) {
+        throw error;
+      }
       throw new Error('JSON inválido');
     }
+  };
+
+  // Exportar biblioteca completa
+  const exportarBiblioteca = () => {
+    const dataStr = JSON.stringify(poderes, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `biblioteca-poderes-${Date.now()}.json`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+  };
+
+  // Importar biblioteca completa
+  const importarBiblioteca = (file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const imported = JSON.parse(content);
+          
+          if (!Array.isArray(imported)) {
+            throw new Error('Arquivo contém um poder individual. Use "Importar Poder" para poderes individuais.');
+          }
+          
+          // Mesclar com biblioteca existente
+          setPoderes(prev => {
+            const merged = [...prev];
+            
+            imported.forEach((poder: PoderSalvo) => {
+              const index = merged.findIndex(p => p.id === poder.id);
+              if (index >= 0) {
+                merged[index] = poder;
+              } else {
+                merged.push(poder);
+              }
+            });
+            
+            return merged;
+          });
+          
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsText(file);
+    });
   };
 
   return {
@@ -120,5 +190,7 @@ export function useBibliotecaPoderes() {
     duplicarPoder,
     exportarPoder,
     importarPoder,
+    exportarBiblioteca,
+    importarBiblioteca,
   };
 }

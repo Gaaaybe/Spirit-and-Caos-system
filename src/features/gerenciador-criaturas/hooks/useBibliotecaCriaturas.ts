@@ -180,16 +180,17 @@ export function useBibliotecaCriaturas() {
       reader.onload = (e) => {
         try {
           const content = e.target?.result as string;
-          const imported = JSON.parse(content) as Creature[];
+          const imported = JSON.parse(content);
           
           if (!Array.isArray(imported)) {
-            throw new Error('Formato inválido');
+            throw new Error('Arquivo contém uma criatura individual. Use o botão de importar criatura (Plus) ao invés de importar biblioteca (Upload).');
           }
           
+          // Mesclar com biblioteca existente
           setSavedCreatures(prev => {
             const merged = [...prev];
             
-            imported.forEach(creature => {
+            imported.forEach((creature: Creature) => {
               const index = merged.findIndex(c => c.id === creature.id);
               if (index >= 0) {
                 merged[index] = creature;
@@ -197,6 +198,68 @@ export function useBibliotecaCriaturas() {
                 merged.push(creature);
               }
             });
+            
+            return merged;
+          });
+          
+          resolve();
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      reader.onerror = () => reject(new Error('Erro ao ler arquivo'));
+      reader.readAsText(file);
+    });
+  }, []);
+
+  // Exportar criatura individual
+  const exportCreature = useCallback((id: string) => {
+    const creature = savedCreatures.find(c => c.id === id);
+    if (!creature) return;
+
+    const dataStr = JSON.stringify(creature, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${creature.name.replace(/\s+/g, '_')}-${Date.now()}.json`;
+    link.click();
+    
+    URL.revokeObjectURL(url);
+  }, [savedCreatures]);
+
+  // Importar criatura individual
+  const importCreature = useCallback((file: File) => {
+    return new Promise<void>((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const imported = JSON.parse(content);
+          
+          // Validar se é um array (biblioteca) ao invés de uma criatura individual
+          if (Array.isArray(imported)) {
+            throw new Error('Arquivo contém uma biblioteca. Use o botão de importar biblioteca (Upload) ao invés do importar criatura (Plus).');
+          }
+          
+          if (!imported || typeof imported !== 'object' || !imported.name) {
+            throw new Error('Formato de criatura inválido');
+          }
+          
+          const creature = imported as Creature;
+          
+          setSavedCreatures(prev => {
+            const merged = [...prev];
+            const index = merged.findIndex(c => c.id === creature.id);
+            
+            if (index >= 0) {
+              merged[index] = creature;
+            } else {
+              merged.push(creature);
+            }
             
             return merged;
           });
@@ -225,5 +288,7 @@ export function useBibliotecaCriaturas() {
     sortCreatures,
     exportLibrary,
     importLibrary,
+    exportCreature,
+    importCreature,
   };
 }
