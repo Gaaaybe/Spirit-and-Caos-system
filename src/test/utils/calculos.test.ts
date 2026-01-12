@@ -223,14 +223,15 @@ describe('Testes de modificadorCustoFixo', () => {
     expect(custoTotal).toBe(2)
   })
 
-  it('Sutil deve ter custo fixo independente do grau', () => {
-    // Sutil tem modificadorCustoFixo nas configurações
+  it('Sutil deve escalar com o grau (mudado de fixo para por grau)', () => {
+    // Sutil agora usa custoPorGrau ao invés de modificadorCustoFixo
     const grau1 = calcularCustoModificacao('sutil', 1, 'dificil-notar')
     const grau10 = calcularCustoModificacao('sutil', 10, 'dificil-notar')
     
-    // Custo deve ser o mesmo independente do grau
-    expect(grau1).toBe(grau10)
-    expect(grau1).toBe(1) // modificadorCustoFixo = 1
+    // Custo deve escalar com o grau
+    expect(grau10).toBeGreaterThan(grau1)
+    expect(grau1).toBe(1) // (1 custoBase) * 1 grau = 1
+    expect(grau10).toBe(10) // (1 custoBase) * 10 grau = 10
   })
 
   it('Sutil "Completamente Indetectável" deve custar mais que "Difícil de Notar"', () => {
@@ -239,7 +240,8 @@ describe('Testes de modificadorCustoFixo', () => {
     const custoIndetectavel = calcularCustoModificacao('sutil', grau, 'indetectavel')
     
     expect(custoIndetectavel).toBeGreaterThan(custoDificil)
-    expect(custoIndetectavel).toBe(2) // modificadorCustoFixo = 2
+    expect(custoDificil).toBe(5) // (1+0) * 5 = 5
+    expect(custoIndetectavel).toBe(10) // (1+1) * 5 = 10
   })
 })
 

@@ -185,18 +185,18 @@ describe('Testes de Casos Específicos', () => {
     })
   })
 
-  it('Sutil deve usar modificadorCustoFixo', () => {
+  it('Sutil deve usar modificadorCusto (mudado de fixo para por grau)', () => {
     const sutil = modificacoes.find(m => m.id === 'sutil')
     
     expect(sutil).toBeDefined()
     expect('configuracoes' in sutil!).toBe(true)
     
     const configs = (sutil as any).configuracoes
-    // Verificar que todas as opções têm modificadorCustoFixo
+    // Verificar que todas as opções têm modificadorCusto (por grau)
     configs.opcoes.forEach((opcao: any) => {
-      expect('modificadorCustoFixo' in opcao).toBe(true)
-      expect(typeof opcao.modificadorCustoFixo).toBe('number')
-      expect(opcao.modificadorCustoFixo).toBeGreaterThan(0)
+      expect('modificadorCusto' in opcao).toBe(true)
+      expect(typeof opcao.modificadorCusto).toBe('number')
+      expect(opcao.modificadorCusto).toBeGreaterThanOrEqual(0)
     })
   })
 
