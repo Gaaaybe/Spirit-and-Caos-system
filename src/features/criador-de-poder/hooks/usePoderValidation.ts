@@ -102,10 +102,10 @@ export function usePoderValidation() {
    * Valida grau de efeito
    */
   const validarGrau = (grau: number): ValidationResult => {
-    if (grau < 1) {
+    if (grau < -5) {
       return {
         isValid: false,
-        errors: [{ field: 'grau', message: 'Grau mínimo é 1' }],
+        errors: [{ field: 'grau', message: 'Grau mínimo é -5' }],
       };
     }
     if (grau > 20) {

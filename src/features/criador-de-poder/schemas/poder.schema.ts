@@ -23,12 +23,22 @@ export const efeitoAplicadoSchema = z.object({
   grau: z
     .number()
     .int('Grau deve ser um número inteiro')
-    .min(1, 'Grau mínimo é 1')
+    .min(-5, 'Grau mínimo é -5')
     .max(20, 'Grau máximo é 20'),
   modificacoesLocais: z.array(modificacaoAplicadaSchema).default([]),
   inputCustomizado: z.string().optional(),
   configuracaoSelecionada: z.string().optional(),
 });
+
+/**
+ * Schema de validação para custo alternativo
+ */
+export const custoAlternativoSchema = z.object({
+  tipo: z.enum(['pe', 'pv', 'atributo', 'item', 'material']),
+  usaEfeitoColateral: z.boolean().optional(),
+  descricao: z.string().optional(),
+  valorMaterial: z.number().positive().optional(),
+}).optional();
 
 /**
  * Schema de validação para Poder
@@ -51,6 +61,7 @@ export const poderSchema = z.object({
   acao: z.number().int().min(0).max(5),
   alcance: z.number().int().min(0).max(6),
   duracao: z.number().int().min(0).max(4),
+  custoAlternativo: custoAlternativoSchema,
 });
 
 /**

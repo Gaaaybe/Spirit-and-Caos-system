@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import React from 'react';
 import { useIsMobile } from '../hooks/useMediaQuery';
 
@@ -31,14 +31,33 @@ export function Slider({
   const [showInput, setShowInput] = useState(false);
   const isMobile = useIsMobile();
   
+  // Sincroniza o localValue quando o value prop muda
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+  
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(e.target.value);
+    let newValue = Number(e.target.value);
+    
+    // Se o valor for 0, decide a direção baseado no valor atual
+    if (newValue === 0) {
+      // Se estamos vindo do lado negativo, mantém no -1
+      // Se estamos vindo do lado positivo, mantém no 1
+      newValue = localValue < 0 ? -1 : 1;
+    }
+    
     setLocalValue(newValue);
     onChange?.(newValue);
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = Number(e.target.value);
+    let newValue = Number(e.target.value);
+    
+    // Se o valor for 0, ajusta para 1 ou -1
+    if (newValue === 0) {
+      newValue = 1;
+    }
+    
     if (newValue >= min && newValue <= max) {
       setLocalValue(newValue);
       onChange?.(newValue);
