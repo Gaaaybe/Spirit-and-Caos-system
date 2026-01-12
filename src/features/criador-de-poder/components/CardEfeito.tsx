@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge, Button, Slider, Select, Input } from '../../../shared/ui';
-import { MODIFICACOES, buscarGrauNaTabela } from '../../../data';
+import { MODIFICACOES, buscarGrauNaTabela, TABELA_UNIVERSAL } from '../../../data';
 import { useState, useMemo } from 'react';
 import { 
   ChevronRight, ChevronDown, ChevronUp, Settings, Sparkles, AlertTriangle, Trash2, 
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useCustomItems } from '../../../shared/hooks';
 import { SeletorModificacao } from './SeletorModificacao';
+import { formatarCustoModificacao } from '../utils/modificacaoFormatter';
 import type { EfeitoDetalhado } from '../types';
 
 interface CardEfeitoProps {
@@ -38,6 +39,55 @@ export function CardEfeito({
   const [modalModificacao, setModalModificacao] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [showDetails, setShowDetails] = useState(false);
+
+  // Formata o custo de uma modificação para exibição
+  const formatarCustoModificacao = (mod: any, modBase: any) => {
+    if (!modBase) return '';
+    
+    let custo = '';
+    const grauMod = mod.grauModificacao || 1;
+    
+    // Custo por grau
+    let custoPorGrauMod = modBase.custoPorGrau || 0;
+    let custoFixoMod = modBase.custoFixo || 0;
+    
+    // Aplica modificador da configuração
+    if (mod.parametros?.configuracaoSelecionada && modBase.configuracoes) {
+      const configuracao = modBase.configuracoes.opcoes.find(
+        (opt: any) => opt.id === mod.parametros?.configuracaoSelecionada
+      );
+      if (configuracao) {
+        // Modificador por grau (ex: Efeito Colateral Menor = -1/grau)
+        if (configuracao.modificadorCusto !== undefined) {
+          custoPorGrauMod += configuracao.modificadorCusto;
+        }
+        // Modificador fixo (ex: Sutil Difícil = +1 fixo, Indetectável = +2 fixo)
+        if (configuracao.modificadorCustoFixo !== undefined) {
+          custoFixoMod += configuracao.modificadorCustoFixo;
+        }
+      }
+    }
+    
+    const custoPorGrauTotal = custoPorGrauMod * grauMod;
+    
+    // Formata custo por grau
+    if (custoPorGrauTotal !== 0) {
+      const sinal = custoPorGrauTotal > 0 ? '+' : '';
+      custo = `${sinal}${custoPorGrauTotal}/grau`;
+    }
+    
+    // Formata custo fixo
+    if (custoFixoMod !== 0) {
+      const sinal = custoFixoMod > 0 ? '+' : '';
+      if (custo) {
+        custo += `, ${sinal}${custoFixoMod} fixo`;
+      } else {
+        custo = `${sinal}${custoFixoMod} fixo`;
+      }
+    }
+    
+    return custo ? ` (${custo})` : '';
+  };
   
   // Proteção contra dados inválidos
   if (!efeito || !efeitoBase) {
@@ -45,7 +95,10 @@ export function CardEfeito({
     return null;
   }
   
-  const dadosGrau = buscarGrauNaTabela(efeito.grau);
+  // Busca dados da tabela universal
+  const dadosGrau = useMemo(() => {
+    return TABELA_UNIVERSAL.find(t => t.grau === efeito.grau);
+  }, [efeito.grau]);
 
   return (
     <>
@@ -130,14 +183,14 @@ export function CardEfeito({
           <Slider
             label={`Grau do Efeito: ${efeito.grau}`}
             value={efeito.grau}
-            min={1}
+            min={-5}
             max={20}
             showValue
             onChange={(valor: number) => onAtualizarGrau(efeito.id, valor)}
           />
 
           {/* Informações da Tabela Universal */}
-          {dadosGrau && (
+          {dadosGrau ? (
             <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/40 dark:to-cyan-950/40 rounded-lg border border-blue-200/50 dark:border-blue-800/50 shadow-sm">
               {/* Campos Principais - Sempre Visíveis */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -208,6 +261,13 @@ export function CardEfeito({
                 </div>
               )}
             </div>
+          ) : (
+            <div className="p-4 bg-red-50 dark:bg-red-950/40 rounded-lg border border-red-200 dark:border-red-800">
+              <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                Grau {efeito.grau} não encontrado na tabela universal. Recarregue a página (Ctrl+R ou Cmd+R).
+              </p>
+            </div>
           )}
 
           {/* Input Customizado (se o efeito requer) */}
@@ -275,16 +335,19 @@ export function CardEfeito({
               <div className="flex flex-wrap gap-2">
                 {efeito.modificacoesLocais.map((mod: any) => {
                   const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+                  const custoTexto = formatarCustoModificacao(mod, modBase);
+                  
                   return (
                     <Badge 
                       key={mod.id}
                       variant={modBase?.tipo === 'extra' ? 'success' : 'warning'}
                       className="flex items-center gap-2"
                     >
-                      {modBase?.nome || mod.modificacaoBaseId}
-                      {mod.grauModificacao && (
-                        <span className="text-xs font-bold">Grau {mod.grauModificacao}</span>
-                      )}
+                      <span>
+                        {modBase?.nome || mod.modificacaoBaseId}
+                        {mod.grauModificacao && ` ${mod.grauModificacao}`}
+                        <span className="font-bold ml-1">{custoTexto}</span>
+                      </span>
                       {mod.parametros?.descricao && (
                         <span className="text-xs opacity-75">: {mod.parametros.descricao}</span>
                       )}

@@ -1,6 +1,6 @@
 import { Modal, ModalFooter, Button, Badge, Input, Textarea, Select, Slider, InlineHelp, EmptyState } from '../../../shared/ui';
 import { MODIFICACOES } from '../../../data';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useFavoritos, useCustomItems } from '../../../shared/hooks';
 import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
 import { useModificacaoFilter, OrdenacaoTipo } from '../hooks/useModificacaoFilter';
@@ -44,8 +44,41 @@ export function SeletorModificacao({
   const [parametros, setParametros] = useState<Record<string, string | number>>({});
   const [configuracaoSelecionada, setConfiguracaoSelecionada] = useState<string>('');
   const [showFormCustom, setShowFormCustom] = useState(false);
+  
+  // Ref para armazenar posição do scroll da lista
+  const scrollPositionRef = useRef<number>(0);
+  const listaContainerRef = useRef<HTMLDivElement>(null);
 
   const modBase = modSelecionada ? todasModificacoes.find(m => m.id === modSelecionada) : null;
+
+  // Inicializa parâmetros padrão quando seleciona uma modificação
+  useEffect(() => {
+    if (modBase) {
+      const parametrosIniciais: Record<string, string | number> = {};
+      
+      // Se tem grau, inicializa com o grau mínimo
+      if (modBase.tipoParametro === 'grau') {
+        parametrosIniciais.grau = modBase.grauMinimo || 1;
+      }
+      
+      setParametros(parametrosIniciais);
+    }
+  }, [modSelecionada, modBase]);
+
+  // Restaura a posição do scroll quando volta para a lista
+  useEffect(() => {
+    if (!modSelecionada && listaContainerRef.current) {
+      listaContainerRef.current.scrollTop = scrollPositionRef.current;
+    }
+  }, [modSelecionada]);
+
+  const handleSelecionarMod = (modId: string) => {
+    // Salva a posição do scroll antes de selecionar
+    if (listaContainerRef.current) {
+      scrollPositionRef.current = listaContainerRef.current.scrollTop;
+    }
+    setModSelecionada(modId);
+  };
 
   const handleSelecionar = () => {
     if (!modSelecionada) return;
@@ -212,7 +245,7 @@ export function SeletorModificacao({
                 }}
               />
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
+              <div ref={listaContainerRef} className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-[60vh] overflow-y-auto">
                 {modificacoesFiltradas.map((mod) => (
                   <div key={mod.id} className="relative">
                     <button
@@ -221,7 +254,7 @@ export function SeletorModificacao({
                           ? 'border-green-200 dark:border-green-800 hover:border-green-500 hover:bg-green-50 dark:hover:bg-green-900/20'
                           : 'border-orange-200 dark:border-orange-800 hover:border-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'
                       }`}
-                      onClick={() => setModSelecionada(mod.id)}
+                      onClick={() => handleSelecionarMod(mod.id)}
                     >
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">

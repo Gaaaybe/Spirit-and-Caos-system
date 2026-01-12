@@ -77,7 +77,7 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
   };
 
   const gerarNotacaoCompacta = () => {
-    let partes: string[] = [];
+    const partes: string[] = [];
     
     // Para cada efeito
     detalhes.efeitosDetalhados.forEach((efDet) => {
@@ -144,7 +144,27 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     }
     
     texto += `CUSTO TOTAL: ${detalhes.custoPdATotal} PdA\n`;
-    texto += `PE TOTAL: ${detalhes.peTotal} PE\n`;
+    
+    // Custo Alternativo
+    if (poder.custoAlternativo && poder.custoAlternativo.tipo !== 'pe') {
+      texto += `CUSTO DE ATIVAÇÃO: `;
+      if (poder.custoAlternativo.tipo === 'pv') {
+        texto += poder.custoAlternativo.descricao || `${detalhes.peTotal} ${detalhes.peTotal === 1 ? 'ponto' : 'pontos'} de PV`;
+      } else if (poder.custoAlternativo.tipo === 'atributo') {
+        texto += poder.custoAlternativo.descricao || `${detalhes.peTotal} ${detalhes.peTotal === 1 ? 'ponto' : 'pontos'} de atributo`;
+      } else if (poder.custoAlternativo.tipo === 'item') {
+        texto += `${poder.custoAlternativo.descricao || 'Item necessário'}`;
+      } else if (poder.custoAlternativo.tipo === 'material') {
+        texto += `${poder.custoAlternativo.descricao || 'Material'} (R ${poder.custoAlternativo.valorMaterial || 1000})`;
+      }
+      if (poder.custoAlternativo.usaEfeitoColateral) {
+        texto += ` + Efeito Colateral`;
+      }
+      texto += ` (não gasta PE)\n`;
+    } else {
+      texto += `PE TOTAL: ${detalhes.peTotal} PE\n`;
+    }
+    
     texto += `ESPAÇOS TOTAIS: ${detalhes.espacosTotal} Espaços\n\n`;
     
     // Modificações Globais
@@ -260,6 +280,40 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                 <p className="text-2xl font-bold">{detalhes.espacosTotal}</p>
               </div>
             </div>
+
+            {/* Custo Alternativo (se houver) */}
+            {poder.custoAlternativo && poder.custoAlternativo.tipo !== 'pe' && (
+              <div className="bg-yellow-400/20 backdrop-blur-sm rounded-lg p-4 mt-4 border border-yellow-400/50">
+                <p className="text-espirito-100 text-xs font-semibold mb-2 uppercase">Custo de Ativação</p>
+                {poder.custoAlternativo.tipo === 'pv' && (
+                  <p className="text-lg font-bold text-yellow-300">
+                    {poder.custoAlternativo.descricao || `${detalhes.peTotal} ${detalhes.peTotal === 1 ? 'ponto' : 'pontos'} de PV`}
+                    {poder.custoAlternativo.usaEfeitoColateral ? ' + Efeito Colateral' : ''}
+                  </p>
+                )}
+                {poder.custoAlternativo.tipo === 'atributo' && (
+                  <p className="text-lg font-bold text-yellow-300">
+                    {poder.custoAlternativo.descricao || `${detalhes.peTotal} ${detalhes.peTotal === 1 ? 'ponto' : 'pontos'} de atributo`}
+                    {poder.custoAlternativo.usaEfeitoColateral ? ' + Efeito Colateral' : ''}
+                  </p>
+                )}
+                {poder.custoAlternativo.tipo === 'item' && (
+                  <p className="text-lg font-bold text-yellow-300">
+                    {poder.custoAlternativo.descricao || 'Item necessário'}
+                    {poder.custoAlternativo.usaEfeitoColateral ? ' + Efeito Colateral' : ''}
+                  </p>
+                )}
+                {poder.custoAlternativo.tipo === 'material' && (
+                  <p className="text-lg font-bold text-yellow-300">
+                    {poder.custoAlternativo.descricao || 'Material'} (R {poder.custoAlternativo.valorMaterial || 1000})
+                    {poder.custoAlternativo.usaEfeitoColateral ? ' + Efeito Colateral' : ''}
+                  </p>
+                )}
+                <p className="text-espirito-200 text-xs mt-1">
+                  (não gasta PE para ativar)
+                </p>
+              </div>
+            )}
 
             {/* Parâmetros do Poder */}
             <div className="grid grid-cols-3 gap-3 mt-4">

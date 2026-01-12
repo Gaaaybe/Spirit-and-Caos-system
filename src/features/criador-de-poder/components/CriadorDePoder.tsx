@@ -6,6 +6,7 @@ import { usePoderValidation } from '../hooks/usePoderValidation';
 import { useBibliotecaPoderes } from '../hooks/useBibliotecaPoderes';
 import { useKeyboardShortcuts, useCustomItems } from '../../../shared/hooks';
 import { ESCALAS, MODIFICACOES } from '../../../data';
+import { formatarCustoModificacao } from '../utils/modificacaoFormatter';
 import { SeletorEfeito } from './SeletorEfeito';
 import { CardEfeito } from './CardEfeito';
 import { SeletorModificacao } from './SeletorModificacao';
@@ -33,10 +34,11 @@ export function CriadorDePoder() {
     adicionarModificacaoGlobal,
     removerModificacaoGlobal,
     atualizarInfoPoder,
+    atualizarCustoAlternativo,
     resetarPoder,
   } = usePoderCalculator();
 
-  const { salvarPoder, buscarPoder } = useBibliotecaPoderes();
+  const { salvarPoder, buscarPoderComHydration } = useBibliotecaPoderes();
   const { validarParaSalvar, validarNome, getFirstError } = usePoderValidation();
 
   const [modalSeletorEfeito, setModalSeletorEfeito] = useState(false);
@@ -89,7 +91,17 @@ export function CriadorDePoder() {
     }
     
     setSalvando(true);
-    const poderExistente = buscarPoder(poder.id);
+    const { poder: poderExistente, hydrationInfo } = buscarPoderComHydration(poder.id);
+    
+    // Exibir avisos de hydration se houver
+    if (hydrationInfo?.hasIssues) {
+      if (hydrationInfo.severity === 'warning') {
+        toast.warning('Poder atualizado automaticamente');
+      } else {
+        toast.info('Poder validado');
+      }
+    }
+    
     salvarPoder(poder);
     
     setSalvando(false);
@@ -280,6 +292,118 @@ export function CriadorDePoder() {
                   />
                 </div>
               )}
+
+              {/* Configuração de Custo Alternativo */}
+              {poder.efeitos.length > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tipo de Custo de Ativação
+                    </label>
+                    <HelpIcon tooltip="Padrão: PE (Pontos de Energia). Você pode usar custo alternativo como PV, Atributos, Itens ou Material." />
+                  </div>
+                  
+                  <Select
+                    value={poder.custoAlternativo?.tipo || 'pe'}
+                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                      const tipo = e.target.value as 'pe' | 'pv' | 'atributo' | 'item' | 'material';
+                      if (tipo === 'pe') {
+                        atualizarCustoAlternativo(undefined);
+                      } else {
+                        atualizarCustoAlternativo({
+                          tipo,
+                          usaEfeitoColateral: tipo !== 'material' && tipo !== 'item',
+                          descricao: '',
+                        });
+                      }
+                    }}
+                    options={[
+                      { value: 'pe', label: 'PE (Pontos de Energia) - Padrão' },
+                      { value: 'pv', label: 'PV (Pontos de Vida)' },
+                      { value: 'atributo', label: 'Atributo (Força, Destreza, etc)' },
+                      { value: 'item', label: 'Item Consumível' },
+                      { value: 'material', label: 'Material/Componente (R)' },
+                    ]}
+                  />
+
+                  {poder.custoAlternativo && poder.custoAlternativo.tipo !== 'pe' && (
+                    <div className="space-y-2 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                      {(poder.custoAlternativo.tipo === 'pv' || poder.custoAlternativo.tipo === 'atributo') && (
+                        <>
+                          <Input
+                            label="Descrição do Custo"
+                            placeholder={
+                              poder.custoAlternativo.tipo === 'pv'
+                                ? 'Ex: Sofre 1d6 de dano, Perde 10 PV'
+                                : 'Ex: Perde 2 de Força, -1 Destreza temporário'
+                            }
+                            value={poder.custoAlternativo.descricao || ''}
+                            onChange={(e) =>
+                              atualizarCustoAlternativo({
+                                ...poder.custoAlternativo!,
+                                descricao: e.target.value,
+                              })
+                            }
+                          />
+                          <InlineHelp
+                            type="warning"
+                            text="Este custo usa Efeito Colateral 2 (sem desconto de -2 PdA). O efeito colateral é o custo pago ao ativar."
+                          />
+                        </>
+                      )}
+
+                      {poder.custoAlternativo.tipo === 'material' && (
+                        <>
+                          <Input
+                            type="number"
+                            label="Valor do Material (R)"
+                            placeholder="Base: 1000R"
+                            value={poder.custoAlternativo.valorMaterial || 1000}
+                            onChange={(e) =>
+                              atualizarCustoAlternativo({
+                                ...poder.custoAlternativo!,
+                                valorMaterial: Number(e.target.value) || 1000,
+                              })
+                            }
+                            min={1}
+                          />
+                          <Input
+                            label="Descrição do Material"
+                            placeholder="Ex: Pó de diamante, Ervas raras, Componente arcano"
+                            value={poder.custoAlternativo.descricao || ''}
+                            onChange={(e) =>
+                              atualizarCustoAlternativo({
+                                ...poder.custoAlternativo!,
+                                descricao: e.target.value,
+                              })
+                            }
+                          />
+                        </>
+                      )}
+
+                      {poder.custoAlternativo.tipo === 'item' && (
+                        <>
+                          <Input
+                            label="Descrição do Item"
+                            placeholder="Ex: Pergaminho consumível, Poção, Munição especial"
+                            value={poder.custoAlternativo.descricao || ''}
+                            onChange={(e) =>
+                              atualizarCustoAlternativo({
+                                ...poder.custoAlternativo!,
+                                descricao: e.target.value,
+                              })
+                            }
+                          />
+                          <InlineHelp
+                            type="info"
+                            text="O item é consumido ao usar o efeito. Útil para pergaminhos, poções ou munição especial."
+                          />
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             
             {/* Stats - Responsivo: stack em mobile, row em desktop */}
@@ -362,16 +486,19 @@ export function CriadorDePoder() {
             <div className="flex flex-wrap gap-2">
               {poder.modificacoesGlobais.map((mod) => {
                 const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+                const custoTexto = formatarCustoModificacao(mod, modBase);
+                
                 return (
                   <Badge 
                     key={mod.id} 
                     variant={modBase?.tipo === 'extra' ? 'success' : 'warning'}
                     className="flex items-center gap-2"
                   >
-                    {modBase?.nome || mod.modificacaoBaseId}
-                    {mod.grauModificacao && (
-                      <span className="text-xs font-bold">Grau {mod.grauModificacao}</span>
-                    )}
+                    <span>
+                      {modBase?.nome || mod.modificacaoBaseId}
+                      {mod.grauModificacao && ` ${mod.grauModificacao}`}
+                      <span className="font-bold ml-1">{custoTexto}</span>
+                    </span>
                     {mod.parametros?.descricao && (
                       <span className="text-xs opacity-75">: {mod.parametros.descricao}</span>
                     )}

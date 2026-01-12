@@ -129,7 +129,7 @@ export function usePoderCalculator() {
     setPoder(prev => ({
       ...prev,
       efeitos: prev.efeitos.map(e =>
-        e.id === efeitoId ? { ...e, grau: Math.max(1, Math.min(20, novoGrau)) } : e
+        e.id === efeitoId ? { ...e, grau: Math.max(-5, Math.min(20, novoGrau)) } : e
       ),
     }));
   };
@@ -249,6 +249,14 @@ export function usePoderCalculator() {
     limparPersistencia();
   };
 
+  // Atualiza o custo alternativo do poder
+  const atualizarCustoAlternativo = (custoAlternativo: Poder['custoAlternativo']) => {
+    setPoder(prev => ({
+      ...prev,
+      custoAlternativo,
+    }));
+  };
+
   // Carrega um poder existente
   const carregarPoder = (poderParaCarregar: Poder) => {
     isCarregandoPoder.current = true;
@@ -270,6 +278,7 @@ export function usePoderCalculator() {
     adicionarModificacaoGlobal,
     removerModificacaoGlobal,
     atualizarInfoPoder,
+    atualizarCustoAlternativo,
     resetarPoder,
     carregarPoder,
   };
