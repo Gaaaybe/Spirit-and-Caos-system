@@ -78,27 +78,33 @@
   },
   "duracao": {
     "nome": "Duração",
-    "descricao": "Quanto tempo o efeito dura. Mover um passo para baixo custa +1/grau, para cima reduz -1/grau",
+    "descricao": "Quanto tempo o efeito dura. Regra de custo: mover para baixo custa +N/grau, para cima reduz -N/grau. CUSTOS ESPECIAIS: Instantâneo↔Concentração = ±1; Concentração↔Sustentada = ±2; Sustentada↔Ativado = ±3",
     "escala": [
       {
         "valor": 0,
         "nome": "Instantâneo",
-        "descricao": "Exige ação padrão e se extingue após ser usado, mantendo o resultado"
+        "descricao": "Exige ação padrão e se extingue após ser usado, mantendo o resultado. Para Concentração: +1/grau",
+        "custoParaProximo": 1
       },
       {
         "valor": 1,
         "nome": "Manutenção (Concentração)",
-        "descricao": "Exige ação padrão por turno para manter"
+        "descricao": "Exige ação padrão por turno para manter. De Instantâneo: -1/grau; Para Sustentada: +2/grau",
+        "custoParaAnterior": -1,
+        "custoParaProximo": 2
       },
       {
         "valor": 2,
         "nome": "Manutenção (Sustentada)",
-        "descricao": "Exige ação livre por turno para manter"
+        "descricao": "Exige ação livre por turno para manter. De Concentração: -2/grau; Para Ativado: +3/grau",
+        "custoParaAnterior": -2,
+        "custoParaProximo": 3
       },
       {
         "valor": 3,
         "nome": "Ativado",
-        "descricao": "Não exige ação para manter; funciona como liga/desliga"
+        "descricao": "Não exige ação para manter; funciona como liga/desliga. De Sustentada: -3/grau",
+        "custoParaAnterior": -3
       },
       {
         "valor": 4,
