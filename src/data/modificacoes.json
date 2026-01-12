@@ -115,7 +115,7 @@
     "nome": "À Distância Estendido",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 1,
+    "custoPorGrau": 2,
     "grauMinimo": 1,
     "grauMaximo": 5,
     "descricao": "Dobra as distâncias base (em negrito) de um efeito de Alcance (À Distância) para cada ponto gasto.",
@@ -208,7 +208,7 @@
     "nome": "Contagioso",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 1,
+    "custoPorGrau": 2,
     "descricao": "Seu efeito se espalha por contato. Quem tocar no alvo original também será afetado, tendo direito a um teste de resistência normal. O efeito pode continuar se espalhando de pessoa para pessoa.",
     "requerParametros": false,
     "categoria": "Alcance e Área"
@@ -218,7 +218,7 @@
     "nome": "Descritor Variável",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 2,
+    "custoPorGrau": 3,
     "descricao": "Permite que você mude o descritor do seu efeito (como de fogo para gelo, ou de sônico para elétrico) como uma ação livre.",
     "requerParametros": true,
     "tipoParametro": "texto",
@@ -236,7 +236,7 @@
         {
           "id": "grupo-amplo",
           "nome": "Grupo Amplo",
-          "modificadorCusto": 2,
+          "modificadorCusto": 3,
           "descricao": "Qualquer descritor de um grupo amplo (ex: qualquer tipo de magia, qualquer tipo de tecnologia)"
         }
       ]
@@ -312,11 +312,47 @@
     "nome": "Efeito Secundário",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 3,
+    "custoPorGrau": 4,
     "descricao": "O efeito atinge o alvo duas vezes: uma vez imediatamente e uma segunda vez no final do seu próximo turno. O alvo tem direito a um teste de resistência normal contra cada um dos efeitos.",
     "requerParametros": false,
     "observacoes": "IMPORTANTE: Efeitos secundários NÃO se acumulam. Se você acertar o mesmo alvo de novo no turno seguinte, ele sofrerá o novo efeito, e o efeito secundário do golpe anterior é adiado por mais uma rodada (não é atingido três vezes).",
     "categoria": "Ação e Tempo"
+  },
+  {
+    "id": "exige-resistencia",
+    "nome": "Exige Resistência",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 1,
+    "descricao": "O efeito necessita de um teste de resistência, fazendo com que o alvo ainda sofra metade dos efeitos do poder em caso de sucesso. Se o efeito não possuir nenhum teste, essa modificação custa +0. Caso o efeito já possua um teste, troque por esse. Escolha qual será o teste ao comprar essa modificação.",
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "configuracoes": {
+      "tipo": "select",
+      "label": "Tipo de Resistência",
+      "opcoes": [
+        {
+          "id": "fortitude",
+          "nome": "Fortitude",
+          "modificadorCusto": 0,
+          "descricao": "Teste de Fortitude. Sucesso = metade do efeito."
+        },
+        {
+          "id": "reflexo",
+          "nome": "Reflexo",
+          "modificadorCusto": 0,
+          "descricao": "Teste de Reflexo. Sucesso = metade do efeito."
+        },
+        {
+          "id": "vontade",
+          "nome": "Vontade",
+          "modificadorCusto": 0,
+          "descricao": "Teste de Vontade. Sucesso = metade do efeito."
+        }
+      ]
+    },
+    "observacoes": "Custo +0 se o efeito não tem teste nativo. Custo +1/grau se já possui teste (troca o teste existente).",
+    "categoria": "Combate"
   },
   {
     "id": "engatilhado",
@@ -364,7 +400,7 @@
     "nome": "Incurável",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 2,
+    "custoPorGrau": 3,
     "descricao": "O dano ou aflição causado por este efeito não pode ser curado por efeitos como Cura ou Regeneração. A recuperação deve ser natural, com o tempo. Apenas o extra Persistente ou Verdadeiro pode curar um dano Incurável.",
     "requerParametros": false,
     "categoria": "Combate"
@@ -415,20 +451,32 @@
     "nome": "Inevitável",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 4,
+    "custoPorGrau": 6,
     "descricao": "Este efeito se torna absoluto e não pode ser evitado ativamente. Sem Teste de Efeito (não rola ataque) e sem Teste de Resistência (efeito simplesmente acontece). Aplica-se a efeitos que normalmente miram um alvo (Dano, Aflição, Enfraquecer, etc).",
     "requerParametros": false,
     "observacoes": "LIMITES: NÃO ignora defesas passivas (RD, Imunidade, Resistência). Para ignorar isso, use Penetrante ou Verdadeiro. Devido ao poder extremo, o Mestre deve aprovar. Alvos ainda têm direito a testes de recuperação conforme regras padrão.",
     "categoria": "Combate"
   },
   {
-    "id": "penetrante-persistente",
-    "nome": "Penetrante/Persistente",
+    "id": "perfurante",
+    "nome": "Perfurante",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 3,
-    "descricao": "Permite que efeitos de dano ignorem a RD de um alvo. Efeitos de recuperação podem curar efeitos incuráveis. Efeitos penetrantes/persistentes podem evoluir para Verdadeiros.",
+    "custoPorGrau": 4,
+    "descricao": "O ataque é desenhado para furar proteções ou encontrar pontos fracos, mas não ignora a armadura completamente. EFEITO (Dano): O alvo considera sua RD pela Metade (arredondado para baixo) contra este ataque. EFEITO (Cura/Persistente): Permite curar danos/aflições que tenham a falha Incurável de grau igual ou menor.",
     "requerParametros": false,
+    "observacoes": "Primeiro nível de penetração. Para dano: RD/2. Para cura: cura Incurável de grau igual ou menor.",
+    "categoria": "Combate"
+  },
+  {
+    "id": "penetrante",
+    "nome": "Penetrante",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 6,
+    "descricao": "O ataque atravessa matéria física como se ela não existisse (ex: faseamento, lâmina monomolecular, ataque espiritual). EFEITO (Dano): Ignora as Resistências do alvo, além de metade da RD. EFEITO (Cura): Cura Incurável de qualquer grau. Efeitos penetrantes/persistentes podem evoluir para Verdadeiros, nesse caso será possível aplicar a outros efeitos.",
+    "requerParametros": false,
+    "observacoes": "Segundo nível de penetração. Para dano: ignora resistências + RD/2. Para cura: cura qualquer Incurável.",
     "categoria": "Combate"
   },
   {
@@ -436,10 +484,11 @@
     "nome": "Verdadeiro",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 6,
-    "descricao": "Efeitos de dano ignoram RD, resistências e imunidades (ainda necessário teste de efeito). Efeitos de recuperação podem recuperar qualquer coisa, inclusive lesões (dependente do descritor). Não podem ser respondidos por reações ou absorvidos. Não podem ser nulificados, exceto por Nulificar Verdadeiro ou Caos.",
+    "custoPorGrau": 8,
+    "grauMinimo": 5,
+    "descricao": "Efeitos de dano ignoram RD, resistências e imunidades (ainda necessário teste de efeito). Efeitos de recuperação podem recuperar qualquer coisa, inclusive lesões (ainda dependente do descritor e de como você comprou o efeito). Além disso não podem ser respondidos por reações normais exceto verdadeiras, ou absorvidos. O efeito não pode ser nulificado, exceto por Nulificar Verdadeiro ou Caos.",
     "requerParametros": false,
-    "observacoes": "Requer grau mínimo 5 no efeito. Verdadeiro e Inato são modificações diferentes.",
+    "observacoes": "Requer grau mínimo 5 no efeito. Nível máximo de penetração - ignora praticamente todas as defesas. Verdadeiro e Inato são modificações diferentes.",
     "categoria": "Combate"
   },
   {
@@ -482,9 +531,29 @@
     "nome": "Seletivo",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 1,
+    "custoPorGrau": 2,
     "descricao": "Permite que você escolha quem é afetado ou não por seu efeito. É essencial para efeitos de Área, permitindo que você atinja apenas os inimigos e poupe seus aliados.",
-    "requerParametros": false,
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "configuracoes": {
+      "tipo": "select",
+      "label": "Tipo de Seleção",
+      "opcoes": [
+        {
+          "id": "restrito",
+          "nome": "Restrito",
+          "modificadorCusto": 0,
+          "descricao": "Escolha um tipo de alvo ao comprar (apenas inimigos, apenas aliados, etc.)"
+        },
+        {
+          "id": "variavel",
+          "nome": "Variável",
+          "modificadorCusto": 1,
+          "descricao": "Você pode escolher livremente entre quais alvos o efeito irá afetar"
+        }
+      ]
+    },
+    "observacoes": "Restrito (+2/grau): Define categoria fixa ao comprar. Variável (+3/grau): Escolhe livremente a cada uso.",
     "categoria": "Controle e Precisão"
   },
   {
@@ -492,25 +561,26 @@
     "nome": "Sutil",
     "tipo": "extra",
     "custoFixo": 0,
-    "custoPorGrau": 0,
+    "custoPorGrau": 1,
     "descricao": "Torna seu efeito difícil ou impossível de ser percebido. Ideal para ataques surpresa.",
-    "requerParametros": false,
+    "requerParametros": true,
+    "tipoParametro": "select",
     "categoria": "Furtividade",
     "configuracoes": {
-      "tipo": "radio",
+      "tipo": "select",
       "label": "Nível de Sutileza",
       "opcoes": [
         {
           "id": "dificil-notar",
-          "nome": "Difícil de Notar",
+          "nome": "Difícil de Notar (+1/grau)",
           "descricao": "O efeito é difícil de notar ou só é perceptível por sentidos exóticos",
-          "modificadorCustoFixo": 1
+          "modificadorCusto": 0
         },
         {
           "id": "indetectavel",
-          "nome": "Completamente Indetectável",
+          "nome": "Completamente Indetectável (+2/grau)",
           "descricao": "O efeito é completamente impossível de detectar",
-          "modificadorCustoFixo": 2
+          "modificadorCusto": 1
         }
       ]
     }
@@ -602,7 +672,7 @@
     "nome": "Cansativo",
     "tipo": "falha",
     "custoFixo": 0,
-    "custoPorGrau": -1,
+    "custoPorGrau": -2,
     "descricao": "Usar este poder é desgastante, você fica fatigado após ativá-lo. A condição Fatigado surge no turno seguinte ao uso do poder. Você pode gastar inspiração para ignorar a fadiga. Perfeito para criar um 'ataque especial' ou 'modo supremo' que você não pode usar o tempo todo.",
     "requerParametros": false,
     "categoria": "Risco e Consequência"
@@ -726,7 +796,7 @@
     "nome": "Incontrolável",
     "tipo": "falha",
     "custoFixo": 0,
-    "custoPorGrau": -1,
+    "custoPorGrau": -2,
     "descricao": "Você não tem controle sobre este efeito. Ele se torna uma ferramenta de trama nas mãos do Mestre, que decide quando e como ele se manifesta. Esta falha é ideal para poderes misteriosos, instáveis ou de origem desconhecida, que o personagem ainda não domina.",
     "requerParametros": false,
     "categoria": "Controle e Precisão"
@@ -753,8 +823,27 @@
     "custoPorGrau": -1,
     "descricao": "Seu efeito só funciona sob circunstâncias ou requisitos específicos, perdendo sua utilidade em muitas situações. Para ser válida, a limitação deve reduzir a utilidade do poder em aproximadamente metade. Exemplos: Apenas contra mortos-vivos, apenas sob a luz da lua, apenas enquanto estiver voando, apenas contra alvos do sexo masculino.",
     "requerParametros": true,
-    "tipoParametro": "texto",
+    "tipoParametro": "select",
     "placeholder": "Ex: Apenas contra mortos-vivos, apenas sob luz da lua...",
+    "configuracoes": {
+      "tipo": "select",
+      "label": "Grau de Limitação",
+      "opcoes": [
+        {
+          "id": "limitado-normal",
+          "nome": "Limitado (-1/grau)",
+          "modificadorCusto": 0,
+          "descricao": "Reduz utilidade em aproximadamente metade"
+        },
+        {
+          "id": "limitado-extremo",
+          "nome": "Limitado Extremo (-2/grau)",
+          "modificadorCusto": -1,
+          "descricao": "Reduz utilidade drasticamente (funciona apenas em situações muito específicas ou raras)"
+        }
+      ]
+    },
+    "observacoes": "Limitado Normal (-1/grau): ~50% de utilidade. Limitado Extremo (-2/grau): ~25% de utilidade ou menos.",
     "categoria": "Limitações"
   },
   {
@@ -953,10 +1042,14 @@
     "tipo": "extra",
     "custoFixo": 0,
     "custoPorGrau": 1,
-    "descricao": "Você pode restaurar a vida dos mortos! Caso o alvo esteja morto a uma quantidade de minutos igual ou menor que o grau em Recuperação, faça um teste de efeito (A CD desse teste é a maior CD do alvo). Caso seja bem-sucedido, a condição do paciente se torna Estabilizado com 1PV, isso por si só não recupera lesões ou condições anteriores, como se tivesse acabado de ser estabilizado (esse efeito apenas vale para outros alvos).",
-    "requerParametros": false,
+    "grauMinimo": 1,
+    "grauMaximo": 20,
+    "requerParametros": true,
+    "tipoParametro": "grau",
+    "descricao": "Você pode restaurar a vida dos mortos! Ao aplicar este extra, seu efeito de Recuperação ganha a capacidade de reverter a condição Morto. Este extra possui seu próprio grau, que deve ser comprado separadamente. LIMITE: O Grau de Ressurreição não pode ser maior que o Grau do efeito de Recuperação base, exceto grau 10 de Recuperação liberando Ressurreição até grau 20. JANELA DE TEMPO: O tempo máximo que o alvo pode estar morto é determinado pelo seu Grau em Ressurreição - Grau 1: 1 Rodada (Imediato/Morte Clínica); Grau 3: 1 Minuto; Grau 4: 30 Minutos; Grau 5: 1 Hora; Grau 9: 12 Horas; Grau 10: 1 Dia; Grau 14: 1 Mês; Grau 17: 1 Ano; Grau 20: Séculos ou Milênios (Desde que haja vestígios). ATIVAÇÃO: Faça um Teste de Efeito (Recuperação). A CD é a maior CD que o alvo possuía em vida (ou a CD da força que o matou, se for sobrenatural). SUCESSO: A condição do paciente se torna Estabilizado com 1 PV. Isso por si só não recupera lesões, membros perdidos ou condições anteriores à morte. FALHA: O efeito não funciona e você não pode tentar novamente no mesmo alvo pela cena.",
+    "detalhesGrau": "O grau determina há quanto tempo o alvo pode estar morto: Grau 1 (1 rodada), Grau 3 (1 min), Grau 4 (30 min), Grau 5 (1h), Grau 9 (12h), Grau 10 (1 dia), Grau 14 (1 mês), Grau 17 (1 ano), Grau 20 (milênios).",
     "categoria": "Recuperação",
-    "observacoes": "Apenas para o efeito Recuperação (Cura). Não funciona em si mesmo."
+    "observacoes": "Apenas para o efeito Recuperação (Cura). Não funciona em si mesmo. O grau em Ressurreição determina há quanto tempo o alvo pode estar morto."
   },
   {
     "id": "empatico",
@@ -1056,6 +1149,17 @@
     "requerParametros": false,
     "categoria": "Intangibilidade",
     "observacoes": "Apenas para Intangibilidade grau 1. -1 fixo."
+  },
+  {
+    "id": "gradativo",
+    "nome": "Gradativo",
+    "tipo": "falha",
+    "custoFixo": 0,
+    "custoPorGrau": 0,
+    "descricao": "Você não pode ativar seu poder diretamente no grau máximo. Em vez disso, deve progredir gradualmente pelos graus inferiores. Por exemplo, um efeito Gradativo de grau 5 precisa ser ativado primeiro no grau 1, depois no grau 2, e assim sucessivamente até alcançar o grau 5. Como só pode ativar o efeito uma vez por turno, são necessários múltiplos turnos para atingir a potência máxima. Você pode parar em qualquer grau intermediário se desejar.",
+    "requerParametros": false,
+    "categoria": "Limitações",
+    "observacoes": "Esta limitação é especialmente temática para efeitos como Intangibilidade (progredir através de formas fluida → gasosa → energética), Crescimento/Encolhimento (mudanças graduais de tamanho), ou poderes que representam transformações ou acúmulos progressivos de energia. Custo neutro (+0/grau)."
   },
   {
     "id": "reflexao",
@@ -1503,15 +1607,37 @@
     "observacoes": "Apenas para o efeito Invocar. +1 fixo."
   },
   {
+    "id": "normal",
+    "nome": "Normal",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 1,
+    "descricao": "As criaturas invocadas por você têm o tipo padrão de criatura, possuindo atributos padrão. Com esta modificação, você deve pagar o custo por criatura invocada +1 por grau.",
+    "requerParametros": false,
+    "categoria": "Invocar",
+    "observacoes": "Apenas para o efeito Invocar. Criaturas com atributos padrão."
+  },
+  {
+    "id": "bruto",
+    "nome": "Bruto",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 2,
+    "descricao": "As criaturas invocadas por você têm o tipo Bruto de criatura, possuindo atributos Bruto. Com esta modificação, você deve pagar o custo por criatura invocada +2 por grau.",
+    "requerParametros": false,
+    "categoria": "Invocar",
+    "observacoes": "Apenas para o efeito Invocar. Criaturas tipo Bruto com atributos superiores."
+  },
+  {
     "id": "heroico",
     "nome": "Heroico",
     "tipo": "extra",
     "custoFixo": 0,
     "custoPorGrau": 3,
-    "descricao": "As criaturas invocadas por você não estão sujeitas às regras de Lacaios, sendo tratadas como personagens normais. Com esta modificação, você deve pagar o custo por criatura invocada, possuindo o mesmo nível que você, incluindo PVs normais para o nível.",
+    "descricao": "As criaturas invocadas por você não estão sujeitas às regras de Lacaios, sendo tratadas como personagens normais e criaturas de Elite. Com esta modificação, você deve pagar o custo por criatura invocada, possuindo o mesmo nível que você, incluindo PVs normais para o nível. +3 por grau.",
     "requerParametros": false,
     "categoria": "Invocar",
-    "observacoes": "Apenas para o efeito Invocar. Lacaios = personagens completos."
+    "observacoes": "Apenas para o efeito Invocar. Lacaios = personagens completos de Elite."
   },
   {
     "id": "horda",
@@ -1726,5 +1852,53 @@
         }
       ]
     }
+  },
+  {
+    "id": "custo-pe-dobrado",
+    "nome": "Custo PE/Espaços Dobrado",
+    "tipo": "falha",
+    "custoFixo": 0,
+    "custoPorGrau": -2,
+    "descricao": "O efeito consome o dobro de PE para ativar OU ocupa o dobro de Espaços. Escolha no momento da criação.",
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "opcoes": ["PE Dobrado", "Espaços Dobrados"],
+    "categoria": "Custo de Uso"
+  },
+  {
+    "id": "custo-pe-total",
+    "nome": "Custo PE/Espaços Total",
+    "tipo": "falha",
+    "custoFixo": 0,
+    "custoPorGrau": -4,
+    "descricao": "O efeito consome todos os seus PE OU ocupa todos os seus Espaços disponíveis de uma só vez. Escolha no momento da criação.",
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "opcoes": ["Todos PE", "Todos Espaços"],
+    "categoria": "Custo de Uso"
+  },
+  {
+    "id": "custo-pe-reduzido",
+    "nome": "Custo PE/Espaços Reduzido",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 2,
+    "descricao": "O efeito consome a metade dos PE (arredonde para baixo) OU ocupa a metade dos Espaços (arredonde para baixo). Escolha no momento da criação. Custo mínimo: 1.",
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "opcoes": ["PE pela Metade", "Espaços pela Metade"],
+    "categoria": "Custo de Uso"
+  },
+  {
+    "id": "custo-pe-minimo",
+    "nome": "Custo PE/Espaços Mínimo",
+    "tipo": "extra",
+    "custoFixo": 0,
+    "custoPorGrau": 4,
+    "descricao": "O efeito tem um custo de metade dos PE - 3 para cada efeito no poder para ativar OU ocupa apenas 3 Espaços independentemente do grau. Escolha no momento da criação.",
+    "requerParametros": true,
+    "tipoParametro": "select",
+    "opcoes": ["PE Mínimo (metade - 3/efeito)", "Espaços Fixos (3)"],
+    "categoria": "Custo de Uso"
   }
 ]

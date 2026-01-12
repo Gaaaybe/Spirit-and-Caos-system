@@ -41,6 +41,13 @@ export interface Poder {
   acao: number;
   alcance: number;
   duracao: number;
+  // Configuração de custo alternativo
+  custoAlternativo?: {
+    tipo: 'pe' | 'pv' | 'atributo' | 'item' | 'material'; // Tipo de custo
+    usaEfeitoColateral?: boolean; // Se true, usa Efeito Colateral 2 (sem desconto)
+    descricao?: string; // Descrição do custo (ex: "Sofre 1d6 de dano", "Perde 2 de Força")
+    valorMaterial?: number; // Para tipo 'material', valor em R$ (base 1000R)
+  };
 }
 
 /**
@@ -256,7 +263,9 @@ export function calcularCustoEfeito(
     todasModificacoes
   );
   
-  const custoTotal = (custoPorGrau * efeito.grau) + custoFixo;
+  // Graus negativos sempre custam como grau 1
+  const grauParaCalculo = efeito.grau < 1 ? 1 : efeito.grau;
+  const custoTotal = (custoPorGrau * grauParaCalculo) + custoFixo;
   
   // RN-05: O custo final também não pode ser menor que 1
   return Math.max(1, custoTotal);
@@ -340,10 +349,12 @@ export function calcularCustoPoder(
 /**
  * Calcula o PE total do Poder
  * Regra: PE do efeito mais caro + 1 para cada outro efeito
+ * NOVA REGRA: Extras não-fixos (custoPorGrau) aumentam o custo de PE
  */
 export function calcularPETotal(
   poder: Poder,
   todosEfeitos: Efeito[],
+  todasModificacoes: Modificacao[],
   tabelaUniversal: Array<{ grau: number; pe: number }>
 ): number {
   if (poder.efeitos.length === 0) return 0;
@@ -364,7 +375,117 @@ export function calcularPETotal(
   // Número de outros efeitos
   const outrosEfeitos = poder.efeitos.length - 1;
   
-  return maiorPE + outrosEfeitos;
+  let peTotal = maiorPE + outrosEfeitos;
+  
+  // Adicionar custo BASE de todos os extras (globais e locais) ao PE de ativação
+  // (custo fixo + custo por grau, sem multiplicar pelo grau do efeito)
+  // Exceto as modificações de custo especiais que apenas modificam o resultado final
+  const modificacoesCustoEspeciais = [
+    'custo-pe-dobrado',
+    'custo-pe-total', 
+    'custo-pe-reduzido',
+    'custo-pe-minimo'
+  ];
+  
+  // Extras globais
+  const extrasGlobais = poder.modificacoesGlobais.filter(mod => {
+    const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+    return modBase && modBase.tipo === 'extra' && !modificacoesCustoEspeciais.includes(mod.modificacaoBaseId);
+  });
+  
+  for (const mod of extrasGlobais) {
+    const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+    if (!modBase) continue;
+    
+    let custoFixoMod = modBase.custoFixo;
+    let custoPorGrauMod = modBase.custoPorGrau;
+    
+    // Aplica modificador de custo da configuração
+    if (mod.parametros?.configuracaoSelecionada && modBase.configuracoes) {
+      const config = modBase.configuracoes.opcoes.find(
+        opt => opt.id === mod.parametros?.configuracaoSelecionada
+      );
+      if (config) {
+        if (config.modificadorCusto !== undefined) {
+          custoPorGrauMod += config.modificadorCusto;
+        }
+        if (config.modificadorCustoFixo !== undefined) {
+          custoFixoMod += config.modificadorCustoFixo;
+        }
+      }
+    }
+    
+    // Adiciona custo fixo + custo por grau (sem multiplicar pelo grau do efeito)
+    const custoBase = custoFixoMod + custoPorGrauMod;
+    peTotal += Math.abs(custoBase);
+  }
+  
+  // Extras locais de cada efeito
+  for (const efeito of poder.efeitos) {
+    const extrasLocais = efeito.modificacoesLocais.filter(mod => {
+      const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+      return modBase && modBase.tipo === 'extra' && !modificacoesCustoEspeciais.includes(mod.modificacaoBaseId);
+    });
+    
+    for (const mod of extrasLocais) {
+      const modBase = todasModificacoes.find(m => m.id === mod.modificacaoBaseId);
+      if (!modBase) continue;
+      
+      let custoFixoMod = modBase.custoFixo;
+      let custoPorGrauMod = modBase.custoPorGrau;
+      
+      // Aplica modificador de custo da configuração
+      if (mod.parametros?.configuracaoSelecionada && modBase.configuracoes) {
+        const config = modBase.configuracoes.opcoes.find(
+          opt => opt.id === mod.parametros?.configuracaoSelecionada
+        );
+        if (config) {
+          if (config.modificadorCusto !== undefined) {
+            custoPorGrauMod += config.modificadorCusto;
+          }
+          if (config.modificadorCustoFixo !== undefined) {
+            custoFixoMod += config.modificadorCustoFixo;
+          }
+        }
+      }
+      
+      // Adiciona custo fixo + custo por grau (sem multiplicar pelo grau do efeito)
+      const custoBase = custoFixoMod + custoPorGrauMod;
+      peTotal += Math.abs(custoBase);
+    }
+  }
+  
+  // Aplicar modificações de custo de PE
+  const modPEDobrado = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-dobrado' && 
+    mod.parametros?.opcao === 'PE Dobrado'
+  );
+  const modPETotal = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-total' && 
+    mod.parametros?.opcao === 'Todos PE'
+  );
+  const modPEReduzido = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-reduzido' && 
+    mod.parametros?.opcao === 'PE pela Metade'
+  );
+  const modPEMinimo = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-minimo' && 
+    mod.parametros?.opcao === 'PE Mínimo (metade - 3/efeito)'
+  );
+  
+  if (modPEDobrado) {
+    peTotal *= 2;
+  } else if (modPETotal) {
+    // PE Total: soma todos os PEs individuais (sem desconto para efeitos adicionais)
+    peTotal = pesEfeitos.reduce((acc, pe) => acc + pe, 0);
+  } else if (modPEReduzido) {
+    peTotal = Math.max(1, Math.ceil(peTotal / 2));
+  } else if (modPEMinimo) {
+    // PE Mínimo: metade dos PE - 3 por cada efeito no poder
+    peTotal = Math.max(1, Math.floor(peTotal / 2) - (3 * poder.efeitos.length));
+  }
+  
+  return peTotal;
 }
 
 /**
@@ -394,7 +515,39 @@ export function calcularEspacosTotal(
   // Número de outros efeitos
   const outrosEfeitos = poder.efeitos.length - 1;
   
-  return maiorEspacos + outrosEfeitos;
+  let espacosTotal = maiorEspacos + outrosEfeitos;
+  
+  // Aplicar modificações de custo de Espaços
+  const modEspacosDobrado = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-dobrado' && 
+    mod.parametros?.opcao === 'Espaços Dobrados'
+  );
+  const modEspacosTotal = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-total' && 
+    mod.parametros?.opcao === 'Todos Espaços'
+  );
+  const modEspacosReduzido = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-reduzido' && 
+    mod.parametros?.opcao === 'Espaços pela Metade'
+  );
+  const modEspacosMinimo = poder.modificacoesGlobais.find(mod => 
+    mod.modificacaoBaseId === 'custo-pe-minimo' && 
+    mod.parametros?.opcao === 'Espaços Fixos (3)'
+  );
+  
+  if (modEspacosDobrado) {
+    espacosTotal *= 2;
+  } else if (modEspacosTotal) {
+    // Espaços Total: soma todos os Espaços individuais
+    espacosTotal = espacosEfeitos.reduce((acc, espacos) => acc + espacos, 0);
+  } else if (modEspacosReduzido) {
+    espacosTotal = Math.max(1, Math.ceil(espacosTotal / 2));
+  } else if (modEspacosMinimo) {
+    // Espaços Fixos: sempre 3
+    espacosTotal = 3;
+  }
+  
+  return espacosTotal;
 }
 
 /**
@@ -451,7 +604,7 @@ export function calcularDetalhesPoder(
   }).filter(Boolean);
   
   const custoPdATotal = calcularCustoPoder(poder, todosEfeitos, todasModificacoes);
-  const peTotal = calcularPETotal(poder, todosEfeitos, TABELA_UNIVERSAL);
+  const peTotal = calcularPETotal(poder, todosEfeitos, todasModificacoes, TABELA_UNIVERSAL);
   const espacosTotal = calcularEspacosTotal(poder, todosEfeitos, TABELA_UNIVERSAL);
   
   return {
