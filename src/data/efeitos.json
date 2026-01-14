@@ -434,7 +434,7 @@
     "descricao": "Você pode impor sua vontade sobre a mente de outros. Faça um Teste de Efeito oposto pelo teste de Vontade do alvo. SUCESSO: Você estabelece controle. O nível de controle é determinado pelo Grau (veja Patamares). FALHA: Alvo resiste e percebe tentativa (a menos que tenha Sutil). RESISTÊNCIA CONTÍNUA: Alvo tem novo teste de Vontade no final de cada turno dele para quebrar controle. ORDENS SUICIDAS: Se ordenar algo obviamente suicida ou oposto à natureza fundamental do alvo (mãe matar filho), ele recebe +2 Vantagens no teste imediato. PATAMARES: Patamar 1 (Grau 2) - Influência/Sugestão: planta ideia, emoção ou tendência (não controla ações diretas, alvo racionaliza como ideia própria). Patamar 2 (Grau 5) - Compulsão/Ordem Única: força ação específica ou emoção intensa (Provocação, Charme, Comando de uma frase). Patamar 3 (Grau 9) - Dominação/Marionete: controle total de funções motoras e mentais, dita todas ações (só um alvo dominado por vez sem modificações).",
     "parametrosPadrao": {
       "acao": 1,
-      "alcance": 3,
+      "alcance": 5,
       "duracao": 1
     },
     "categorias": ["Ataque", "Controle", "Debuff"],

@@ -823,7 +823,7 @@
     "custoPorGrau": -1,
     "descricao": "Seu efeito só funciona sob circunstâncias ou requisitos específicos, perdendo sua utilidade em muitas situações. Para ser válida, a limitação deve reduzir a utilidade do poder em aproximadamente metade. Exemplos: Apenas contra mortos-vivos, apenas sob a luz da lua, apenas enquanto estiver voando, apenas contra alvos do sexo masculino.",
     "requerParametros": true,
-    "tipoParametro": "select",
+    "tipoParametro": "texto",
     "placeholder": "Ex: Apenas contra mortos-vivos, apenas sob luz da lua...",
     "configuracoes": {
       "tipo": "select",

@@ -139,8 +139,8 @@ function validarModificacoes(
     
     // Valida parâmetros
     if (mod.parametros) {
-      // Remove parâmetros desnecessários se a modificação não requer
-      if (!modBase.requerParametros) {
+      // Remove parâmetros desnecessários se a modificação não requer E não tem configurações
+      if (!modBase.requerParametros && !modBase.configuracoes) {
         delete mod.parametros;
         changes.push(`Parâmetros desnecessários removidos de ${modBase.nome}`);
       } else {
@@ -157,8 +157,8 @@ function validarModificacoes(
       }
     }
     
-    // Se a modificação agora requer configuração mas o poder antigo não tinha, adiciona padrão
-    if (modBase.requerParametros && modBase.configuracoes?.opcoes && modBase.configuracoes.tipo === 'select') {
+    // Se a modificação requer configuração mas o poder antigo não tinha, adiciona padrão
+    if (modBase.configuracoes?.opcoes && modBase.configuracoes.tipo === 'select') {
       if (!mod.parametros) {
         mod.parametros = {};
       }

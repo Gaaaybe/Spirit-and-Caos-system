@@ -5,12 +5,11 @@ import { useFavoritos, useCustomItems } from '../../../shared/hooks';
 import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
 import { useModificacaoFilter, OrdenacaoTipo } from '../hooks/useModificacaoFilter';
 import { Sparkles, AlertTriangle, Search, Star, BarChart2, RotateCcw, Settings, Edit3, FileText, DollarSign, Tag, ArrowLeft, Info, Plus } from 'lucide-react';
-import type { Modificacao } from '../../../data';
 
 interface SeletorModificacaoProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelecionar: (modId: string, parametros?: Record<string, any>) => void;
+  onSelecionar: (modId: string, parametros?: Record<string, string | number>) => void;
   titulo?: string;
 }
 
@@ -51,20 +50,6 @@ export function SeletorModificacao({
 
   const modBase = modSelecionada ? todasModificacoes.find(m => m.id === modSelecionada) : null;
 
-  // Inicializa parâmetros padrão quando seleciona uma modificação
-  useEffect(() => {
-    if (modBase) {
-      const parametrosIniciais: Record<string, string | number> = {};
-      
-      // Se tem grau, inicializa com o grau mínimo
-      if (modBase.tipoParametro === 'grau') {
-        parametrosIniciais.grau = modBase.grauMinimo || 1;
-      }
-      
-      setParametros(parametrosIniciais);
-    }
-  }, [modSelecionada, modBase]);
-
   // Restaura a posição do scroll quando volta para a lista
   useEffect(() => {
     if (!modSelecionada && listaContainerRef.current) {
@@ -78,6 +63,20 @@ export function SeletorModificacao({
       scrollPositionRef.current = listaContainerRef.current.scrollTop;
     }
     setModSelecionada(modId);
+    
+    // Inicializa parâmetros quando seleciona uma modificação
+    const mod = todasModificacoes.find(m => m.id === modId);
+    if (mod) {
+      const parametrosIniciais: Record<string, string | number> = {};
+      
+      // Se tem grau, inicializa com o grau mínimo
+      if (mod.tipoParametro === 'grau') {
+        parametrosIniciais.grau = mod.grauMinimo || 1;
+      }
+      
+      setParametros(parametrosIniciais);
+    }
+    setConfiguracaoSelecionada('');
   };
 
   const handleSelecionar = () => {
@@ -117,11 +116,7 @@ export function SeletorModificacao({
             {/* Dica sobre modificações */}
             <InlineHelp
               type="info"
-              text={
-                <span className="flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 inline" /> Extras aumentam o custo mas adicionam funcionalidades. <AlertTriangle className="w-3 h-3 inline ml-1" /> Falhas reduzem o custo mas impõem limitações.
-                </span>
-              }
+              text="Extras aumentam o custo mas adicionam funcionalidades. Falhas reduzem o custo mas impõem limitações."
               dismissible={true}
               storageKey="modificacoes-info"
             />
@@ -130,7 +125,7 @@ export function SeletorModificacao({
             <Input
               placeholder="Buscar por nome, descrição ou categoria..."
               value={busca}
-              onChange={(e: any) => setBusca(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBusca(e.target.value)}
             />
 
             {/* Controles: Ordenação e Filtros */}
@@ -486,7 +481,7 @@ export function SeletorModificacao({
                       label="Descrição/Detalhe"
                       placeholder={modBase.placeholder || 'Digite aqui...'}
                       value={parametros.descricao || ''}
-                      onChange={(e: any) => setParametros({ ...parametros, descricao: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setParametros({ ...parametros, descricao: e.target.value })}
                       rows={3}
                     />
                   )}
@@ -497,7 +492,7 @@ export function SeletorModificacao({
                       label="Valor"
                       placeholder={modBase.placeholder || 'Digite um número...'}
                       value={parametros.valor || ''}
-                      onChange={(e: any) => setParametros({ ...parametros, valor: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setParametros({ ...parametros, valor: e.target.value })}
                     />
                   )}
 
@@ -505,7 +500,7 @@ export function SeletorModificacao({
                     <Select
                       label="Opção"
                       value={parametros.opcao || ''}
-                      onChange={(e: any) => setParametros({ ...parametros, opcao: e.target.value })}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setParametros({ ...parametros, opcao: e.target.value })}
                       options={modBase.opcoes.map(op => ({ value: op, label: op }))}
                     />
                   )}
@@ -547,7 +542,7 @@ export function SeletorModificacao({
                 onClick={handleSelecionar}
                 disabled={
                   (modBase?.configuracoes && !configuracaoSelecionada) ||
-                  (modBase?.requerParametros && Object.keys(parametros).length === 0)
+                  (modBase?.requerParametros && Object.keys(parametros).length === 0 && !configuracaoSelecionada)
                 }
                 className="flex items-center justify-center gap-2"
               >
