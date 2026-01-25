@@ -1,189 +1,298 @@
-# Spirit and Caos System - Power Creator
+# Aetherium
 
-Sistema de criação de poderes/técnicas para RPG, desenvolvido com React + TypeScript + Vite.
+<div align="center">
 
-## 🎮 Sobre o Sistema
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Deployed-success?logo=github)
+![React](https://img.shields.io/badge/React-19.2.0-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue?logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-7.2.2-646CFF?logo=vite)
+![Tests](https://img.shields.io/badge/Tests-92%20passing-brightgreen?logo=vitest)
 
-Ferramenta para criar e gerenciar poderes personalizados seguindo as regras do sistema Spirit and Caos, inspirado em Mutants & Masterminds.
+**Plataforma completa para o sistema de RPG Spirit and Caos**
 
-## 🏗️ Arquitetura de Parâmetros
+[🌐 Demo ao Vivo](https://gaaaybe.github.io/Aetherium/) | [📖 Documentação](#-funcionalidades) | [🐛 Reportar Bug](https://github.com/Gaaaybe/Spirit-and-Caos-system/issues)
 
-### Conceito Central
+</div>
 
-A arquitetura é **hierárquica**:
-- Um **Poder** é o contêiner principal
-- Um **Poder** contém múltiplos **Efeitos** (blocos de construção como "Dano", "Voo", "Afligir")
-- Cada **Efeito** possui parâmetros padrão (Ação, Alcance, Duração)
+---
 
-### Regras de Negócio
+## 🎯 Sobre o Projeto
 
-#### 1️⃣ Efeitos Definem o Padrão (Regra do "Pior Parâmetro")
+**Aetherium** é uma suite de ferramentas digitais para o sistema de RPG **Spirit and Caos** (inspirado em Mutants & Masterminds). Desenvolvida com foco em usabilidade e precisão, oferece:
 
-Os parâmetros do **Poder** são **auto-calculados** como o **pior** (mais restritivo) parâmetro entre todos os efeitos filhos:
+- ⚡ **Criador de Poderes** - Motor completo de construção de poderes com 41 efeitos e 123 modificações
+- 🐉 **Gerenciador de Criaturas** - Board interativo para controlar NPCs e encontros
+- 📚 **Biblioteca de Poderes** - Sistema de salvamento e organização
+- 🎭 **Fichas de Personagem** *(em breve)*
+- 🎲 **Gerenciador de Campanhas** *(em breve)*
 
-```typescript
-// Exemplo:
-Efeito A: {acao: 1, alcance: 1, duracao: 0}  // Ação Padrão, Corpo-a-corpo, Instantâneo
-Efeito B: {acao: 5, alcance: 0, duracao: 4}  // Nenhuma, Pessoal, Permanente
+## ✨ Funcionalidades
 
-// Poder auto-calcula (pior = menor valor):
-Poder: {acao: 1, alcance: 0, duracao: 0}
-```
+### ⚡ Criador de Poderes
 
-**"Pior" = menor valor numérico:**
-- Ação: 0 (Completa) < 5 (Nenhuma)
-- Alcance: 0 (Pessoal) < 3 (Percepção)
-- Duração: 0 (Instantâneo) < 4 (Permanente)
+Sistema completo de construção de poderes com:
 
-#### 2️⃣ O Poder Modifica Globalmente
+- ✅ **41 Efeitos Base** (Dano, Afligir, Ilusão, Teleporte, etc.)
+- ✅ **123 Modificações** (Extras e Falhas)
+- ✅ Cálculo automático de **PdA, PE e Espaços**
+- ✅ Modificações globais e locais
+- ✅ Sistema de parâmetros hierárquico
+- ✅ Efeitos e modificações customizados
+- ✅ Validação em tempo real
 
-A UI permite **modificar manualmente** os parâmetros auto-calculados do Poder. Quando modificados, esses valores se aplicam a **TODOS os efeitos**.
+#### Sistema de Parâmetros Hierárquico
 
-```typescript
-// Modifico o Poder para:
-Poder: {acao: 5, alcance: 0, duracao: 0}
-
-// Este override se aplica a TODOS os efeitos
-```
-
-#### 3️⃣ O Custo é Calculado com Modificador Global
-
-O modificador de custo é calculado **UMA VEZ** para o poder inteiro e aplicado a **TODOS os efeitos**:
+A arquitetura é baseada em **herança de parâmetros**:
 
 ```typescript
-// Parâmetros padrão do poder: {acao: 1, alcance: 0, duracao: 0}
-// Parâmetros atuais do poder: {acao: 5, alcance: 0, duracao: 0}
+// Poder contém múltiplos Efeitos
+Poder: "Rajada Flamejante"
+├─ Dano (grau 5)        {acao:1, alcance:1, duracao:0}
+└─ Afligir (grau 2)     {acao:1, alcance:1, duracao:0}
 
-// Modificador GLOBAL = (atual - padrão)
-modificadorGlobal = (5-1) + (0-0) + (0-0) = +4 PdA/grau
+// Regra: Poder herda o PIOR parâmetro (mais restritivo)
+Parâmetros do Poder: {acao:1, alcance:1, duracao:0}
 
-// Aplicado a CADA efeito:
-Efeito A (custo base 1): 1 + 4 = 5 PdA/grau
-Efeito B (custo base 4): 4 + 4 = 8 PdA/grau
-
-// Total do Poder: 5 + 8 = 13 PdA
+// Override manual aplica-se a TODOS os efeitos
+Se mudar Alcance → 2 (À Distância):
+  Modificador Global: +1/grau em TODOS os efeitos
 ```
 
-**Importante:** Os parâmetros **individuais dos efeitos** são **IGNORADOS** no cálculo de custo. Eles servem **APENAS** para definir os parâmetros padrão do poder.
-
-### Fórmula de Custo
-
+**Fórmula de Custo:**
 ```
 CustoPorGrau = CustoBase 
              + Σ(Modificações_Globais) 
              + Σ(Modificações_Locais) 
              + ModificadorParametrosGlobal
 
-onde:
-  ModificadorParametrosGlobal = (AçãoPoder - AçãoPadrãoPoder)
-                               + (AlcancePoder - AlcancePadrãoPoder)
-                               + (DuraçãoPoder - DuraçãoPadrãoPoder)
+Custo Mínimo: 1 PdA (sempre)
 ```
+
+### 🐉 Gerenciador de Criaturas
+
+Board interativo com React Flow para combate tático:
+
+- ✅ Canvas drag & drop com zoom/pan
+- ✅ Calculadora de stats por role (Tanque, Artilheiro, Suporte, etc.)
+- ✅ Sistema de Boss Mechanics (Soberania)
+- ✅ Gerenciamento de HP/PE em tempo real
+- ✅ Status de combate (Ativo, Oculto, Derrotado)
+- ✅ Biblioteca de criaturas salvas
+- ✅ Exportar/Importar JSON
+
+### 📚 Biblioteca de Poderes
+
+Gestão completa de poderes salvos:
+
+- ✅ Busca e filtros avançados
+- ✅ Sistema de favoritos
+- ✅ Duplicação e edição rápida
+- ✅ Exportar/Importar individual ou em lote
+- ✅ Persistência local (LocalStorage)
+- ✅ Sistema de versionamento (hydration)
+
+### 🎨 Experiência do Usuário
+
+- ✅ **Interface Responsiva** - Mobile e desktop otimizados
+- ✅ **Tema Claro/Escuro** - Alternância automática/manual
+- ✅ **Atalhos de Teclado** - Ctrl+S (salvar), Ctrl+N (novo), etc.
+- ✅ **Page Transitions** - Animações suaves entre rotas
+- ✅ **Toast System** - Feedback visual consistente
+- ✅ **Empty States** - Guias para começar
 
 ## 🚀 Tecnologias
 
-- **React 19.2.0** - UI com componentes funcionais
-- **TypeScript** - Tipagem estática
-- **Vite 7.2.2** - Build tool rápido
-- **Tailwind CSS** - Estilização
-- **Zustand** - Gerenciamento de estado (biblioteca de poderes)
+- **React 19.2.0** - Framework UI moderno
+- **TypeScript 5.9.3** - Tipagem estática robusta
+- **Vite 7.2.2** (Rolldown) - Build ultrarrápido
+- **Tailwind CSS 3.4** - Estilização utility-first
+- **React Router 7.9** - Navegação SPA
+- **React Flow 11.11** - Canvas interativo de criaturas
+- **Zod 4.1** - Validação de schemas
+- **Vitest 4.0** - Framework de testes (92 testes passando)
 
 ## 📂 Estrutura do Projeto
-
-```
-src/
-├── data/
-│   ├── efeitos.json        # Base de dados de efeitos
-│   ├── modificacoes.json   # Modificadores disponíveis
-│   └── escalas.ts          # Escalas de parâmetros
+                     # Base de dados JSON
+│   ├── efeitos.json          # 41 efeitos base
+│   ├── modificacoes.json     # 123 modificações
+│   ├── escalas.json          # Escalas de parâmetros
+│   └── tabelaUniversal.json  # 20 graus de poder
 ├── features/
-│   └── criador-de-poder/
-│       ├── components/     # Componentes React
-│       ├── hooks/          # Lógica de negócio
-│       └── regras/         # Motor de cálculo de custos
-└── shared/
-    └── ui/                 # Componentes reutilizáveis
-```
+│   ├── criador-de-poder/
+│   │   ├── components/       # UI do criador
+│   │   ├── hooks/            # Lógica de negócio
+│   │   ├── regras/           # Motor de cálculo
+│   │   ├── schemas/          # Validação Zod
+│   │   └── utils/            # Hydration e helpers
+│   └── gerenciador-criaturas/
+│       ├─eçando
 
-## 🛠️ Como Usar
+### Pré-requisitos
+
+- Node.js 18+ e npm/pnpm/yarn
 
 ### Instalação
 
 ```bash
+# Clone o repositório
+git clone https://github.com/Gaaaybe/Spirit-and-Caos-system.git
+cd Spirit-and-Caos-system
+
+# Instale dependências
 npm install
-```
 
-### Desenvolvimento
-
-```bash
+# Inicie servidor de desenvolvimento
 npm run dev
 ```
 
 Acesse: `http://localhost:5173`
 
-### Build para Produção
+### Scripts Disponíveis
 
 ```bash
-npm run build
+npm run dev          # Servidor de desenvolvimento
+npm run build        # Build de produção
+npm run preview      # Preview do build
+npm run lint         # Verificar código
+npm test             # Rodar testes
+npm test:ui          # Interface visual de testes
+npm test:coverage    # Relatório de cobertura
 ```
 
-### Deploy
+### Build para Produção
 
-O projeto está configurado para **deploy automático** no GitHub Pages:
+```🧪 Testes
 
-- ✅ Push no `master` → Deploy automático
-- ✅ Testes executados antes do deploy
+O projeto possui **92 testes** cobrindo:
+
+- ✅ Validação de estrutura de dados (efeitos.json, modificacoes.json)
+- ✅ Motor de cálculo de custos (100% das regras testadas)
+- ✅ Sistema de hydration (migrações de versão)
+- ✅ Casos extremos e edge cases
+- ✅ Componentes UI críticos
+
+```bash
+# Rodar todos os testes
+npm test
+
+# Modo watch (desenvolvimento)
+npm test -- --watch
+
+# Interface visual
+npm test:ui
+```
+
+## 🌐 Deploy
+
+### GitHub Pages (Automático)
+
+O projeto está configurado para **deploy automático**:
+
+- ✅ Push no `master` → CI/CD executa testes → Deploy
 - ✅ Build otimizado com Vite
-- 🌐 **URL:** `https://gaaaybe.github.io/Spirit-and-Caos-system/`
+- 🌐 **Produção:** [gaaaybe.github.io/Aetherium](https://gaaaybe.github.io/Aetherium/)
 
 **Configuração manual (primeira vez):**
 1. Vá em **Settings** → **Pages** no GitHub
 2. Em **Source**, selecione **GitHub Actions**
-3. Faça push no master e aguarde o deploy (~2 min)
+3. Faça push no master e aguarde (~2 min)
 
-## 📝 Exemplos de Uso
+## ⌨️ Atalhos de Teclado
 
-### Criar um Poder Simples
+| Tecla | Ação |
+|-------|------|
+| `Ctrl/⌘ + S` | Salvar poder |
+| `Ctrl/⌘ + N` | Novo poder |
+| `Ctrl/⌘ + B` | Abrir biblioteca |
+| `Ctrl/⌘ + E` | Adicionar efeito |
+| `Ctrl/⌘ + M` | Adicionar modificação |
+| `Ctrl/⌘ + R` | Ver resumo |
+| `Esc` | Fechar modal |
+| `?` | Mostrar ajuda |
 
-1. Adicione um efeito (ex: "Dano")
-2. Configure o grau do efeito
-3. Os parâmetros do poder são auto-calculados
-4. (Opcional) Modifique os parâmetros do poder para override global
-5. Adicione modificações globais ou locais conforme necessário
+## 📖 Documentação
 
-### Poder com Múltiplos Efeitos
+### Base de Dados
 
+- **41 Efeitos** - De Afligir a Voo
+- **123 Modificações** - Extras (aumentam custo) e Falhas (reduzem custo)
+- **20 Graus de Poder** - Tabela Universal com progressão balanceada
+- **3 Escalas de Parâmetros** - Ação, Alcance, Duração
+
+### Regras de Negócio
+
+#### RN-01: Herança de Parâmetros
+O Poder herda o **pior** (mais restritivo) parâmetro entre seus efeitos.
+
+#### RN-02: Override Global
+Modificar parâmetros do Poder aplica a **todos** os efeitos.
+
+## 📊 Status do Projeto
+
+![GitHub last commit](https://img.shields.io/github/last-commit/Gaaaybe/Spirit-and-Caos-system)
+![GitHub issues](https://img.shields.io/github/issues/Gaaaybe/Spirit-and-Caos-system)
+![GitHub stars](https://img.shields.io/github/stars/Gaaaybe/Spirit-and-Caos-system)
+
+---
+
+<div align="center">
+
+**Versão:** 1.0.0  
+**Última atualização:** 24 de janeiro de 2026
+
+Desenvolvido com ⚡ por [Gaaaybe](https://github.com/Gaaaybe)
+
+</div>
+
+#### RN-04: Custo Mínimo
+Todo poder custa **no mínimo 1 PdA**, independente de falhas.
+
+#### RN-05: PE de Ativação
 ```
-Poder: "Rajada Flamejante"
-├─ Dano (grau 5)           - {acao:1, alcance:1, duracao:0}
-└─ Afligir (grau 2)        - {acao:1, alcance:1, duracao:0}
-
-Parâmetros auto-calculados: {acao:1, alcance:1, duracao:0}
-Custo sem modificações: 5 + 2 = 7 PdA
-
-Se modificar Alcance para "À Distância" (2):
-Modificador global: (1-1) + (2-1) + (0-0) = +1 PdA/grau
-Dano: 1 + 1 = 2 PdA/grau × 5 = 10 PdA
-Afligir: 1 + 1 = 2 PdA/grau × 2 = 4 PdA
-Total: 14 PdA
+PE = max(1, CustoPdATotal / 2)
 ```
 
-## 🧮 Sistema de Cálculo
+## 🗺️ Roadmap
 
-### RN-02: Custo de Poder
-```
-CustoPoder = Σ(CustoEfeito)
-```
+### ✅ Concluído (v1.0)
+- [x] Criador de Poderes funcional
+- [x] Gerenciador de Criaturas com board interativo
+- [x] Biblioteca de Poderes
+- [x] Sistema de hydration e versionamento
+- [x] 92 testes automatizados
+- [x] Landing page e navegação
+- [x] Tema claro/escuro
+- [x] Deploy automático
 
-### RN-03: Custo Por Grau
-```
-CustoPorGrau = CustoBase + Modificações + ModificadorGlobal
-```
+### 🚧 Em Desenvolvimento (v1.1)
+- [ ] Fichas de Personagem completas
+- [ ] Sistema de Campanhas
+- [ ] Tutorial interativo (onboarding)
+- [ ] Configuração de coverage de testes
 
-### RN-05: Custo Mínimo
-```
-Custo NUNCA pode ser menor que 1 PdA
-```
+### 🔮 Futuro (v2.0+)
+- [ ] Backend + persistência na nuvem
+- [ ] Sistema de contas de usuário
+- [ ] Chat em tempo real para jogadores
+- [ ] Sistema de rolagem de dados
+- [ ] Templates de poderes populares
+- [ ] App mobile (React Native)
+
+## 🤝 Contribuindo
+
+Contribuições são bem-vindas! Para mudanças importantes:
+
+1. Fork o projeto
+2. Crie uma branch (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Add: MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
+
+### Convenções
+
+- **Commits:** Conventional Commits (`feat:`, `fix:`, `docs:`, etc.)
+- **Code Style:** ESLint + Prettier (automático)
+- **Testes:** Adicione testes para novas features
 
 ### RN-06: Modificadores de Parâmetros
 ```
