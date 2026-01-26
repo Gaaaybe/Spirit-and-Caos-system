@@ -13,6 +13,8 @@ import {
   calcularPVMax,
   calcularPEMax,
   calcularCD,
+  calcularRankCalamidade,
+  calcularPdATotal,
   buscarBonusEficiencia,
   calcularBonusPericia,
   calcularRDBloqueio,
@@ -40,14 +42,39 @@ function criarPersonagemInicial(): Personagem {
     };
   });
   
+  // Atributos iniciais (10 em todos)
+  const atributosIniciais: Attributes = {
+    Força: 10,
+    Destreza: 10,
+    Constituição: 10,
+    Inteligência: 10,
+    Sabedoria: 10,
+    Carisma: 10,
+  };
+  
+  // Calcular modificadores iniciais
+  const modsIniciais = calcularModificadores(atributosIniciais, {
+    Força: 0,
+    Destreza: 0,
+    Constituição: 0,
+    Inteligência: 0,
+    Sabedoria: 0,
+    Carisma: 0,
+  });
+  
+  // Calcular vitais iniciais (nível 1, atributos padrão)
+  const nivelInicial = 1;
+  const pvMaxInicial = calcularPVMax(nivelInicial, modsIniciais.Constituição);
+  const peMaxInicial = calcularPEMax(modsIniciais.Inteligência, modsIniciais.Destreza);
+  
   return {
     id: `char-${Date.now()}`,
     header: {
       name: 'Novo Personagem',
       identity: '',
       origin: '',
-      level: 1,
-      calamityRank: 'Raposa',
+      level: nivelInicial,
+      // calamityRank removido - agora é calculado automaticamente
       keyAttributeMental: 'Inteligência',
       keyAttributePhysical: 'Destreza',
       inspiration: 0,
@@ -55,14 +82,7 @@ function criarPersonagemInicial(): Personagem {
       complications: [],
       motivations: [],
     },
-    attributes: {
-      Força: 10,
-      Destreza: 10,
-      Constituição: 10,
-      Inteligência: 10,
-      Sabedoria: 10,
-      Carisma: 10,
-    },
+    attributes: atributosIniciais,
     attributeTempBonuses: {
       Força: 0,
       Destreza: 0,
@@ -73,13 +93,13 @@ function criarPersonagemInicial(): Personagem {
     },
     vitals: {
       pv: {
-        current: 20,
-        max: 20,
+        current: pvMaxInicial,
+        max: pvMaxInicial,
         temp: 0,
       },
       pe: {
-        current: 10,
-        max: 10,
+        current: peMaxInicial,
+        max: peMaxInicial,
         temp: 0,
       },
       deathCounters: 0,
@@ -95,12 +115,13 @@ function criarPersonagemInicial(): Personagem {
         suit: null,
         accessory: null,
       },
-      quickSlots: [],
+      quickSlots: Array(6).fill(null),
       backpack: [],
     },
     pdaTotal: 15,
     pdaExtras: 0,
     espacosDisponiveis: 10,
+    deslocamento: 9,
     dataCriacao: agora,
     dataModificacao: agora,
   };
@@ -122,6 +143,12 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
   const calculado = useMemo<PersonagemCalculado>(() => {
     const mods = calcularModificadores(personagem.attributes, personagem.attributeTempBonuses);
     const bonusEficiencia = buscarBonusEficiencia(personagem.header.level);
+    
+    // Rank de Calamidade (calculado automaticamente)
+    const calamityRank = calcularRankCalamidade(personagem.header.level);
+    
+    // PdA Total (calculado automaticamente)
+    const pdaTotal = calcularPdATotal(personagem.header.level, personagem.pdaExtras);
     
     // Pontos de Atributo disponíveis
     const pontosAtributoDisponiveis = calcularPontosAtributoDisponiveis(
@@ -157,14 +184,16 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
     
     return {
       modificadores: mods,
+      calamityRank,
+      pdaTotal,
       pontosAtributoDisponiveis,
       pvMax,
       peMax,
-      deslocamento: 9, // Padrão: 9 metros
+      deslocamento: personagem.deslocamento,
       cdMental,
       cdPhysical,
       pdaUsados,
-      pdaDisponiveis: personagem.pdaTotal - pdaUsados,
+      pdaDisponiveis: pdaTotal - pdaUsados,
       espacosUsados,
       rdBloqueio,
       bonusEficiencia,
@@ -176,8 +205,9 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
     personagem.header.keyAttributeMental,
     personagem.header.keyAttributePhysical,
     personagem.poderes,
-    personagem.pdaTotal,
+    personagem.pdaExtras,
     personagem.inventory.equipped,
+    personagem.deslocamento,
   ]);
   
   // ========================================
@@ -261,9 +291,11 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
       skill,
       skillName,
       calculado.modificadores,
-      calculado.bonusEficiencia
+      calculado.bonusEficiencia,
+      personagem.header.keyAttributeMental,
+      personagem.header.keyAttributePhysical
     );
-  }, [personagem.skills, calculado.modificadores, calculado.bonusEficiencia]);
+  }, [personagem.skills, personagem.header.keyAttributeMental, personagem.header.keyAttributePhysical, calculado.modificadores, calculado.bonusEficiencia]);
   
   // ========================================
   // RETORNO

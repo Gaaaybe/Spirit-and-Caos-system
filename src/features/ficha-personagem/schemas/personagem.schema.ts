@@ -43,7 +43,7 @@ export const characterHeaderSchema = z.object({
   identity: z.string().max(200).default(''),
   origin: z.string().max(500).default(''),
   level: z.number().int().min(1).max(250),
-  calamityRank: z.string(),
+  // calamityRank removido - agora é calculado automaticamente
   
   // Atributos chave
   keyAttributeMental: z.enum(['Inteligência', 'Sabedoria', 'Carisma']),
@@ -52,7 +52,6 @@ export const characterHeaderSchema = z.object({
   // Recursos narrativos
   inspiration: z.number().int().min(0).max(3).default(0),
   runics: z.number().int().min(0).default(0),
-  currentXp: z.number().int().min(0).default(0),
   
   // Narrativa
   complications: z.array(z.string()).default([]),
@@ -193,6 +192,9 @@ export const personagemSchema = z.object({
   pdaExtras: z.number().int().min(0).default(0),
   espacosDisponiveis: z.number().int().min(0),
   
+  // Movimento
+  deslocamento: z.number().int().min(0).default(9),
+  
   // Metadata
   dataCriacao: z.string(),
   dataModificacao: z.string(),
@@ -255,9 +257,11 @@ export const personagemSchema = z.object({
 /**
  * Schema para personagem salvo (com versão obrigatória)
  */
-export const personagemSalvoSchema = personagemSchema.extend({
-  schemaVersion: z.string().min(1),
-});
+export const personagemSalvoSchema = personagemSchema.and(
+  z.object({
+    schemaVersion: z.string().min(1),
+  })
+);
 
 // ========================================
 // TIPOS INFERIDOS

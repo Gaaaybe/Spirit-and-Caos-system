@@ -76,20 +76,24 @@ export function calcularPontosAtributoDisponiveis(
 /**
  * Calcula PV Máximo
  * Fórmula: (nível * ModCON) + 6
+ * Mínimo: 4 (proteção contra modificador de CON muito negativo)
  */
 export function calcularPVMax(nivel: number, modConstituicao: number): number {
-  return (nivel * modConstituicao) + 6;
+  const pvCalculado = (nivel * modConstituicao) + 6;
+  return Math.max(4, pvCalculado);
 }
 
 /**
  * Calcula PE Máximo
  * Fórmula: ARREDONDAR.PARA.BAIXO(899 * RAIZ((modMental + modFisico) / 15000); 0)
+ * Mínimo: 4 (proteção contra modificadores muito negativos)
  * 
  * @param modKeyMental - Modificador do atributo chave mental escolhido
  * @param modKeyPhysical - Modificador do atributo chave físico escolhido
  */
 export function calcularPEMax(modKeyMental: number, modKeyPhysical: number): number {
-  return Math.floor(899 * Math.sqrt((modKeyMental + modKeyPhysical) / 15000));
+  const peCalculado = Math.floor(899 * Math.sqrt((modKeyMental + modKeyPhysical) / 15000));
+  return Math.max(4, peCalculado);
 }
 
 // ========================================
@@ -176,29 +180,45 @@ export function buscarBonusEficiencia(nivel: number): number {
 
 /**
  * Calcula o bônus total de uma perícia
- * Fórmula: Mod.Atributo + Treino + Eficiência (se eficiente) - Metade (se ineficiente) + Misc
+ * Fórmula: Mod.Atributo + Treino + Misc + Eficiência (se eficiente) - Eficiência (se ineficiente)
+ * 
+ * Casos especiais:
+ * - Atletismo: usa atributo chave físico ao invés de Força
+ * - Espiritismo: usa atributo chave mental ao invés de Sabedoria
  */
 export function calcularBonusPericia(
   skill: SkillEntry,
   skillName: string,
   modificadores: Attributes,
-  bonusEficiencia: number
+  bonusEficiencia: number,
+  keyAttributeMental?: AttributeName,
+  keyAttributePhysical?: AttributeName
 ): number {
-  // Atributo base da perícia
-  const atributoBase = SKILL_ATTRIBUTE_MAP[skillName as keyof typeof SKILL_ATTRIBUTE_MAP];
+  // Determinar atributo base
+  let atributoBase: AttributeName;
+  
+  // Casos especiais: Atletismo e Espiritismo usam atributo chave
+  if (skillName === 'Atletismo' && keyAttributePhysical) {
+    atributoBase = keyAttributePhysical;
+  } else if (skillName === 'Espiritismo' && keyAttributeMental) {
+    atributoBase = keyAttributeMental;
+  } else {
+    atributoBase = SKILL_ATTRIBUTE_MAP[skillName as keyof typeof SKILL_ATTRIBUTE_MAP];
+  }
+  
   const modAtributo = atributoBase ? modificadores[atributoBase] : 0;
   
   // Bônus base
   let bonus = modAtributo + skill.trainingLevel + skill.miscBonus;
   
-  // Eficiência
+  // Eficiência (adiciona bônus)
   if (skill.isEfficient) {
     bonus += bonusEficiencia;
   }
   
-  // Ineficiência (perde metade do bônus total)
+  // Ineficiência (subtrai o bônus de eficiência)
   if (skill.isInefficient) {
-    bonus = Math.floor(bonus / 2);
+    bonus -= bonusEficiencia;
   }
   
   return bonus;

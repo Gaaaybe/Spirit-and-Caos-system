@@ -41,6 +41,8 @@ export const SKILL_ATTRIBUTE_MAP: Record<SkillName, AttributeName> = {
   
   // Resistências
   'Fortitude': 'Constituição',
+  'Reflexos': 'Destreza',
+  'Vontade': 'Carisma',
 };
 
 /**
@@ -69,6 +71,8 @@ export const ALL_SKILLS: SkillName[] = [
   'Intimidação',
   'Iniciativa',
   'Fortitude',
+  'Reflexos',
+  'Vontade',
 ];
 
 /**
@@ -110,6 +114,8 @@ export const SKILL_CATEGORIES = {
   
   Resistência: [
     'Fortitude',
+    'Reflexos',
+    'Vontade',
   ] as SkillName[],
 };
 

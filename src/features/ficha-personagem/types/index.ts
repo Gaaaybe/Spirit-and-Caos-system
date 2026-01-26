@@ -17,7 +17,7 @@ export interface CharacterHeader {
   identity: string;              // Ex: "Cavaleiro sem Rainha"
   origin: string;
   level: number;                 // 1 a 250
-  calamityRank: string;          // Calculado via Nível (Raposa, Lobo, Tigre...)
+  // calamityRank removido - agora é calculado automaticamente via calcularRankCalamidade(level)
   
   // Atributos Chave para CD
   keyAttributeMental: 'Inteligência' | 'Sabedoria' | 'Carisma';
@@ -142,7 +142,9 @@ export type SkillName =
   | 'Investigação'
   | 'Intimidação'
   | 'Iniciativa'
-  | 'Fortitude';
+  | 'Fortitude'
+  | 'Reflexos'
+  | 'Vontade';
 
 // ========================================
 // DOMÍNIOS E PODERES
@@ -251,6 +253,9 @@ export interface Personagem {
   pdaExtras: number;             // PdA extras concedidos (manual)
   espacosDisponiveis: number;    // Espaços disponíveis (calculado)
   
+  // Movimento
+  deslocamento: number;          // Metros por turno (padrão: 9m, editável)
+  
   // Metadata
   dataCriacao: string;
   dataModificacao: string;
@@ -277,6 +282,12 @@ export interface PersonagemSalvo extends Personagem {
 export interface PersonagemCalculado {
   // Modificadores de atributos (calculados via ARREDONDAR.PARA.CIMA((atributo - 10) / 2))
   modificadores: Attributes;
+  
+  // Rank de Calamidade (calculado automaticamente pelo nível)
+  calamityRank: string;
+  
+  // PdA Total (calculado automaticamente)
+  pdaTotal: number;              // 15 + ((nivel-1)*7) + floor(nivel/5)*7 + extras
   
   // Pontos de Atributo
   pontosAtributoDisponiveis: number; // (nivel * (nivel+1) / 2) + (67 - somaAtributos)
