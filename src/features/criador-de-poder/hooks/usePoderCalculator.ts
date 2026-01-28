@@ -229,11 +229,12 @@ export function usePoderCalculator() {
   };
 
   // Atualiza nome e descrição do poder
-  const atualizarInfoPoder = (nome?: string, descricao?: string) => {
+  const atualizarInfoPoder = (nome?: string, descricao?: string, dominioId?: string) => {
     setPoder(prev => ({
       ...prev,
       ...(nome !== undefined && { nome }),
       ...(descricao !== undefined && { descricao }),
+      ...(dominioId !== undefined && { dominioId }),
     }));
   };
 

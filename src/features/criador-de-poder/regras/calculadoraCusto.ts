@@ -34,6 +34,7 @@ export interface Poder {
   id: string;
   nome: string;
   descricao?: string;
+  dominioId: string; // ID do domínio do poder
   efeitos: EfeitoAplicado[];
   modificacoesGlobais: ModificacaoAplicada[];
   // Parâmetros do poder (aplicados a TODOS os efeitos)

@@ -3,6 +3,7 @@ import efeitos from './efeitos.json';
 import modificacoes from './modificacoes.json';
 import tabelaUniversal from './tabelaUniversal.json';
 import escalas from './escalas.json';
+import dominios from './dominios.json';
 
 // Tipos TypeScript (opcional, para melhor autocompletar)
 export interface ConfiguracaoEfeito {
@@ -87,6 +88,17 @@ export interface EscalaParametro {
   descricao: string;
 }
 
+export interface Dominio {
+  id: string;
+  nome: string;
+  descricao: string;
+  espiritual: boolean | null; // null para Peculiar (customizável)
+  categoria: 'espiritual' | 'especial' | 'arma';
+  requerAreaConhecimento?: boolean; // Para Científico
+  areasConhecimento?: string[]; // Áreas do Científico
+  customizavel?: boolean; // Para Peculiar
+}
+
 export interface Escalas {
   acao: {
     nome: string;
@@ -110,6 +122,7 @@ export const EFEITOS: Efeito[] = efeitos as Efeito[];
 export const MODIFICACOES: Modificacao[] = modificacoes as Modificacao[];
 export const TABELA_UNIVERSAL: TabelaUniversalItem[] = tabelaUniversal;
 export const ESCALAS: Escalas = escalas as Escalas;
+export const DOMINIOS: Dominio[] = dominios as Dominio[];
 
 // Funções auxiliares para busca rápida
 export function buscarEfeito(id: string): Efeito | undefined {
@@ -127,4 +140,8 @@ export function buscarGrauNaTabela(grau: number): TabelaUniversalItem | undefine
 export function obterNomeParametro(tipo: 'acao' | 'alcance' | 'duracao', valor: number): string {
   const escala = ESCALAS[tipo]?.escala.find(e => e.valor === valor);
   return escala?.nome || 'Desconhecido';
+}
+
+export function buscarDominio(id: string): Dominio | undefined {
+  return DOMINIOS.find(d => d.id === id);
 }

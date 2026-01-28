@@ -1,0 +1,92 @@
+[
+  {
+    "id": "natural",
+    "nome": "Natural",
+    "descricao": "O Domínio Natural representa o poder que flui diretamente das correntes espirituais da vida, presentes em todos os seres vivos e no equilíbrio da própria natureza. Aqueles que trilham esse caminho não manipulam a realidade com violência ou imposição, mas sim harmonizam o seu espírito com o mundo, tornando-se um elo entre o interior e o exterior. Esse poder é sutil e, ao mesmo tempo, imenso — capaz de curar, nutrir, fortalecer ou mesmo devastar, mas sempre dentro da lógica de ciclo e renovação.",
+    "espiritual": true,
+    "categoria": "espiritual"
+  },
+  {
+    "id": "sagrado",
+    "nome": "Sagrado",
+    "descricao": "O Domínio Sagrado representa o poder divino, a luz purificadora e a proteção celestial. Aqueles que canalizam esse domínio são guiados por princípios elevados, fé e devoção.",
+    "espiritual": true,
+    "categoria": "espiritual"
+  },
+  {
+    "id": "sacrilegio",
+    "nome": "Sacrilégio",
+    "descricao": "O Domínio Sacrilégio representa o poder profano, as forças obscuras e a transgressão do sagrado. Aqueles que utilizam esse domínio manipulam energias proibidas e caminhos sombrios.",
+    "espiritual": true,
+    "categoria": "espiritual"
+  },
+  {
+    "id": "psiquico",
+    "nome": "Psíquico",
+    "descricao": "O Domínio Psíquico representa o poder da mente sobre a matéria, a telepatia, telecinese e manipulação mental. Aqueles que dominam esse poder transcendem as limitações físicas através do puro poder mental.",
+    "espiritual": true,
+    "categoria": "espiritual"
+  },
+  {
+    "id": "cientifico",
+    "nome": "Científico",
+    "descricao": "O Domínio Científico representa o poder da ciência, tecnologia e conhecimento racional. Dividido em áreas de conhecimento específicas, este domínio permite manipular a realidade através de princípios científicos e invenções.",
+    "espiritual": false,
+    "categoria": "especial",
+    "requerAreaConhecimento": true,
+    "areasConhecimento": [
+      "Física",
+      "Química",
+      "Biologia",
+      "Engenharia",
+      "Medicina",
+      "Eletrônica",
+      "Computação",
+      "Astronomia",
+      "Outro"
+    ]
+  },
+  {
+    "id": "peculiar",
+    "nome": "Peculiar",
+    "descricao": "O Domínio Peculiar representa poderes únicos e personalizados que não se encaixam nas categorias tradicionais. Pode ser espiritual ou não, dependendo da natureza específica do poder.",
+    "espiritual": null,
+    "categoria": "especial",
+    "customizavel": true
+  },
+  {
+    "id": "arma-branca",
+    "nome": "Arma Branca",
+    "descricao": "Domínio que representa o uso de armas brancas — espadas, machados, lanças e outras armas de combate corpo a corpo.",
+    "espiritual": false,
+    "categoria": "arma"
+  },
+  {
+    "id": "arma-fogo",
+    "nome": "Arma de Fogo",
+    "descricao": "Domínio que representa o uso de armas de fogo — pistolas, rifles, metralhadoras e outras armas de projéteis.",
+    "espiritual": false,
+    "categoria": "arma"
+  },
+  {
+    "id": "arma-tensao",
+    "nome": "Arma de Tensão",
+    "descricao": "Domínio que representa o uso de armas de tensão — arcos, bestas, fundas e outras armas que utilizam energia mecânica.",
+    "espiritual": false,
+    "categoria": "arma"
+  },
+  {
+    "id": "arma-explosiva",
+    "nome": "Arma Explosiva",
+    "descricao": "Domínio que representa o uso de explosivos — granadas, minas, C4 e outros dispositivos explosivos.",
+    "espiritual": false,
+    "categoria": "arma"
+  },
+  {
+    "id": "arma-tecnologica",
+    "nome": "Arma Tecnológica/Exótica",
+    "descricao": "Domínio que representa o uso de armas tecnológicas avançadas ou exóticas — armas de energia, raios laser, armas alienígenas e tecnologia experimental.",
+    "espiritual": false,
+    "categoria": "arma"
+  }
+]

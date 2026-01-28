@@ -7,6 +7,7 @@ const LOAD_PODER_KEY = 'criador-de-poder-carregar';
 export const PODER_PADRAO: Omit<Poder, 'id'> = {
   nome: 'Novo Poder',
   descricao: '',
+  dominioId: 'natural', // Domínio padrão
   efeitos: [],
   modificacoesGlobais: [],
   acao: 0,

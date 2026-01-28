@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Zap, Package, Globe, Sparkles, Copy, FileText, Clock, Ruler, Timer } from 'lucide-react';
 import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast } from '../../../shared/ui';
 import { Poder, ModificacaoAplicada } from '../regras/calculadoraCusto';
-import { MODIFICACOES, ESCALAS, Modificacao } from '../../../data';
+import { MODIFICACOES, ESCALAS, Modificacao, DOMINIOS } from '../../../data';
 import { useCustomItems } from '../../../shared/hooks';
 import type { DetalhesPoder } from '../types';
 
@@ -141,6 +141,16 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     
     if (poder.descricao) {
       texto += `${poder.descricao}\n\n`;
+    }
+    
+    // Domínio
+    const dominio = DOMINIOS.find(d => d.id === poder.dominioId);
+    if (dominio) {
+      texto += `DOMÍNIO: ${dominio.nome}`;
+      if (dominio.espiritual !== null) {
+        texto += dominio.espiritual ? ' (Espiritual)' : ' (Não Espiritual)';
+      }
+      texto += `\n`;
     }
     
     texto += `CUSTO TOTAL: ${detalhes.custoPdATotal} PdA\n`;
@@ -314,6 +324,33 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                 </p>
               </div>
             )}
+
+            {/* Domínio do Poder */}
+            {(() => {
+              const dominio = DOMINIOS.find(d => d.id === poder.dominioId);
+              if (!dominio) return null;
+              
+              return (
+                <div className="bg-white/10 backdrop-blur-sm rounded-lg p-4 mt-4 border border-espirito-400/50">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Globe className="w-5 h-5 text-espirito-200" />
+                    <p className="text-espirito-100 text-sm font-semibold uppercase">Domínio</p>
+                  </div>
+                  <p className="text-lg font-bold text-espirito-100">
+                    {dominio.nome}
+                    {dominio.espiritual !== null && (
+                      <span className="text-sm font-normal text-espirito-200 ml-2">
+                        {dominio.espiritual ? '(Espiritual)' : '(Não Espiritual)'}
+                      </span>
+                    )}
+                  </p>
+                  <p className="text-xs text-espirito-200 mt-1">
+                    {dominio.descricao.substring(0, 150)}
+                    {dominio.descricao.length > 150 ? '...' : ''}
+                  </p>
+                </div>
+              );
+            })()}
 
             {/* Parâmetros do Poder */}
             <div className="grid grid-cols-3 gap-3 mt-4">

@@ -6,7 +6,7 @@ import { usePoderCalculator } from '../hooks/usePoderCalculator';
 import { usePoderValidation } from '../hooks/usePoderValidation';
 import { useBibliotecaPoderes } from '../hooks/useBibliotecaPoderes';
 import { useKeyboardShortcuts, useCustomItems } from '../../../shared/hooks';
-import { ESCALAS, MODIFICACOES } from '../../../data';
+import { ESCALAS, MODIFICACOES, DOMINIOS } from '../../../data';
 import { formatarCustoModificacao } from '../utils/modificacaoFormatter';
 import { SeletorEfeito } from './SeletorEfeito';
 import { CardEfeito } from './CardEfeito';
@@ -227,6 +227,42 @@ export function CriadorDePoder() {
                   placeholder="Descreva o poder..."
                   rows={3}
                 />
+              </div>
+
+              {/* Seleção de Domínio */}
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Domínio
+                  </label>
+                  <HelpIcon tooltip="Define a origem e natureza do poder. Cada domínio representa como o poder se manifesta no mundo." />
+                </div>
+                <Select
+                  value={poder.dominioId}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => atualizarInfoPoder(undefined, undefined, e.target.value)}
+                  options={[
+                    { value: '__placeholder__', label: 'Selecione um domínio...', disabled: true },
+                    ...DOMINIOS.filter(d => d.categoria === 'espiritual').map(d => ({
+                      value: d.id,
+                      label: `${d.nome} ${d.espiritual ? '(Espiritual)' : ''}`,
+                    })),
+                    { value: '__separator-1__', label: '─────────', disabled: true },
+                    ...DOMINIOS.filter(d => d.categoria === 'especial').map(d => ({
+                      value: d.id,
+                      label: d.nome,
+                    })),
+                    { value: '__separator-2__', label: '─────────', disabled: true },
+                    ...DOMINIOS.filter(d => d.categoria === 'arma').map(d => ({
+                      value: d.id,
+                      label: d.nome,
+                    })),
+                  ]}
+                />
+                {poder.dominioId && (
+                  <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {DOMINIOS.find(d => d.id === poder.dominioId)?.descricao}
+                  </p>
+                )}
               </div>
 
               {/* Parâmetros do Poder (aplicados a todos os efeitos) */}

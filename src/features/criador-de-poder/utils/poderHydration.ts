@@ -91,7 +91,13 @@ export function hydratePoder(poderSalvo: PoderComVersion): HydrationResult {
   if (!poder.descricao) poder.descricao = '';
   if (!poder.id) poder.id = Date.now().toString();
   
-  // 6. Validar custo alternativo (se existir)
+  // 6. Garantir domínio (NOVO)
+  if (!poder.dominioId) {
+    poder.dominioId = 'natural'; // Domínio padrão para poderes antigos
+    changes.push('Domínio "Natural" atribuído automaticamente');
+  }
+  
+  // 7. Validar custo alternativo (se existir)
   if (poder.custoAlternativo) {
     if (!['pe', 'atributo', 'item', 'material'].includes(poder.custoAlternativo.tipo)) {
       delete poder.custoAlternativo;

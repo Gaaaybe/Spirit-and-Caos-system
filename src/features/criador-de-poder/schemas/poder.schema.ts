@@ -53,6 +53,7 @@ export const poderSchema = z.object({
       message: 'Por favor, dê um nome único ao poder',
     }),
   descricao: z.string().max(1000, 'Descrição deve ter no máximo 1000 caracteres').optional(),
+  dominioId: z.string().min(1, 'Domínio é obrigatório'),
   efeitos: z
     .array(efeitoAplicadoSchema)
     .min(1, 'Adicione pelo menos um efeito ao poder')
