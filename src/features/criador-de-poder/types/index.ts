@@ -74,3 +74,7 @@ export interface DetalhesPoder {
 
 export type EventoChangeInput = React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 export type EventoChangeSelect = React.ChangeEvent<HTMLSelectElement>;
+
+// ============= TIPOS DE ACERVO =============
+
+export type { Acervo, DetalhesAcervo, ValidacaoAcervo } from './acervo.types';
