@@ -5,8 +5,8 @@ import type {
   MasterRow,
   RoleTemplate,
   CreatureRole,
-} from '../types';
-import { getRoleTemplate } from '../data/roleTemplates';
+} from '../types/index.js';
+import { getRoleTemplate } from '../data/roleTemplates.js';
 import { getMasterTable } from '../data/getMasterTable.js';
 
 /**

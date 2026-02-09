@@ -4,8 +4,8 @@
  */
 
 import { useState } from 'react';
-import { BibliotecaPersonagens } from '../components/BibliotecaPersonagens';
-import { EditorPersonagem } from '../components/EditorPersonagem';
+import { BibliotecaPersonagens } from './BibliotecaPersonagens';
+import { EditorPersonagem } from './EditorPersonagem';
 
 type ViewMode = 'biblioteca' | 'editor' | 'criar';
 

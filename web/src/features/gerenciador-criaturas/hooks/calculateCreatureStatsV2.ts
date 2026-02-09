@@ -2,10 +2,10 @@ import type {
   CreatureFormInput, 
   CreatureStatsV2,
   MasterRow,
-} from '../types';
-import type { Attribute, Save, Skill } from '../data/constants';
-import { ATTRIBUTES, SAVES } from '../data/constants';
-import { getRoleTemplate } from '../data/roleTemplates';
+} from '../types/index.js';
+import type { Attribute, Save, Skill } from '../data/constants.js';
+import { ATTRIBUTES, SAVES } from '../data/constants.js';
+import { getRoleTemplate } from '../data/roleTemplates.js';
 import { getMasterTable } from '../data/getMasterTable.js';
 
 /**

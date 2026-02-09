@@ -1,4 +1,4 @@
-import { Modal, ModalFooter, Button } from './';
+import { Modal, ModalFooter, Button } from '.';
 import { useState } from 'react';
 import { AlertTriangle, HelpCircle, Info } from 'lucide-react';
 
