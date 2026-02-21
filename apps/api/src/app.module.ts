@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { PowerCreationModule } from './domain/power-creation/infrastructure/power-creation.module';
 
 @Module({
-  imports: [],
+  imports: [PowerCreationModule],
   controllers: [AppController],
   providers: [AppService],
 })
