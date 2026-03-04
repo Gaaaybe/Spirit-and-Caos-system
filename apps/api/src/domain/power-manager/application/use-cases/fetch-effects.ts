@@ -1,6 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, right } from '@/core/either';
-import type { EffectBase } from '../../enterprise/entities/effect-base';
-import type { EffectsRepository } from '../repositories/effects-repository';
+import { EffectBase } from '../../enterprise/entities/effect-base';
+import { EffectsRepository } from '../repositories/effects-repository';
 
 interface FetchEffectsUseCaseRequest {
   category?: string;
@@ -11,7 +12,7 @@ interface FetchEffectsUseCaseResponseData {
 }
 
 type FetchEffectsUseCaseResponse = Either<null, FetchEffectsUseCaseResponseData>;
-
+@Injectable()
 export class FetchEffectsUseCase {
   constructor(private effectsRepository: EffectsRepository) {}
 

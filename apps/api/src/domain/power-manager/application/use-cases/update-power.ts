@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
@@ -8,9 +9,10 @@ import type { AlternativeCost } from '../../enterprise/entities/value-objects/al
 import type { AppliedModification } from '../../enterprise/entities/value-objects/applied-modification';
 import type { Domain } from '../../enterprise/entities/value-objects/domain';
 import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
-import type { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
-import type { PowersRepository } from '../repositories/powers-repository';
+import type { PowerCost } from '../../enterprise/entities/value-objects/power-cost';
+import { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
 
 interface UpdatePowerUseCaseRequest {
@@ -36,6 +38,7 @@ type UpdatePowerUseCaseResponse = Either<
   UpdatePowerUseCaseResponseData
 >;
 
+@Injectable()
 export class UpdatePowerUseCase {
   constructor(
     private powersRepository: PowersRepository,
@@ -66,9 +69,7 @@ export class UpdatePowerUseCase {
       return left(new NotAllowedError());
     }
 
-    let newCustoTotal:
-      | undefined
-      | import('../../enterprise/entities/value-objects/power-cost').PowerCost;
+    let newCustoTotal: PowerCost | undefined;
 
     if (effects !== undefined || globalModifications !== undefined) {
       const costResult = await this.powerCostCalculator.calculate({

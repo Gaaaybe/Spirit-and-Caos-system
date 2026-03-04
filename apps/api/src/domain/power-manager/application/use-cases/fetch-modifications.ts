@@ -1,6 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, right } from '@/core/either';
 import type { ModificationBase } from '../../enterprise/entities/modification-base';
-import type { ModificationsRepository } from '../repositories/modifications-repository';
+import { ModificationsRepository } from '../repositories/modifications-repository';
 
 interface FetchModificationsUseCaseRequest {
   type?: 'extra' | 'falha';
@@ -12,7 +13,7 @@ interface FetchModificationsUseCaseResponseData {
 }
 
 type FetchModificationsUseCaseResponse = Either<null, FetchModificationsUseCaseResponseData>;
-
+@Injectable()
 export class FetchModificationsUseCase {
   constructor(private modificationsRepository: ModificationsRepository) {}
 

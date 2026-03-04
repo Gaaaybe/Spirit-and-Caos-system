@@ -1,6 +1,7 @@
 import { type Either, right } from '@/core/either';
 import { Peculiarity } from '../../enterprise/entities/peculiarity';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { Injectable } from '@nestjs/common';
 
 interface CreatePeculiarityUseCaseRequest {
   userId: string;
@@ -15,7 +16,7 @@ interface CreatePeculiarityUseCaseResponseData {
 }
 
 type CreatePeculiarityUseCaseResponse = Either<null, CreatePeculiarityUseCaseResponseData>;
-
+@Injectable()
 export class CreatePeculiarityUseCase {
   constructor(private peculiaritiesRepository: PeculiaritiesRepository) {}
 

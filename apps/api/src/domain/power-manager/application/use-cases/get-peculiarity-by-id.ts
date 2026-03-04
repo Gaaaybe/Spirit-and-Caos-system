@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import type { Peculiarity } from '../../enterprise/entities/peculiarity';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
 
 interface GetPeculiarityByIdUseCaseRequest {
   peculiarityId: string;
@@ -16,6 +17,7 @@ type GetPeculiarityByIdUseCaseResponse = Either<
   GetPeculiarityByIdUseCaseResponseData
 >;
 
+@Injectable()
 export class GetPeculiarityByIdUseCase {
   constructor(private peculiaritiesRepository: PeculiaritiesRepository) {}
 

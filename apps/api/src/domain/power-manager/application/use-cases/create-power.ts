@@ -1,18 +1,19 @@
 import { type Either, left, right } from '@/core/either';
-import type { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DomainEvents } from '@/core/events/domain-events';
-import type { AppliedEffect } from '../../enterprise/entities/applied-effect';
+import { AppliedEffect } from '../../enterprise/entities/applied-effect';
 import { Power } from '../../enterprise/entities/power';
-import type { AlternativeCost } from '../../enterprise/entities/value-objects/alternative-cost';
-import type { AppliedModification } from '../../enterprise/entities/value-objects/applied-modification';
-import type { Domain } from '../../enterprise/entities/value-objects/domain';
-import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
+import { AlternativeCost } from '../../enterprise/entities/value-objects/alternative-cost';
+import { AppliedModification } from '../../enterprise/entities/value-objects/applied-modification';
+import { Domain } from '../../enterprise/entities/value-objects/domain';
+import { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import { PowerEffectList } from '../../enterprise/entities/watched-lists/power-effect-list';
 import { PowerGlobalModificationList } from '../../enterprise/entities/watched-lists/power-global-modification-list';
-import type { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
+import { Injectable } from '@nestjs/common';
 
 interface CreatePowerUseCaseRequest {
   userId?: string;
@@ -35,7 +36,7 @@ type CreatePowerUseCaseResponse = Either<
   ResourceNotFoundError | InvalidVisibilityError,
   CreatePowerUseCaseResponseData
 >;
-
+@Injectable()
 export class CreatePowerUseCase {
   constructor(
     private powersRepository: PowersRepository,

@@ -1,6 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, right } from '@/core/either';
 import type { Peculiarity } from '../../enterprise/entities/peculiarity';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
 
 interface FetchUserPeculiaritiesUseCaseRequest {
   userId: string;
@@ -16,6 +17,7 @@ type FetchUserPeculiaritiesUseCaseResponse = Either<
   FetchUserPeculiaritiesUseCaseResponseData
 >;
 
+@Injectable()
 export class FetchUserPeculiaritiesUseCase {
   constructor(private peculiaritiesRepository: PeculiaritiesRepository) {}
 

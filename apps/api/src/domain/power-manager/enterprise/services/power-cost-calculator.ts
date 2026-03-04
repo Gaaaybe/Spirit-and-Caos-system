@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
-import type { EffectsRepository } from '../../application/repositories/effects-repository';
-import type { ModificationsRepository } from '../../application/repositories/modifications-repository';
+import { EffectsRepository } from '../../application/repositories/effects-repository';
+import { ModificationsRepository } from '../../application/repositories/modifications-repository';
 import type { AppliedEffect } from '../entities/applied-effect';
 import type { AppliedModification } from '../entities/value-objects/applied-modification';
 import { PowerCost } from '../entities/value-objects/power-cost';
@@ -16,6 +17,7 @@ export interface PowerCostCalculationInput {
   globalModifications?: AppliedModification[];
 }
 
+@Injectable()
 export class PowerCostCalculator {
   constructor(
     private effectsRepository: EffectsRepository,
