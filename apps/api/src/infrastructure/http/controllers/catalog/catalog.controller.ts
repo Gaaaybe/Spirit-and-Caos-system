@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { CatalogService } from '@/infrastructure/services/catalog.service';
 import { Public } from '@/infrastructure/auth/public';
+import { CatalogService } from '@/infrastructure/services/catalog.service';
 
 @Controller('/catalog')
 export class CatalogController {
