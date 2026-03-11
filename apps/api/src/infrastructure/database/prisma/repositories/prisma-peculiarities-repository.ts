@@ -26,6 +26,16 @@ export class PrismaPeculiaritiesRepository extends PeculiaritiesRepository {
     return raws.map(PeculiarityMapper.toDomain);
   }
 
+  async findPublic({ page }: PaginationParams): Promise<Peculiarity[]> {
+    const raws = await this.prisma.peculiarity.findMany({
+      where: { isPublic: true },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PeculiarityMapper.toDomain);
+  }
+
   async create(peculiarity: Peculiarity): Promise<void> {
     await this.prisma.peculiarity.create({ data: PeculiarityMapper.toPrisma(peculiarity) });
   }
