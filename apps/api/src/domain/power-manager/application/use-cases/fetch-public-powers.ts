@@ -1,6 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, right } from '@/core/either';
 import type { Power } from '../../enterprise/entities/power';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 
 interface FetchPowersUseCaseRequest {
   page: number;
@@ -12,6 +13,7 @@ interface FetchPowersUseCaseResponseData {
 
 type FetchPowersUseCaseResponse = Either<null, FetchPowersUseCaseResponseData>;
 
+@Injectable()
 export class FetchPowersUseCase {
   constructor(private powersRepository: PowersRepository) {}
 

@@ -1,10 +1,11 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { Power } from '../../enterprise/entities/power';
 import { PowerEffectList } from '../../enterprise/entities/watched-lists/power-effect-list';
 import { PowerGlobalModificationList } from '../../enterprise/entities/watched-lists/power-global-modification-list';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 
 interface CopyPublicPowerUseCaseRequest {
   powerId: string;
@@ -20,6 +21,7 @@ type CopyPublicPowerUseCaseResponse = Either<
   CopyPublicPowerUseCaseResponseData
 >;
 
+@Injectable()
 export class CopyPublicPowerUseCase {
   constructor(private powersRepository: PowersRepository) {}
 

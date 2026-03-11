@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 
 interface DeletePowerUseCaseRequest {
   powerId: string;
@@ -10,6 +11,7 @@ interface DeletePowerUseCaseRequest {
 
 type DeletePowerUseCaseResponse = Either<ResourceNotFoundError | NotAllowedError, null>;
 
+@Injectable()
 export class DeletePowerUseCase {
   constructor(private powersRepository: PowersRepository) {}
 

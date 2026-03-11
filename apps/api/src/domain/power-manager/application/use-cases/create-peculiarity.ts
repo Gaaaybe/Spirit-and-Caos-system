@@ -1,7 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, right } from '@/core/either';
 import { Peculiarity } from '../../enterprise/entities/peculiarity';
 import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
-import { Injectable } from '@nestjs/common';
 
 interface CreatePeculiarityUseCaseRequest {
   userId: string;

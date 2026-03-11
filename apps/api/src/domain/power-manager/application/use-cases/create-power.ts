@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DomainEvents } from '@/core/events/domain-events';
@@ -13,7 +14,6 @@ import { PowerCostCalculator } from '../../enterprise/services/power-cost-calcul
 import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
 import { PowersRepository } from '../repositories/powers-repository';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
-import { Injectable } from '@nestjs/common';
 
 interface CreatePowerUseCaseRequest {
   userId?: string;

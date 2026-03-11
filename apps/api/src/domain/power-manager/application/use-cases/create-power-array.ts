@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DomainEvents } from '@/core/events/domain-events';
@@ -7,8 +8,8 @@ import type { Domain } from '../../enterprise/entities/value-objects/domain';
 import { PowerCost } from '../../enterprise/entities/value-objects/power-cost';
 import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import { PowerArrayPowerList } from '../../enterprise/entities/watched-lists/power-array-power-list';
-import type { PowerArraysRepository } from '../repositories/power-arrays-repository';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowerArraysRepository } from '../repositories/power-arrays-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
 
 interface CreatePowerArrayUseCaseRequest {
@@ -31,6 +32,7 @@ type CreatePowerArrayUseCaseResponse = Either<
   CreatePowerArrayUseCaseResponseData
 >;
 
+@Injectable()
 export class CreatePowerArrayUseCase {
   constructor(
     private powerArraysRepository: PowerArraysRepository,
