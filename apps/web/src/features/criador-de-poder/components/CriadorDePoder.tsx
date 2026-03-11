@@ -1,12 +1,15 @@
-import { useState, useMemo } from 'react';
-import { Save, Info, Sparkles, FileText, Zap, Library } from 'lucide-react';
+import { useState } from 'react';
+import { Save, Sparkles, FileText, Zap, Library } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button, Card, CardHeader, CardTitle, CardContent, Badge, Input, Textarea, Select, toast, HelpIcon, Tooltip, ConfirmDialog, InlineHelp, EmptyState } from '../../../shared/ui';
 import { usePoderCalculator } from '../hooks/usePoderCalculator';
 import { usePoderValidation } from '../hooks/usePoderValidation';
-import { useBibliotecaPoderes } from '../hooks/useBibliotecaPoderes';
-import { useKeyboardShortcuts, useCustomItems } from '../../../shared/hooks';
-import { ESCALAS, MODIFICACOES, DOMINIOS } from '../../../data';
+import { usePoderes } from '../hooks/usePoderes';
+import { poderToCreatePayload } from '../utils/poderApiConverter';
+import { useKeyboardShortcuts } from '../../../shared/hooks';
+import { usePeculiaridades } from '../../../shared/hooks/usePeculiaridades';
+import { ESCALAS, DOMINIOS } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 import { formatarCustoModificacao } from '../utils/modificacaoFormatter';
 import { SeletorEfeito } from './SeletorEfeito';
 import { CardEfeito } from './CardEfeito';
@@ -16,11 +19,8 @@ import { ModalAtalhos } from './ModalAtalhos';
 import { FormPeculiaridadeCustomizada } from './FormPeculiaridadeCustomizada';
 
 export function CriadorDePoder() {
-  const { customModificacoes, peculiaridades, addPeculiaridade } = useCustomItems();
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const { peculiaridades, criar: criarPeculiaridade } = usePeculiaridades();
+  const { modificacoes: todasModificacoes } = useCatalog();
   
   const {
     poder,
@@ -38,9 +38,10 @@ export function CriadorDePoder() {
     atualizarInfoPoder,
     atualizarCustoAlternativo,
     resetarPoder,
+    atualizarIdPoder,
   } = usePoderCalculator();
 
-  const { salvarPoder, buscarPoderComHydration } = useBibliotecaPoderes();
+  const { criar, atualizar } = usePoderes();
   const { validarParaSalvar, validarNome, getFirstError } = usePoderValidation();
 
   const [modalSeletorEfeito, setModalSeletorEfeito] = useState(false);
@@ -99,34 +100,31 @@ export function CriadorDePoder() {
   const handleSalvar = async () => {
     // Validação usando Zod
     const resultado = validarParaSalvar(poder);
-    
     if (!resultado.isValid) {
-      // Mostra o primeiro erro encontrado
       const erro = getFirstError(resultado);
       if (erro) toast.error(erro);
       return;
     }
-    
+
     setSalvando(true);
-    const { poder: poderExistente, hydrationInfo } = buscarPoderComHydration(poder.id);
-    
-    // Exibir avisos de hydration se houver
-    if (hydrationInfo?.hasIssues) {
-      if (hydrationInfo.severity === 'warning') {
-        toast.warning('Poder atualizado automaticamente');
+    try {
+      const payload = poderToCreatePayload(poder);
+      // IDs da API são UUIDs; IDs locais são timestamps numéricos
+      const isApiId = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(poder.id);
+
+      if (isApiId) {
+        await atualizar(poder.id, payload);
+        toast.success(`Poder "${poder.nome}" atualizado com sucesso!`);
       } else {
-        toast.info('Poder validado');
+        const novo = await criar(payload);
+        // Atualiza o ID local com o UUID da API para que saves futuros sejam updates
+        atualizarIdPoder(novo.id);
+        toast.success(`Poder "${poder.nome}" salvo com sucesso!`);
       }
-    }
-    
-    salvarPoder(poder);
-    
-    setSalvando(false);
-    
-    if (poderExistente) {
-      toast.success(`Poder "${poder.nome}" atualizado com sucesso!`);
-    } else {
-      toast.success(`Poder "${poder.nome}" salvo com sucesso!`);
+    } catch {
+      toast.error('Erro ao salvar poder. Tente novamente.');
+    } finally {
+      setSalvando(false);
     }
   };
 
@@ -172,21 +170,6 @@ export function CriadorDePoder() {
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Dica de Auto-save */}
-      {poder.efeitos.length > 0 && (
-        <div className="flex items-center justify-between bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg px-4 py-2">
-          <div className="flex items-center gap-2">
-            <Save className="w-4 h-4 text-green-600 dark:text-green-400" />
-            <span className="text-sm text-green-700 dark:text-green-300">
-              Progresso salvo automaticamente
-            </span>
-          </div>
-          <Tooltip content="Seu trabalho é salvo automaticamente no navegador. Você pode fechar e voltar depois!">
-            <Info className="w-4 h-4 text-green-600 dark:text-green-400 cursor-help" />
-          </Tooltip>
-        </div>
-      )}
-
       {/* Dica de Boas-vindas */}
       {poder.efeitos.length === 0 && (
         <InlineHelp
@@ -354,9 +337,9 @@ export function CriadorDePoder() {
                         <p className="text-sm font-semibold text-purple-900 dark:text-purple-100 mb-1">
                           {peculiar.nome} {peculiar.espiritual && <span className="text-xs opacity-75">(Espiritual)</span>}
                         </p>
-                        {peculiar.descricaoCurta && (
+                        {peculiar.descricao && (
                           <p className="text-xs text-gray-600 dark:text-gray-400">
-                            {peculiar.descricaoCurta}
+                            {peculiar.descricao}
                           </p>
                         )}
                       </div>
@@ -571,7 +554,7 @@ export function CriadorDePoder() {
               {/* Botões - Grid em mobile, flex em desktop */}
               <div className="grid grid-cols-2 sm:flex gap-2">
                 <Tooltip content="Ver biblioteca de poderes salvos">
-                  <Link to="/criador/biblioteca" className="w-full sm:w-auto">
+                  <Link to="/biblioteca" className="w-full sm:w-auto">
                     <Button variant="outline" size="sm" aria-label="Ir para biblioteca" className="w-full flex items-center gap-2">
                       <Library className="w-4 h-4" /><span className="hidden sm:inline">Biblioteca</span>
                     </Button>
@@ -794,11 +777,11 @@ export function CriadorDePoder() {
       <FormPeculiaridadeCustomizada
         isOpen={modalFormPeculiaridade}
         onClose={() => setModalFormPeculiaridade(false)}
-        onSubmit={(peculiaridade) => {
-          addPeculiaridade(peculiaridade);
-          atualizarInfoPoder(undefined, undefined, undefined, undefined, peculiaridade.id);
+        onSubmit={async (data) => {
+          const novaP = await criarPeculiaridade(data);
+          atualizarInfoPoder(undefined, undefined, undefined, undefined, novaP.id);
           setModalFormPeculiaridade(false);
-          toast.success(`Peculiaridade "${peculiaridade.nome}" criada com sucesso!`);
+          toast.success(`Peculiaridade "${novaP.nome}" criada com sucesso!`);
         }}
       />
     </div>

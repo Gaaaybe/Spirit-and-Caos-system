@@ -20,6 +20,10 @@ export interface Acervo {
   poderes: Poder[]; // Array de poderes completos
   dataCriacao: string;
   dataModificacao: string;
+  // Domínio preservado da API (preenchido ao carregar acervo existente)
+  dominioId?: string;
+  dominioAreaConhecimento?: string;
+  dominioIdPeculiar?: string;
 }
 
 /**

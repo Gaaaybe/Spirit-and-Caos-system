@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { EFEITOS, MODIFICACOES } from '../../../data';
-import { useCustomItems } from '../../../shared/hooks';
+import { useCatalog } from '@/context/useCatalog';
 import { 
   Poder, 
   EfeitoAplicado, 
@@ -11,7 +10,7 @@ import {
 import { usePoderPersistence, PODER_PADRAO } from './usePoderPersistence';
 
 export function usePoderCalculator() {
-  const { customEfeitos, customModificacoes } = useCustomItems();
+  const { efeitos: efeitosBase, modificacoes: modificacoesBase } = useCatalog();
   const { 
     carregarEstadoInicial, 
     salvarAutomaticamente, 
@@ -19,15 +18,8 @@ export function usePoderCalculator() {
     foiCarregadoDeStorage 
   } = usePoderPersistence();
 
-  // Combina efeitos e modificações base com customizados
-  const todosEfeitos = useMemo(
-    () => [...EFEITOS, ...customEfeitos],
-    [customEfeitos]
-  );
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const todosEfeitos = efeitosBase;
+  const todasModificacoes = modificacoesBase;
 
   // Flag para evitar auto-update de parâmetros ao carregar poder existente
   const isCarregandoPoder = useRef(false);
@@ -272,6 +264,11 @@ export function usePoderCalculator() {
     setPoder(poderParaCarregar);
   };
 
+  // Atualiza o ID do poder (usado após criação na API para persistir o UUID)
+  const atualizarIdPoder = (newId: string) => {
+    setPoder((prev) => ({ ...prev, id: newId }));
+  };
+
   return {
     poder,
     detalhes,
@@ -290,5 +287,6 @@ export function usePoderCalculator() {
     atualizarCustoAlternativo,
     resetarPoder,
     carregarPoder,
+    atualizarIdPoder,
   };
 }

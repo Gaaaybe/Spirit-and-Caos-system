@@ -1,10 +1,10 @@
-import { useMemo } from 'react';
 import { Zap, Package, Globe, Sparkles, Copy, FileText, Clock, Ruler, Timer } from 'lucide-react';
 import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast } from '../../../shared/ui';
 import { MarkdownText } from '../../../shared/components';
 import { Poder, ModificacaoAplicada } from '../regras/calculadoraCusto';
-import { MODIFICACOES, ESCALAS, Modificacao, DOMINIOS } from '../../../data';
-import { useCustomItems } from '../../../shared/hooks';
+import { ESCALAS, type Modificacao, DOMINIOS } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
+import { usePeculiaridades } from '../../../shared/hooks/usePeculiaridades';
 import type { DetalhesPoder } from '../types';
 
 interface ResumoPoderProps {
@@ -21,11 +21,8 @@ function getNomeEscala(tipo: 'acao' | 'alcance' | 'duracao', valor: number): str
 }
 
 export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderProps) {
-  const { customModificacoes, getPeculiaridade } = useCustomItems();
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const { peculiaridades } = usePeculiaridades();
+  const { modificacoes: todasModificacoes } = useCatalog();
 
   const formatarModificacaoString = (mod: ModificacaoAplicada, modBase?: Modificacao) => {
     let modTexto = modBase?.nome || mod.modificacaoBaseId;
@@ -155,16 +152,13 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     if (dominio) {
       // Peculiar customizado
       if (poder.dominioId === 'peculiar' && poder.dominioIdPeculiar) {
-        const peculiaridade = getPeculiaridade(poder.dominioIdPeculiar);
+        const peculiaridade = peculiaridades.find(p => p.id === poder.dominioIdPeculiar);
         if (peculiaridade) {
           texto += `DOMÍNIO: Peculiar - ${peculiaridade.nome}`;
           texto += peculiaridade.espiritual ? ' (Espiritual)' : ' (Não Espiritual)';
           texto += `\n\n`;
-          texto += `FUNDAMENTO DA PECULIARIDADE:\n`;
-          texto += `O que é: ${peculiaridade.fundamento.oQueE}\n\n`;
-          texto += `Como funciona: ${peculiaridade.fundamento.comoFunciona}\n\n`;
-          texto += `Regras internas: ${peculiaridade.fundamento.regrasInternas}\n\n`;
-          texto += `Requerimentos: ${peculiaridade.fundamento.requerimentos}\n`;
+          texto += `PECULIARIDADE:\n`;
+          texto += `${peculiaridade.descricao}\n`;
         }
       } else {
         texto += `DOMÍNIO: ${dominio.nome}`;
@@ -358,7 +352,7 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
               
               // Peculiar customizado
               if (poder.dominioId === 'peculiar' && poder.dominioIdPeculiar) {
-                const peculiaridade = getPeculiaridade(poder.dominioIdPeculiar);
+                const peculiaridade = peculiaridades.find(p => p.id === poder.dominioIdPeculiar);
                 if (!peculiaridade) return null;
                 
                 return (
@@ -374,32 +368,15 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                       </span>
                     </p>
                     
-                    <div className="mt-3 space-y-2 text-xs">
-                      <div className="bg-white/10 rounded p-2">
-                        <p className="font-semibold text-purple-100 mb-1">O que é:</p>
-                        <div className="text-purple-200">
-                          <MarkdownText>{peculiaridade.fundamento.oQueE}</MarkdownText>
+                    {peculiaridade.descricao && (
+                      <div className="mt-3 text-xs">
+                        <div className="bg-white/10 rounded p-2">
+                          <div className="text-purple-200">
+                            <MarkdownText>{peculiaridade.descricao}</MarkdownText>
+                          </div>
                         </div>
                       </div>
-                      <div className="bg-white/10 rounded p-2">
-                        <p className="font-semibold text-purple-100 mb-1">Como funciona:</p>
-                        <div className="text-purple-200">
-                          <MarkdownText>{peculiaridade.fundamento.comoFunciona}</MarkdownText>
-                        </div>
-                      </div>
-                      <div className="bg-white/10 rounded p-2">
-                        <p className="font-semibold text-purple-100 mb-1">Regras internas:</p>
-                        <div className="text-purple-200">
-                          <MarkdownText>{peculiaridade.fundamento.regrasInternas}</MarkdownText>
-                        </div>
-                      </div>
-                      <div className="bg-white/10 rounded p-2">
-                        <p className="font-semibold text-purple-100 mb-1">Requerimentos:</p>
-                        <div className="text-purple-200">
-                          <MarkdownText>{peculiaridade.fundamento.requerimentos}</MarkdownText>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 );
               }

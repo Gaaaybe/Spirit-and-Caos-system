@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Modal, Badge, Card } from '../../../shared/ui';
-import { useCustomItems } from '../../../shared/hooks';
-import { EFEITOS, MODIFICACOES } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 import { calcularDetalhesPoder } from '../regras/calculadoraCusto';
 import { useAcervoCalculator } from '../hooks/useAcervoCalculator';
 import { ResumoPoder } from './ResumoPoder';
@@ -17,27 +16,17 @@ interface ResumoAcervoProps {
 }
 
 export function ResumoAcervo({ isOpen, onClose, acervo }: ResumoAcervoProps) {
-  const { customEfeitos, customModificacoes } = useCustomItems();
+  const { efeitos: efeitosBase, modificacoes: modificacoesBase } = useCatalog();
   const [poderSelecionado, setPoderSelecionado] = useState<{ poder: Poder; detalhes: DetalhesPoder } | null>(null);
-
-  // Combinar efeitos e modificações base + customizados
-  const todosEfeitos = useMemo(
-    () => [...EFEITOS, ...customEfeitos],
-    [customEfeitos]
-  );
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
 
   // Calcular detalhes de cada poder
   const poderesComDetalhes = useMemo(() => {
     if (!acervo) return [];
     return acervo.poderes.map(poder => {
-      const detalhes = calcularDetalhesPoder(poder, todosEfeitos, todasModificacoes);
+      const detalhes = calcularDetalhesPoder(poder, efeitosBase, modificacoesBase);
       return { poder, detalhes };
     });
-  }, [acervo, todosEfeitos, todasModificacoes]);
+  }, [acervo, efeitosBase, modificacoesBase]);
 
   // Calcular detalhes do acervo
   const detalhesAcervo = useAcervoCalculator(

@@ -1,10 +1,9 @@
 import { Modal, ModalFooter, Button, Badge, Input, Textarea, Select, Slider, InlineHelp, EmptyState } from '../../../shared/ui';
-import { MODIFICACOES } from '../../../data';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useFavoritos, useCustomItems } from '../../../shared/hooks';
-import { FormModificacaoCustomizada } from './FormModificacaoCustomizada';
+import { useFavoritos } from '../../../shared/hooks';
+import { useCatalog } from '@/context/useCatalog';
 import { useModificacaoFilter, OrdenacaoTipo } from '../hooks/useModificacaoFilter';
-import { Sparkles, AlertTriangle, Search, Star, BarChart2, RotateCcw, Settings, Edit3, FileText, DollarSign, Tag, ArrowLeft, Info, Plus } from 'lucide-react';
+import { Sparkles, AlertTriangle, Search, Star, BarChart2, RotateCcw, Settings, Edit3, FileText, DollarSign, Tag, ArrowLeft, Info } from 'lucide-react';
 
 interface SeletorModificacaoProps {
   isOpen: boolean;
@@ -13,20 +12,14 @@ interface SeletorModificacaoProps {
   titulo?: string;
 }
 
-export function SeletorModificacao({ 
-  isOpen, 
-  onClose, 
+export function SeletorModificacao({
+  isOpen,
+  onClose,
   onSelecionar,
-  titulo = "Selecionar Modificação" 
+  titulo = "Selecionar Modificação"
 }: SeletorModificacaoProps) {
   const { isFavoritoModificacao, toggleFavoritoModificacao } = useFavoritos();
-  const { customModificacoes, addCustomModificacao } = useCustomItems();
-  
-  // Combina modificações base com customizadas
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const { modificacoes: todasModificacoes } = useCatalog();
 
   const {
     busca, setBusca,
@@ -42,7 +35,6 @@ export function SeletorModificacao({
   const [modSelecionada, setModSelecionada] = useState<string | null>(null);
   const [parametros, setParametros] = useState<Record<string, string | number>>({});
   const [configuracaoSelecionada, setConfiguracaoSelecionada] = useState<string>('');
-  const [showFormCustom, setShowFormCustom] = useState(false);
   
   // Ref para armazenar posição do scroll da lista
   const scrollPositionRef = useRef<number>(0);
@@ -106,7 +98,7 @@ export function SeletorModificacao({
       onClose={onClose}
       title={modSelecionada 
         ? `Configurar: ${modBase?.nome}` 
-        : `${titulo} (${modificacoesFiltradas.length} de ${MODIFICACOES.length})`
+        : `${titulo} (${modificacoesFiltradas.length} de ${todasModificacoes.length})`
       }
       size="xl"
     >
@@ -560,23 +552,10 @@ export function SeletorModificacao({
       </div>
 
       <ModalFooter>
-        <Button variant="secondary" onClick={() => setShowFormCustom(true)} className="flex items-center gap-2">
-          <Plus className="w-4 h-4" /> Criar Modificação Customizada
-        </Button>
         <Button variant="ghost" onClick={onClose}>
           Fechar
         </Button>
       </ModalFooter>
-
-      {/* Modal de criação de modificação customizada */}
-      <FormModificacaoCustomizada
-        isOpen={showFormCustom}
-        onClose={() => setShowFormCustom(false)}
-        onSave={(modificacao) => {
-          addCustomModificacao(modificacao);
-          setShowFormCustom(false);
-        }}
-      />
     </Modal>
   );
 }

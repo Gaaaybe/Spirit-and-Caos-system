@@ -1,30 +1,32 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Modal, ModalFooter, Button, Input, Badge, Card, toast, InlineHelp, EmptyState } from '../../../shared/ui';
-import { useAcervos } from '../hooks/useAcervos';
+import { usePowerArrays } from '../hooks/usePowerArrays';
 import { useBibliotecaPoderes } from '../hooks/useBibliotecaPoderes';
 import { useAcervoCalculator } from '../hooks/useAcervoCalculator';
-import { useCustomItems } from '../../../shared/hooks';
-import { EFEITOS, MODIFICACOES } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 import { calcularDetalhesPoder } from '../regras/calculadoraCusto';
 import type { Acervo } from '../types/acervo.types';
 import type { Poder } from '../regras/calculadoraCusto';
+import type { DomainName } from '@/services/types';
 import { Package, Plus, X, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface CriadorAcervoProps {
   isOpen: boolean;
   onClose: () => void;
   acervoInicial?: Acervo;
+  onSalvo?: () => void;
 }
 
-export function CriadorAcervo({ isOpen, onClose, acervoInicial }: CriadorAcervoProps) {
-  const { salvarAcervo } = useAcervos();
+export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: CriadorAcervoProps) {
+  const { criar: criarAcervo, atualizar: atualizarAcervo } = usePowerArrays();
   const { poderes: bibliotecaPoderes } = useBibliotecaPoderes();
-  const { customEfeitos, customModificacoes } = useCustomItems();
+  const { efeitos: efeitosBase, modificacoes: modificacoesBase } = useCatalog();
   
   const [nome, setNome] = useState(acervoInicial?.nome || '');
   const [descritor, setDescritor] = useState(acervoInicial?.descritor || '');
   const [poderesSelecionados, setPoderesSelecionados] = useState<Poder[]>(acervoInicial?.poderes || []);
   const [buscaPoder, setBuscaPoder] = useState('');
+  const [salvando, setSalvando] = useState(false);
 
   // Sincronizar estado quando acervoInicial mudar ou modal abrir
   useEffect(() => {
@@ -44,15 +46,8 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial }: CriadorAcervoP
     }
   }, [acervoInicial, isOpen]);
 
-  // Combinar efeitos e modificações base + customizados
-  const todosEfeitos = useMemo(
-    () => [...EFEITOS, ...customEfeitos],
-    [customEfeitos]
-  );
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const todosEfeitos = efeitosBase;
+  const todasModificacoes = modificacoesBase;
 
   // Calcular detalhes de cada poder selecionado CORRETAMENTE
   const poderesComDetalhes = useMemo(() => {
@@ -60,7 +55,7 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial }: CriadorAcervoP
       const detalhes = calcularDetalhesPoder(poder, todosEfeitos, todasModificacoes);
       return { poder, detalhes };
     });
-  }, [poderesSelecionados, todosEfeitos, todasModificacoes]);
+  }, [poderesSelecionados, efeitosBase, modificacoesBase]);
 
   // Criar acervo temporário para cálculos
   const acervoTemp: Acervo = {
@@ -98,34 +93,57 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial }: CriadorAcervoP
     setPoderesSelecionados(prev => prev.filter(p => p.id !== powerId));
   };
 
-  const handleSalvar = () => {
+  const handleSalvar = async () => {
     if (!nome.trim()) {
       toast.error('Digite um nome para o acervo');
       return;
     }
-
     if (!descritor.trim()) {
       toast.error('Digite um descritor para o acervo');
       return;
     }
-
+    if (poderesSelecionados.length === 0) {
+      toast.error('Adicione ao menos um poder ao acervo');
+      return;
+    }
     if (!detalhesAcervo.valido) {
       toast.error('Corrija os erros antes de salvar');
       return;
     }
 
-    const acervo: Acervo = {
-      id: acervoInicial?.id || `acervo-${Date.now()}`,
+    // Deriva domínio: usa o preservado do acervo existente ou o do primeiro poder
+    const dominioId = (acervoInicial?.dominioId ||
+      poderesSelecionados[0]?.dominioId ||
+      'natural') as DomainName;
+
+    const payload = {
       nome: nome.trim(),
-      descritor: descritor.trim(),
-      poderes: poderesSelecionados,
-      dataCriacao: acervoInicial?.dataCriacao || new Date().toISOString(),
-      dataModificacao: new Date().toISOString(),
+      descricao: descritor.trim(),
+      dominio: {
+        name: dominioId,
+        areaConhecimento: acervoInicial?.dominioAreaConhecimento,
+        peculiarId: acervoInicial?.dominioIdPeculiar,
+      },
+      powerIds: poderesSelecionados.map((p) => p.id),
     };
 
-    salvarAcervo(acervo);
-    toast.success(`Acervo "${acervo.nome}" ${acervoInicial ? 'atualizado' : 'criado'}!`);
-    handleClose();
+    setSalvando(true);
+    try {
+      const isApiId = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(acervoInicial?.id ?? '');
+      if (acervoInicial?.id && isApiId) {
+        await atualizarAcervo(acervoInicial.id, payload);
+        toast.success(`Acervo "${nome}" atualizado!`);
+      } else {
+        await criarAcervo(payload);
+        toast.success(`Acervo "${nome}" criado!`);
+      }
+      handleClose();
+      onSalvo?.();
+    } catch {
+      toast.error('Erro ao salvar acervo. Tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
   };
 
   const handleClose = () => {
@@ -330,9 +348,9 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial }: CriadorAcervoP
         <Button
           variant="primary"
           onClick={handleSalvar}
-          disabled={!nome.trim() || !descritor.trim() || !detalhesAcervo.valido}
+          disabled={salvando || !nome.trim() || !descritor.trim() || !detalhesAcervo.valido}
         >
-          {acervoInicial ? 'Atualizar' : 'Criar'} Acervo
+          {salvando ? 'Salvando...' : (acervoInicial ? 'Atualizar' : 'Criar')} Acervo
         </Button>
       </ModalFooter>
     </Modal>

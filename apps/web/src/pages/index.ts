@@ -3,5 +3,7 @@ export { BibliotecaPage } from './BibliotecaPage';
 export { SobrePage } from './SobrePage';
 export { GerenciadorPage } from './GerenciadorPage';
 export { LandingPage } from './LandingPage';
+export { LoginPage } from './LoginPage';
 export { PersonagensPage } from './PersonagensPage';
 export { CampanhasPage } from './CampanhasPage';
+export { ComunidadePage } from './ComunidadePage';

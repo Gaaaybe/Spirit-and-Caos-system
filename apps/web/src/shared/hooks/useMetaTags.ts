@@ -33,6 +33,11 @@ const routeMetaTags: Record<string, MetaTagsConfig> = {
     description: 'Acesse, edite e gerencie todos os seus poderes salvos. Exporte, importe e organize sua coleção de poderes.',
     keywords: 'biblioteca, poderes salvos, gerenciar poderes, exportar, importar',
   },
+  '/biblioteca': {
+    title: 'Minha Biblioteca - Aetherium',
+    description: 'Acesse seus poderes, acervos e peculiaridades salvos. Gerencie e organize toda a sua coleção.',
+    keywords: 'biblioteca, poderes salvos, acervos, peculiaridades, minha coleção',
+  },
   '/gerenciador': {
     title: 'Gerenciador de Criaturas - Aetherium',
     description: 'Crie e gerencie NPCs, monstros e criaturas para suas sessões de Spirit and Caos.',

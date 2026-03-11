@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import type { Poder } from '../../criador-de-poder/types';
 import type { PersonagemPoder } from '../types';
 import { calcularDetalhesPoder } from '../../criador-de-poder/regras/calculadoraCusto';
-import { EFEITOS, MODIFICACOES } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 
 // ========================================
 // TIPOS
@@ -43,18 +43,19 @@ export function usePersonagemPoderes({
   poderes,
   onPoderChange,
 }: UsePersonagemPoderesProps): UsePersonagemPoderesReturn {
+  const { efeitos, modificacoes } = useCatalog();
   
   /**
    * Calcula custos do poder
    */
   const calcularCustos = useCallback((poder: Poder) => {
-    const detalhes = calcularDetalhesPoder(poder, EFEITOS, MODIFICACOES);
+    const detalhes = calcularDetalhesPoder(poder, efeitos, modificacoes);
     
     return {
       pdaCost: detalhes.custoPdATotal,
       espacosOccupied: detalhes.espacosTotal,
     };
-  }, []);
+  }, [efeitos, modificacoes]);
   
   /**
    * Vincula um poder ao personagem

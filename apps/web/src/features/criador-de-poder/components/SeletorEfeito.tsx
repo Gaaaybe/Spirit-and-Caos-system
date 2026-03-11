@@ -1,8 +1,7 @@
 import { Modal, ModalFooter, Button, Badge, Input, EmptyState } from '../../../shared/ui';
-import { EFEITOS } from '../../../data';
 import { useState, useMemo } from 'react';
-import { useFavoritos, useCustomItems } from '../../../shared/hooks';
-import { FormEfeitoCustomizado } from './FormEfeitoCustomizado';
+import { useFavoritos } from '../../../shared/hooks';
+import { useCatalog } from '@/context/useCatalog';
 import { Star, Settings, Edit3, Zap, Search, X, BarChart2, Tag, RotateCcw } from 'lucide-react';
 
 interface SeletorEfeitoProps {
@@ -16,20 +15,13 @@ type FiltroCustomTipo = 'todos' | 'com-config' | 'com-input' | 'sem-extras' | 'f
 
 export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoProps) {
   const { isFavoritoEfeito, toggleFavoritoEfeito } = useFavoritos();
-  const { customEfeitos, addCustomEfeito } = useCustomItems();
+  const { efeitos: todosEfeitos } = useCatalog();
   const [busca, setBusca] = useState('');
   const [categoriaFiltro, setCategoriaFiltro] = useState<string>('');
   const [ordenacao, setOrdenacao] = useState<OrdenacaoTipo>('relevancia');
   const [filtroCustom, setFiltroCustom] = useState<FiltroCustomTipo>('todos');
   const [custoMinimo, setCustoMinimo] = useState<number>(0);
   const [custoMaximo, setCustoMaximo] = useState<number>(20);
-  const [showFormCustom, setShowFormCustom] = useState(false);
-
-  // Combina efeitos base com customizados
-  const todosEfeitos = useMemo(
-    () => [...EFEITOS, ...customEfeitos],
-    [customEfeitos]
-  );
 
   const efeitosFiltrados = useMemo(() => {
     const resultado = todosEfeitos.filter(efeito => {
@@ -89,8 +81,8 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
 
   // Extrai todas as categorias únicas, ordenadas alfabeticamente
   const categorias = useMemo(() => 
-    Array.from(new Set(EFEITOS.flatMap(e => e.categorias))).sort(),
-    []
+    Array.from(new Set(todosEfeitos.flatMap(e => e.categorias))).sort(),
+    [todosEfeitos]
   );
 
   const limparFiltros = () => {
@@ -106,7 +98,7 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Selecionar Efeito (${efeitosFiltrados.length} de ${EFEITOS.length})`}
+      title={`Selecionar Efeito (${efeitosFiltrados.length} de ${todosEfeitos.length})`}
       size="xl"
     >
       <div className="space-y-4">
@@ -357,23 +349,10 @@ export function SeletorEfeito({ isOpen, onClose, onAdicionar }: SeletorEfeitoPro
       </div>
 
       <ModalFooter>
-        <Button variant="secondary" onClick={() => setShowFormCustom(true)}>
-          + Criar Efeito Customizado
-        </Button>
         <Button variant="ghost" onClick={onClose}>
           Fechar
         </Button>
       </ModalFooter>
-
-      {/* Modal de criação de efeito customizado */}
-      <FormEfeitoCustomizado
-        isOpen={showFormCustom}
-        onClose={() => setShowFormCustom(false)}
-        onSave={(efeito) => {
-          addCustomEfeito(efeito);
-          setShowFormCustom(false);
-        }}
-      />
     </Modal>
   );
 }

@@ -752,7 +752,7 @@
     "custoBase": 2,
     "descricao": "Fabricar é a maestria de projetar e construir itens. Processo dividido em: 1) Aprender Receita (gasta PdA uma vez, receita permanente), 2) Fabricar Item (gasta Tempo, Materiais/Dinheiro, Energia/PE). Fabricação Mundana (2 PdA/grau): Cria itens base sem efeitos especiais de uma categoria (armas brancas, comidas, roupas, joias). Criação de Itens Especiais (4 PdA/grau): Cria itens complexos com efeitos (receita de item único). Passos: escolher item base, adicionar efeitos (grau máximo = grau Fabricar, custo total limitado por Fabricar), criar receita. Nível do item = soma dos graus de todos efeitos. Requer descritores apropriados. Necessita teste de efeito.",
     "parametrosPadrao": {
-      "acao": 6,
+      "acao": 0,
       "alcance": 0,
       "duracao": 4
     },

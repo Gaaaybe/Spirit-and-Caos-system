@@ -11,7 +11,9 @@ const routeLabels: Record<string, string> = {
   '/campanhas': 'Campanhas',
   '/criador': 'Criador de Poderes',
   '/criador/biblioteca': 'Biblioteca',
+  '/biblioteca': 'Biblioteca',
   '/gerenciador': 'Criaturas',
+  '/comunidade': 'Comunidade',
   '/sobre': 'Sobre',
 };
 

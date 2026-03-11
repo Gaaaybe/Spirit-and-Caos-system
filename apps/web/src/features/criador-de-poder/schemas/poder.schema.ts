@@ -43,7 +43,7 @@ export const custoAlternativoSchema = z.object({
 /**
  * Schema de validação para Poder
  */
-export const poderSchema = z.object({
+export const poderBaseSchema = z.object({
   id: z.string().min(1, 'ID do poder é obrigatório'),
   nome: z
     .string()
@@ -65,30 +65,33 @@ export const poderSchema = z.object({
   alcance: z.number().int().min(0).max(6),
   duracao: z.number().int().min(0).max(4),
   custoAlternativo: custoAlternativoSchema,
-}).refine((data) => {
-  // Se domínio for científico, área de conhecimento é obrigatória
-  if (data.dominioId === 'cientifico' && !data.dominioAreaConhecimento) {
-    return false;
-  }
-  return true;
-}, {
-  message: 'Área de conhecimento é obrigatória para o domínio Científico',
-  path: ['dominioAreaConhecimento'],
-}).refine((data) => {
-  // Se domínio for peculiar, ID da peculiaridade é obrigatório
-  if (data.dominioId === 'peculiar' && !data.dominioIdPeculiar) {
-    return false;
-  }
-  return true;
-}, {
-  message: 'Selecione uma peculiaridade ou crie uma nova',
-  path: ['dominioIdPeculiar'],
 });
 
+export const poderSchema = poderBaseSchema
+  .refine((data) => {
+    if (data.dominioId === 'cientifico' && !data.dominioAreaConhecimento) {
+      return false;
+    }
+    return true;
+  }, {
+    message: 'Área de conhecimento é obrigatória para o domínio Científico',
+    path: ['dominioAreaConhecimento'],
+  })
+  .refine((data) => {
+    if (data.dominioId === 'peculiar' && !data.dominioIdPeculiar) {
+      return false;
+    }
+    return true;
+  }, {
+    message: 'Selecione uma peculiaridade ou crie uma nova',
+    path: ['dominioIdPeculiar'],
+  });
+
 /**
- * Schema parcial para validação durante edição (campos opcionais)
+ * Schema parcial para validação durante edição (campos opcionais).
+ * Usa poderBaseSchema porque .partial() não funciona em ZodEffects (.refine).
  */
-export const poderParcialSchema = poderSchema.partial({
+export const poderParcialSchema = poderBaseSchema.partial({
   efeitos: true,
   nome: true,
 });
@@ -104,5 +107,6 @@ export const poderParaSalvarSchema = poderSchema;
  */
 export type ModificacaoAplicadaValidada = z.infer<typeof modificacaoAplicadaSchema>;
 export type EfeitoAplicadoValidado = z.infer<typeof efeitoAplicadoSchema>;
+export type PoderBaseValidado = z.infer<typeof poderBaseSchema>;
 export type PoderValidado = z.infer<typeof poderSchema>;
 export type PoderParcialValidado = z.infer<typeof poderParcialSchema>;

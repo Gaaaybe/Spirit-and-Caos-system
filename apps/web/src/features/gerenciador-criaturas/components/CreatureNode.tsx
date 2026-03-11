@@ -6,7 +6,7 @@ import { FormAtaque } from './FormAtaque';
 import { FormHabilidade } from './FormHabilidade';
 import { ResumoPoder } from '../../criador-de-poder/components/ResumoPoder';
 import { calcularDetalhesPoder } from '../../criador-de-poder/regras/calculadoraCusto';
-import { EFEITOS, MODIFICACOES } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 import type { Creature, CreatureAttack, CreatureAbility } from '../types';
 import type { Poder } from '../../criador-de-poder/types';
 import { getRoleColor } from '../data/roleTemplates';
@@ -31,6 +31,7 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
   const roleColor = getRoleColor(creature.role);
   const { removeCreature, toggleStatus, updateResources, updateCreature } = useCreatureBoardContext();
   const { onEditCreature, onSaveCreature } = useUIActions();
+  const { efeitos, modificacoes } = useCatalog();
   const [hpInput, setHpInput] = useState('');
   const [peInput, setPeInput] = useState('');
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -51,8 +52,8 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
   // Calcular detalhes do poder visualizado (memoizado)
   const viewingAbilityDetails = useMemo(() => {
     if (!viewingAbility) return null;
-    return calcularDetalhesPoder(viewingAbility.poder as Poder, EFEITOS, MODIFICACOES);
-  }, [viewingAbility]);
+    return calcularDetalhesPoder(viewingAbility.poder as Poder, efeitos, modificacoes);
+  }, [viewingAbility, efeitos, modificacoes]);
 
   // Calcular porcentagem de HP e PE
   const hpPercent = (creature.stats.hp / creature.stats.maxHp) * 100;
@@ -927,7 +928,7 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
                 creature.creatureAbilities.map((ability, index) => {
                   const realPeCost = ability.effortCost * creature.stats.effortUnit;
                   // Calcular PdA do poder
-                  const poderDetails = calcularDetalhesPoder(ability.poder as Poder, EFEITOS, MODIFICACOES);
+                  const poderDetails = calcularDetalhesPoder(ability.poder as Poder, efeitos, modificacoes);
                   const pdaCost = poderDetails.custoPdATotal;
                   const isExpanded = expandedAbilityId === ability.id;
                   const hasDescription = !!(ability.poder as PoderTemp).descricao;

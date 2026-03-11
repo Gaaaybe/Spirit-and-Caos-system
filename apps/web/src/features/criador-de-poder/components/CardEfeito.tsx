@@ -1,11 +1,11 @@
 import { Card, CardHeader, CardTitle, CardContent, CardFooter, Badge, Button, Slider, Select, Input } from '../../../shared/ui';
-import { MODIFICACOES, buscarGrauNaTabela, TABELA_UNIVERSAL } from '../../../data';
+import { buscarGrauNaTabela, TABELA_UNIVERSAL } from '../../../data';
+import { useCatalog } from '@/context/useCatalog';
 import { useState, useMemo } from 'react';
 import { 
   ChevronRight, ChevronDown, ChevronUp, Settings, Sparkles, AlertTriangle, Trash2, 
   Swords, Ruler, Zap, Package, Weight, Clock, Rocket, Move, AlertCircle, X 
 } from 'lucide-react';
-import { useCustomItems } from '../../../shared/hooks';
 import { SeletorModificacao } from './SeletorModificacao';
 import { formatarCustoModificacao } from '../utils/modificacaoFormatter';
 import type { EfeitoDetalhado } from '../types';
@@ -29,11 +29,7 @@ export function CardEfeito({
   onAtualizarInputCustomizado,
   onAtualizarConfiguracao,
 }: CardEfeitoProps) {
-  const { customModificacoes } = useCustomItems();
-  const todasModificacoes = useMemo(
-    () => [...MODIFICACOES, ...customModificacoes],
-    [customModificacoes]
-  );
+  const { modificacoes: todasModificacoes } = useCatalog();
   
   const { efeito, efeitoBase, custoPorGrau, custoFixo, custoTotal } = efeitoDetalhado;
   const [modalModificacao, setModalModificacao] = useState(false);
