@@ -1,30 +1,89 @@
+import { Injectable } from '@nestjs/common';
 import type { PaginationParams } from '@/core/repositories/paginationParams';
 import { PowerArraysRepository } from '@/domain/power-manager/application/repositories/power-arrays-repository';
 import type { PowerArray } from '@/domain/power-manager/enterprise/entities/power-array';
+import * as PrismaPowerArrayMapper from '../mappers/prisma-power-array-mapper';
+import { PrismaService } from '../prisma.service';
 
+const INCLUDE = {
+  powerArrayPowers: {
+    include: {
+      power: { include: { appliedEffects: { include: { appliedModifications: true } } } },
+    },
+    orderBy: { posicao: 'asc' as const },
+  },
+} as const;
+
+@Injectable()
 export class PrismaPowerArraysRepository extends PowerArraysRepository {
-  findById(_id: string): Promise<PowerArray | null> {
-    throw new Error('Method not implemented.');
+  constructor(private prisma: PrismaService) {
+    super();
   }
-  findMany(_params: PaginationParams): Promise<PowerArray[]> {
-    throw new Error('Method not implemented.');
+
+  async findById(id: string): Promise<PowerArray | null> {
+    const raw = await this.prisma.powerArray.findUnique({ where: { id }, include: INCLUDE });
+    return raw ? PrismaPowerArrayMapper.toDomain(raw) : null;
   }
-  findByUserId(_userId: string, _params: PaginationParams): Promise<PowerArray[]> {
-    throw new Error('Method not implemented.');
+
+  async findMany({ page }: PaginationParams): Promise<PowerArray[]> {
+    const raws = await this.prisma.powerArray.findMany({
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerArrayMapper.toDomain);
   }
-  findByDomain(_domainName: string, _params: PaginationParams): Promise<PowerArray[]> {
-    throw new Error('Method not implemented.');
+
+  async findByUserId(userId: string, { page }: PaginationParams): Promise<PowerArray[]> {
+    const raws = await this.prisma.powerArray.findMany({
+      where: { userId },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerArrayMapper.toDomain);
   }
-  findPublic(_params: PaginationParams): Promise<PowerArray[]> {
-    throw new Error('Method not implemented.');
+
+  async findByDomain(domainName: string, { page }: PaginationParams): Promise<PowerArray[]> {
+    const raws = await this.prisma.powerArray.findMany({
+      where: { domainName: domainName as never },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerArrayMapper.toDomain);
   }
-  create(_powerArray: PowerArray): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async findPublic({ page }: PaginationParams): Promise<PowerArray[]> {
+    const raws = await this.prisma.powerArray.findMany({
+      where: { isPublic: true },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerArrayMapper.toDomain);
   }
-  update(_powerArray: PowerArray): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async create(powerArray: PowerArray): Promise<void> {
+    await this.prisma.powerArray.create({ data: PrismaPowerArrayMapper.toPrisma(powerArray) });
   }
-  delete(_id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async update(powerArray: PowerArray): Promise<void> {
+    const { id, powerArrayPowers, ...fields } = PrismaPowerArrayMapper.toPrisma(powerArray);
+    await this.prisma.$transaction([
+      this.prisma.powerArrayPower.deleteMany({ where: { powerArrayId: id as string } }),
+      this.prisma.powerArray.update({
+        where: { id: id as string },
+        data: { ...fields, powerArrayPowers },
+      }),
+    ]);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.powerArray.delete({ where: { id } });
   }
 }

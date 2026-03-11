@@ -1,26 +1,53 @@
+import { Injectable } from '@nestjs/common';
 import { EffectsRepository } from '@/domain/power-manager/application/repositories/effects-repository';
 import type { EffectBase } from '@/domain/power-manager/enterprise/entities/effect-base';
+import * as EffectBaseMapper from '../mappers/prisma-effect-base-mapper';
+import { PrismaService } from '../prisma.service';
 
+@Injectable()
 export class PrismaEffectsRepository extends EffectsRepository {
-  findById(_id: string): Promise<EffectBase | null> {
-    throw new Error('Method not implemented.');
+  constructor(private prisma: PrismaService) {
+    super();
   }
-  findAll(): Promise<EffectBase[]> {
-    throw new Error('Method not implemented.');
+
+  async findById(id: string): Promise<EffectBase | null> {
+    const raw = await this.prisma.effectBase.findUnique({ where: { id } });
+    return raw ? EffectBaseMapper.toDomain(raw) : null;
   }
-  findByCategory(_category: string): Promise<EffectBase[]> {
-    throw new Error('Method not implemented.');
+
+  async findAll(): Promise<EffectBase[]> {
+    const raws = await this.prisma.effectBase.findMany({ orderBy: { nome: 'asc' } });
+    return raws.map(EffectBaseMapper.toDomain);
   }
-  findCustomEffects(): Promise<EffectBase[]> {
-    throw new Error('Method not implemented.');
+
+  async findByCategory(category: string): Promise<EffectBase[]> {
+    const raws = await this.prisma.effectBase.findMany({
+      where: { categorias: { has: category } },
+      orderBy: { nome: 'asc' },
+    });
+    return raws.map(EffectBaseMapper.toDomain);
   }
-  create(_effect: EffectBase): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async findCustomEffects(): Promise<EffectBase[]> {
+    const raws = await this.prisma.effectBase.findMany({
+      where: { custom: true },
+      orderBy: { nome: 'asc' },
+    });
+    return raws.map(EffectBaseMapper.toDomain);
   }
-  update(_effect: EffectBase): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async create(effect: EffectBase): Promise<void> {
+    await this.prisma.effectBase.create({ data: EffectBaseMapper.toPrisma(effect) });
   }
-  delete(_id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async update(effect: EffectBase): Promise<void> {
+    await this.prisma.effectBase.update({
+      where: { id: effect.effectId },
+      data: EffectBaseMapper.toPrisma(effect),
+    });
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.effectBase.delete({ where: { id } });
   }
 }

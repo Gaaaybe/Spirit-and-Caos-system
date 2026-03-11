@@ -1,33 +1,95 @@
+import { Injectable } from '@nestjs/common';
 import type { PaginationParams } from '@/core/repositories/paginationParams';
 import { PowersRepository } from '@/domain/power-manager/application/repositories/powers-repository';
 import type { Power } from '@/domain/power-manager/enterprise/entities/power';
+import * as PrismaPowerMapper from '../mappers/prisma-power-mapper';
+import { PrismaService } from '../prisma.service';
 
+const INCLUDE = {
+  appliedEffects: { include: { appliedModifications: true } },
+} as const;
+
+@Injectable()
 export class PrismaPowersRepository extends PowersRepository {
-  findById(_id: string): Promise<Power | null> {
-    throw new Error('Method not implemented.');
+  constructor(private prisma: PrismaService) {
+    super();
   }
-  findMany(_params: PaginationParams): Promise<Power[]> {
-    throw new Error('Method not implemented.');
+
+  async findById(id: string): Promise<Power | null> {
+    const raw = await this.prisma.power.findUnique({ where: { id }, include: INCLUDE });
+    return raw ? PrismaPowerMapper.toDomain(raw) : null;
   }
-  findByUserId(_userId: string, _params: PaginationParams): Promise<Power[]> {
-    throw new Error('Method not implemented.');
+
+  async findMany({ page }: PaginationParams): Promise<Power[]> {
+    const raws = await this.prisma.power.findMany({
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerMapper.toDomain);
   }
-  findByDomain(_domainName: string, _params: PaginationParams): Promise<Power[]> {
-    throw new Error('Method not implemented.');
+
+  async findByUserId(userId: string, { page }: PaginationParams): Promise<Power[]> {
+    const raws = await this.prisma.power.findMany({
+      where: { userId },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerMapper.toDomain);
   }
-  findUserCreatedPowers(_params: PaginationParams): Promise<Power[]> {
-    throw new Error('Method not implemented.');
+
+  async findByDomain(domainName: string, { page }: PaginationParams): Promise<Power[]> {
+    const raws = await this.prisma.power.findMany({
+      where: { domainName: domainName as never },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerMapper.toDomain);
   }
-  findPublic(_params: PaginationParams): Promise<Power[]> {
-    throw new Error('Method not implemented.');
+
+  async findUserCreatedPowers({ page }: PaginationParams): Promise<Power[]> {
+    const raws = await this.prisma.power.findMany({
+      where: { userId: { not: null } },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerMapper.toDomain);
   }
-  create(_power: Power): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async findPublic({ page }: PaginationParams): Promise<Power[]> {
+    const raws = await this.prisma.power.findMany({
+      where: { isPublic: true },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+      skip: (page - 1) * 20,
+    });
+    return raws.map(PrismaPowerMapper.toDomain);
   }
-  update(_power: Power): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async create(power: Power): Promise<void> {
+    await this.prisma.power.create({ data: PrismaPowerMapper.toPrisma(power) });
   }
-  delete(_id: string): Promise<void> {
-    throw new Error('Method not implemented.');
+
+  async update(power: Power): Promise<void> {
+    const { id, appliedEffects, ...fields } = PrismaPowerMapper.toPrisma(power);
+    await this.prisma.$transaction([
+      this.prisma.appliedEffect.deleteMany({ where: { powerId: id as string } }),
+      this.prisma.power.update({
+        where: { id: id as string },
+        data: { ...fields, appliedEffects },
+      }),
+    ]);
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.prisma.power.delete({ where: { id } });
   }
 }
