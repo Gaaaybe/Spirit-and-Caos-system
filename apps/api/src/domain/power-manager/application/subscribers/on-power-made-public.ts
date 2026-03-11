@@ -1,10 +1,15 @@
+import { Injectable } from '@nestjs/common';
+import type { OnModuleInit } from '@nestjs/common';
 import type { DomainEvent } from '@/core/events/domain-event';
 import { DomainEvents } from '@/core/events/domain-events';
 import { PowerMadePublicEvent } from '../../enterprise/events/power-made-public-event';
 import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
 
-export class OnPowerMadePublic {
-  constructor(private peculiaritiesRepository: PeculiaritiesRepository) {
+@Injectable()
+export class OnPowerMadePublic implements OnModuleInit {
+  constructor(private peculiaritiesRepository: PeculiaritiesRepository) {}
+
+  onModuleInit(): void {
     this.setupSubscriptions();
   }
 

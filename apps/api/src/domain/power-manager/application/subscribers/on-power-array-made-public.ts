@@ -1,10 +1,15 @@
+import { Injectable } from '@nestjs/common';
+import type { OnModuleInit } from '@nestjs/common';
 import type { DomainEvent } from '@/core/events/domain-event';
 import { DomainEvents } from '@/core/events/domain-events';
 import { PowerArrayMadePublicEvent } from '../../enterprise/events/power-array-made-public-event';
 import type { PowersRepository } from '../repositories/powers-repository';
 
-export class OnPowerArrayMadePublic {
-  constructor(private powersRepository: PowersRepository) {
+@Injectable()
+export class OnPowerArrayMadePublic implements OnModuleInit {
+  constructor(private powersRepository: PowersRepository) {}
+
+  onModuleInit(): void {
     this.setupSubscriptions();
   }
 
