@@ -1,25 +1,24 @@
-import { AppModule } from '@/infrastructure/app.module'
-import { PrismaService } from '@/infrastructure/database/prisma/prisma.service'
-import { INestApplication } from '@nestjs/common'
-import { Test } from '@nestjs/testing'
-import request from 'supertest'
-
+import { INestApplication } from '@nestjs/common';
+import { Test } from '@nestjs/testing';
+import request from 'supertest';
+import { AppModule } from '@/infrastructure/app.module';
+import { PrismaService } from '@/infrastructure/database/prisma/prisma.service';
 
 describe('Register user controller (E2E)', () => {
-  let app: INestApplication
-  let prisma: PrismaService
+  let app: INestApplication;
+  let _prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [AppModule],
-    }).compile()
+    }).compile();
 
-    app = moduleRef.createNestApplication()
+    app = moduleRef.createNestApplication();
 
-    prisma = moduleRef.get(PrismaService)
+    _prisma = moduleRef.get(PrismaService);
 
-    await app.init()
-  })
+    await app.init();
+  });
 
   test('[POST] /users — should create a user and return 201', async () => {
     const response = await request(app.getHttpServer()).post('/users').send({
