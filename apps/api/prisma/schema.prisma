@@ -30,6 +30,7 @@ model User {
   peculiarities Peculiarity[]
   powers        Power[]
   powerArrays   PowerArray[]
+  items         Item[]
 
   @@map("users")
 }
@@ -216,6 +217,128 @@ model PowerArrayPower {
   @@index([powerArrayId])
   @@index([powerId])
   @@map("power_array_powers")
+}
+
+// ============================================
+// BOUNDED CONTEXT: ITEM-MANAGER
+// ============================================
+
+enum ItemType {
+  WEAPON
+  DEFENSIVE_EQUIPMENT
+  CONSUMABLE
+  ARTIFACT
+  ACCESSORY
+}
+
+enum WeaponRange {
+  CORPO_A_CORPO
+  CURTO
+  MEDIO
+  LONGO
+}
+
+enum EquipmentType {
+  TRAJE
+  PROTECAO
+}
+
+enum DurabilityStatus {
+  INTACTO
+  DANIFICADO
+}
+
+enum SpoilageState {
+  PERFEITA
+  BOA
+  NORMAL
+  RUIM
+  TERRIVEL
+}
+
+model Item {
+  id          String          @id @default(uuid())
+  userId      String?         // NULL = item oficial/sistema
+  tipo        ItemType
+  nome        String
+  descricao   String
+  isPublic    Boolean         @default(false)
+  notas       String?
+  durabilidade DurabilityStatus @default(INTACTO)
+
+  domainName             DomainName
+  domainAreaConhecimento String?
+  domainPeculiarId       String?
+
+  custoBase  Int
+  nivelItem  Int @default(1)
+  maxStack   Int @default(1)
+
+  // --- WEAPON ---
+  critMargin             Int?
+  critMultiplier         Int?
+  alcance                WeaponRange?
+  atributoEscalonamento  String?
+  upgradeLevelValue      Int?
+  upgradeLevelMax        Int?
+
+  // --- DEFENSIVE EQUIPMENT ---
+  tipoEquipamento        EquipmentType?
+
+  // --- CONSUMABLE ---
+  descritorEfeito String?
+  qtdDoses        Int?
+  isRefeicao      Boolean?
+  spoilageState   SpoilageState?
+
+  // --- ARTIFACT ---
+  isAttuned Boolean?
+
+  // --- ACCESSORY ---
+  efeitoPassivo String?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+
+  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemDamages   ItemDamage[]
+  itemPowers    ItemPower[]
+
+  @@index([userId])
+  @@index([tipo])
+  @@index([isPublic])
+  @@index([userId, isPublic])
+  @@index([domainName])
+  @@map("items")
+}
+
+/// Tabela de danos de uma arma (tipo multivalorado, ordenado por posição)
+model ItemDamage {
+  id        String  @id @default(uuid())
+  itemId    String
+  dado      String
+  base      String
+  espiritual Boolean @default(false)
+  posicao   Int     @default(0)
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId])
+  @@map("item_damages")
+}
+
+/// Junction table: poderes associados a um item (IDs apenas)
+model ItemPower {
+  id      String @id @default(uuid())
+  itemId  String
+  powerId String
+  posicao Int    @default(0)
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, powerId])
+  @@index([itemId])
+  @@map("item_powers")
 }
 
 model EffectBase {
