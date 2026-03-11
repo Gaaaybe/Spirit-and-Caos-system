@@ -120,9 +120,7 @@ describe('FetchModificationsController (e2e)', () => {
   });
 
   test('[GET] /modifications?category=Inexistente — should return empty array', async () => {
-    const response = await request(app.getHttpServer()).get(
-      '/modifications?category=Inexistente',
-    );
+    const response = await request(app.getHttpServer()).get('/modifications?category=Inexistente');
 
     expect(response.statusCode).toBe(200);
     expect(response.body).toHaveLength(0);

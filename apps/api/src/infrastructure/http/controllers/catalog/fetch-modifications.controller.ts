@@ -9,10 +9,7 @@ export class FetchModificationsController {
 
   @Public()
   @Get()
-  async handle(
-    @Query('type') type?: 'extra' | 'falha',
-    @Query('category') category?: string,
-  ) {
+  async handle(@Query('type') type?: 'extra' | 'falha', @Query('category') category?: string) {
     const result = await this.fetchModifications.execute({ type, category });
 
     return result.value!.modifications.map(ModificationBasePresenter.toHTTP);

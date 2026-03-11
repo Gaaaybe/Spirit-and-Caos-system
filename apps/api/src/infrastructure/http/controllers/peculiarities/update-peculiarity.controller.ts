@@ -9,9 +9,9 @@ import {
 import { z } from 'zod';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { UpdatePeculiarityUseCase } from '@/domain/power-manager/application/use-cases/update-peculiarity';
 import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
-import { UpdatePeculiarityUseCase } from '@/domain/power-manager/application/use-cases/update-peculiarity';
 import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
 import { PeculiarityPresenter } from '../../presenters/peculiarity.presenter';
 

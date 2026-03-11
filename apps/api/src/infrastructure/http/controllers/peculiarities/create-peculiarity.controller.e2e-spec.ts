@@ -55,13 +55,11 @@ describe('CreatePeculiarityController (e2e)', () => {
   });
 
   test('[POST] /peculiarities — should return 401 without token', async () => {
-    const response = await request(app.getHttpServer())
-      .post('/peculiarities')
-      .send({
-        nome: 'Telepatia',
-        descricao: 'Capacidade de ler mentes e se comunicar mentalmente.',
-        espiritual: true,
-      });
+    const response = await request(app.getHttpServer()).post('/peculiarities').send({
+      nome: 'Telepatia',
+      descricao: 'Capacidade de ler mentes e se comunicar mentalmente.',
+      espiritual: true,
+    });
 
     expect(response.statusCode).toBe(401);
   });
