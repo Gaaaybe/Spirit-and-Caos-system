@@ -119,12 +119,20 @@ export function toPrisma(power: Power): Prisma.PowerUncheckedCreateInput {
   const globalModItems = power.globalModifications.getItems();
   const alt = power.custoAlternativo;
 
-  const appliedEffects: Omit<Prisma.AppliedEffectUncheckedCreateInput, 'powerId'>[] = effectItems.map(
-    (effect, i) => {
-      const { powerId: _powerId, ...base } = AppliedEffectMapper.toPrisma(effect, id, i);
+  const appliedEffects: Omit<Prisma.AppliedEffectUncheckedCreateInput, 'powerId'>[] =
+    effectItems.map((effect, i) => {
+      const {
+        powerId: _powerId,
+        id: _effectId,
+        ...base
+      } = AppliedEffectMapper.toPrisma(effect, id, i);
 
       const localMods = effect.modifications.map((mod, j) => {
-        const { appliedEffectId: _aeid, ...modBase } = AppliedModificationMapper.toPrisma(mod, effect.id.toString(), j);
+        const { appliedEffectId: _aeid, ...modBase } = AppliedModificationMapper.toPrisma(
+          mod,
+          effect.id.toString(),
+          j,
+        );
         return modBase;
       });
 
@@ -144,8 +152,7 @@ export function toPrisma(power: Power): Prisma.PowerUncheckedCreateInput {
         ...base,
         appliedModifications: { create: [...localMods, ...globalMods] },
       };
-    },
-  );
+    });
 
   return {
     id,
