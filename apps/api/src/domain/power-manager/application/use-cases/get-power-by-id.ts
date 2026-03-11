@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import type { Power } from '../../enterprise/entities/power';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 
 interface GetPowerByIdUseCaseRequest {
   powerId: string;
@@ -13,6 +14,7 @@ interface GetPowerByIdUseCaseResponseData {
 
 type GetPowerByIdUseCaseResponse = Either<ResourceNotFoundError, GetPowerByIdUseCaseResponseData>;
 
+@Injectable()
 export class GetPowerByIdUseCase {
   constructor(private powersRepository: PowersRepository) {}
 

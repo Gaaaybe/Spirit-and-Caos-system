@@ -1,7 +1,8 @@
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import type { PowerArray } from '../../enterprise/entities/power-array';
-import type { PowerArraysRepository } from '../repositories/power-arrays-repository';
+import { PowerArraysRepository } from '../repositories/power-arrays-repository';
 
 interface GetPowerArrayByIdUseCaseRequest {
   powerArrayId: string;
@@ -16,6 +17,7 @@ type GetPowerArrayByIdUseCaseResponse = Either<
   GetPowerArrayByIdUseCaseResponseData
 >;
 
+@Injectable()
 export class GetPowerArrayByIdUseCase {
   constructor(private powerArraysRepository: PowerArraysRepository) {}
 
