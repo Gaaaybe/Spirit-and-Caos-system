@@ -1,6 +1,13 @@
 import { Module } from '@nestjs/common';
 import { AuthenticateUserUseCase } from '@/domain/accounts/application/useCases/authenticate-user';
 import { RegisterUserUseCase } from '@/domain/accounts/application/useCases/register-user';
+import { CopyPublicItemUseCase } from '@/domain/item-manager/application/use-cases/copy-public-item';
+import { CreateItemUseCase } from '@/domain/item-manager/application/use-cases/create-item';
+import { DeleteItemUseCase } from '@/domain/item-manager/application/use-cases/delete-item';
+import { FetchPublicItemsUseCase } from '@/domain/item-manager/application/use-cases/fetch-public-items';
+import { FetchUserItemsUseCase } from '@/domain/item-manager/application/use-cases/fetch-user-items';
+import { GetItemByIdUseCase } from '@/domain/item-manager/application/use-cases/get-item-by-id';
+import { UpdateItemUseCase } from '@/domain/item-manager/application/use-cases/update-item';
 import { CopyPublicPeculiarityUseCase } from '@/domain/power-manager/application/use-cases/copy-public-peculiarity';
 import { CopyPublicPowerUseCase } from '@/domain/power-manager/application/use-cases/copy-public-power';
 import { CopyPublicPowerArrayUseCase } from '@/domain/power-manager/application/use-cases/copy-public-power-array';
@@ -24,6 +31,8 @@ import { GetPowerByIdUseCase } from '@/domain/power-manager/application/use-case
 import { UpdatePeculiarityUseCase } from '@/domain/power-manager/application/use-cases/update-peculiarity';
 import { UpdatePowerUseCase } from '@/domain/power-manager/application/use-cases/update-power';
 import { UpdatePowerArrayUseCase } from '@/domain/power-manager/application/use-cases/update-power-array';
+import { OnPowerArrayMadePublic } from '@/domain/power-manager/application/subscribers/on-power-array-made-public';
+import { OnPowerMadePublic } from '@/domain/power-manager/application/subscribers/on-power-made-public';
 import { PowerCostCalculator } from '@/domain/power-manager/enterprise/services/power-cost-calculator';
 import { CryptographyModule } from '../cryptography/cryptography.module';
 import { DatabaseModule } from '../database/database.module';
@@ -54,6 +63,13 @@ import { FetchUserPowersController } from './controllers/powers/fetch-user-power
 import { GetPowerByIdController } from './controllers/powers/get-power-by-id.controller';
 import { UpdatePowerController } from './controllers/powers/update-power.controller';
 import { RegisterUserController } from './controllers/register-user.controller';
+import { CopyPublicItemController } from './controllers/items/copy-public-item.controller';
+import { CreateItemController } from './controllers/items/create-item.controller';
+import { DeleteItemController } from './controllers/items/delete-item.controller';
+import { FetchPublicItemsController } from './controllers/items/fetch-public-items.controller';
+import { FetchUserItemsController } from './controllers/items/fetch-user-items.controller';
+import { GetItemByIdController } from './controllers/items/get-item-by-id.controller';
+import { UpdateItemController } from './controllers/items/update-item.controller';
 
 @Module({
   imports: [DatabaseModule, CryptographyModule],
@@ -84,6 +100,13 @@ import { RegisterUserController } from './controllers/register-user.controller';
     FetchUserPowerArraysController,
     FetchPublicPowerArraysController,
     GetPowerArrayByIdController,
+    CreateItemController,
+    UpdateItemController,
+    DeleteItemController,
+    GetItemByIdController,
+    FetchPublicItemsController,
+    FetchUserItemsController,
+    CopyPublicItemController,
   ],
   providers: [
     RegisterUserUseCase,
@@ -106,6 +129,8 @@ import { RegisterUserController } from './controllers/register-user.controller';
     FetchUserPowersUseCase,
     CopyPublicPowerUseCase,
     PowerCostCalculator,
+    OnPowerMadePublic,
+    OnPowerArrayMadePublic,
     CreatePowerArrayUseCase,
     CopyPublicPowerArrayUseCase,
     UpdatePowerArrayUseCase,
@@ -113,6 +138,13 @@ import { RegisterUserController } from './controllers/register-user.controller';
     GetPowerArrayByIdUseCase,
     FetchPowerArraysUseCase,
     FetchUserPowerArraysUseCase,
+    CreateItemUseCase,
+    UpdateItemUseCase,
+    DeleteItemUseCase,
+    GetItemByIdUseCase,
+    FetchPublicItemsUseCase,
+    FetchUserItemsUseCase,
+    CopyPublicItemUseCase,
   ],
 })
 export class HttpModule {}
