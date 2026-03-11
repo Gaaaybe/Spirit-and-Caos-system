@@ -30,8 +30,8 @@ describe('CreatePowerArrayUseCase', () => {
 
     DomainEvents.clearHandlers();
     DomainEvents.clearMarkedAggregates();
-    new OnPowerArrayMadePublic(powersRepository);
-    new OnPowerMadePublic(peculiaritiesRepository);
+    new OnPowerArrayMadePublic(powersRepository).onModuleInit();
+    new OnPowerMadePublic(peculiaritiesRepository).onModuleInit();
 
     sut = new CreatePowerArrayUseCase(powerArraysRepository, powersRepository);
   });

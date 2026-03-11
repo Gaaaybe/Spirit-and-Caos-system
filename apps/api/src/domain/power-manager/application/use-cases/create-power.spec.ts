@@ -36,7 +36,7 @@ describe('CreatePowerUseCase', () => {
 
     DomainEvents.clearHandlers();
     DomainEvents.clearMarkedAggregates();
-    new OnPowerMadePublic(peculiaritiesRepository);
+    new OnPowerMadePublic(peculiaritiesRepository).onModuleInit();
 
     sut = new CreatePowerUseCase(powersRepository, powerCostCalculator, peculiaritiesRepository);
   });
