@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { AuthenticateUserUseCase } from '@/domain/accounts/application/useCases/authenticate-user';
 import { RegisterUserUseCase } from '@/domain/accounts/application/useCases/register-user';
+import { CopyPublicPeculiarityUseCase } from '@/domain/power-manager/application/use-cases/copy-public-peculiarity';
 import { CopyPublicPowerUseCase } from '@/domain/power-manager/application/use-cases/copy-public-power';
+import { CopyPublicPowerArrayUseCase } from '@/domain/power-manager/application/use-cases/copy-public-power-array';
+import { FetchPublicPeculiaritiesUseCase } from '@/domain/power-manager/application/use-cases/fetch-public-peculiarities';
 import { CreatePeculiarityUseCase } from '@/domain/power-manager/application/use-cases/create-peculiarity';
 import { CreatePowerUseCase } from '@/domain/power-manager/application/use-cases/create-power';
 import { CreatePowerArrayUseCase } from '@/domain/power-manager/application/use-cases/create-power-array';
@@ -29,11 +32,14 @@ import { AuthenticateController } from './controllers/authenticate-user.controll
 import { CatalogController } from './controllers/catalog/catalog.controller';
 import { FetchEffectsController } from './controllers/catalog/fetch-effects.controller';
 import { FetchModificationsController } from './controllers/catalog/fetch-modifications.controller';
+import { CopyPublicPeculiarityController } from './controllers/peculiarities/copy-public-peculiarity.controller';
 import { CreatePeculiarityController } from './controllers/peculiarities/create-peculiarity.controller';
 import { DeletePeculiarityController } from './controllers/peculiarities/delete-peculiarity.controller';
+import { FetchPublicPeculiaritiesController } from './controllers/peculiarities/fetch-public-peculiarities.controller';
 import { FetchUserPeculiaritiesController } from './controllers/peculiarities/fetch-user-peculiarities.controller';
 import { GetPeculiarityByIdController } from './controllers/peculiarities/get-peculiarity-by-id.controller';
 import { UpdatePeculiarityController } from './controllers/peculiarities/update-peculiarity.controller';
+import { CopyPublicPowerArrayController } from './controllers/power-arrays/copy-public-power-array.controller';
 import { CreatePowerArrayController } from './controllers/power-arrays/create-power-array.controller';
 import { DeletePowerArrayController } from './controllers/power-arrays/delete-power-array.controller';
 import { FetchPublicPowerArraysController } from './controllers/power-arrays/fetch-public-power-arrays.controller';
@@ -58,10 +64,12 @@ import { RegisterUserController } from './controllers/register-user.controller';
     FetchEffectsController,
     FetchModificationsController,
     CreatePeculiarityController,
+    FetchPublicPeculiaritiesController,
     FetchUserPeculiaritiesController,
     GetPeculiarityByIdController,
     UpdatePeculiarityController,
     DeletePeculiarityController,
+    CopyPublicPeculiarityController,
     CreatePowerController,
     UpdatePowerController,
     FetchUserPowersController,
@@ -70,6 +78,7 @@ import { RegisterUserController } from './controllers/register-user.controller';
     DeletePowerController,
     CopyPublicPowerController,
     CreatePowerArrayController,
+    CopyPublicPowerArrayController,
     UpdatePowerArrayController,
     DeletePowerArrayController,
     FetchUserPowerArraysController,
@@ -83,10 +92,12 @@ import { RegisterUserController } from './controllers/register-user.controller';
     FetchEffectsUseCase,
     FetchModificationsUseCase,
     CreatePeculiarityUseCase,
+    FetchPublicPeculiaritiesUseCase,
     FetchUserPeculiaritiesUseCase,
     GetPeculiarityByIdUseCase,
     UpdatePeculiarityUseCase,
     DeletePeculiarityUseCase,
+    CopyPublicPeculiarityUseCase,
     CreatePowerUseCase,
     UpdatePowerUseCase,
     GetPowerByIdUseCase,
@@ -96,6 +107,7 @@ import { RegisterUserController } from './controllers/register-user.controller';
     CopyPublicPowerUseCase,
     PowerCostCalculator,
     CreatePowerArrayUseCase,
+    CopyPublicPowerArrayUseCase,
     UpdatePowerArrayUseCase,
     DeletePowerArrayUseCase,
     GetPowerArrayByIdUseCase,

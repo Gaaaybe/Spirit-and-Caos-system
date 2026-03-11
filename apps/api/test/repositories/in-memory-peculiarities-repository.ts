@@ -38,4 +38,13 @@ export class InMemoryPeculiaritiesRepository extends PeculiaritiesRepository {
       this.items.splice(itemIndex, 1);
     }
   }
+
+  async findPublic(params: PaginationParams): Promise<Peculiarity[]> {
+    const filtered = this.items.filter((item) => item.isOfficial() || item.isPublic);
+
+    const startIndex = (params.page - 1) * 20;
+    const endIndex = startIndex + 20;
+
+    return filtered.slice(startIndex, endIndex);
+  }
 }
