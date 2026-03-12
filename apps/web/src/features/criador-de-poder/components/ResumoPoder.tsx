@@ -1,5 +1,5 @@
 import { Zap, Package, Globe, Sparkles, Copy, FileText, Clock, Ruler, Timer } from 'lucide-react';
-import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast } from '../../../shared/ui';
+import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast, DynamicIcon } from '../../../shared/ui';
 import { MarkdownText } from '../../../shared/components';
 import { Poder, ModificacaoAplicada } from '../regras/calculadoraCusto';
 import { ESCALAS, type Modificacao, DOMINIOS } from '../../../data';
@@ -267,8 +267,12 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
           <div className="relative z-10">
             <div className="flex items-start justify-between mb-4">
               <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <Zap className="w-8 h-8 text-yellow-300" />
+                <div className="flex items-center gap-4 mb-2">
+                  {poder.icone && (
+                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden backdrop-blur-sm flex items-center justify-center">
+                      <DynamicIcon name={poder.icone} className="w-14 h-14 text-yellow-300" />
+                    </div>
+                  )}
                   <h2 className="text-3xl font-bold">{poder.nome}</h2>
                 </div>
                 {poder.descricao && (

@@ -226,7 +226,8 @@ export function usePoderCalculator() {
     descricao?: string, 
     dominioId?: string, 
     dominioAreaConhecimento?: string,
-    dominioIdPeculiar?: string
+    dominioIdPeculiar?: string,
+    icone?: string
   ) => {
     setPoder(prev => ({
       ...prev,
@@ -235,6 +236,7 @@ export function usePoderCalculator() {
       ...(dominioId !== undefined && { dominioId }),
       ...(dominioAreaConhecimento !== undefined && { dominioAreaConhecimento }),
       ...(dominioIdPeculiar !== undefined && { dominioIdPeculiar }),
+      ...(icone !== undefined && { icone: icone || undefined }),
     }));
   };
 

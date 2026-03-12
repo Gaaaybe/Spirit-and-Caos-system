@@ -8,6 +8,7 @@ export { Modal, ModalFooter } from './Modal';
 export { Select } from './Select';
 export { ToastContainer, toast } from './Toast';
 export { Tooltip, HelpIcon } from './Tooltip';
+export { DynamicIcon } from './DynamicIcon';
 export { ConfirmDialog } from './ConfirmDialog';
 export { InlineHelp } from './InlineHelp';
 export { EmptyState } from './EmptyState';

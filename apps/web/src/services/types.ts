@@ -66,6 +66,7 @@ export interface PoderResponse {
   nome: string;
   descricao: string;
   isPublic: boolean;
+  icone: string | null;
   notas: string | null;
   dominio: DominioResponse;
   parametros: { acao: number; alcance: number; duracao: number };
@@ -114,6 +115,7 @@ export interface CreatePoderPayload {
   custoAlternativo?: CustoAlternativoPayload;
   isPublic?: boolean;
   notas?: string;
+  icone?: string;
 }
 
 export type UpdatePoderPayload = CreatePoderPayload;
@@ -126,6 +128,7 @@ export interface AcervoResponse {
   nome: string;
   descricao: string;
   isPublic: boolean;
+  icone: string | null;
   notas: string | null;
   dominio: DominioResponse;
   parametrosBase: { acao: number; alcance: number; duracao: number } | null;
@@ -143,6 +146,7 @@ export interface CreateAcervoPayload {
   parametrosBase?: { acao: number; alcance: number; duracao: number };
   isPublic?: boolean;
   notas?: string;
+  icone?: string;
 }
 
 export type UpdateAcervoPayload = CreateAcervoPayload;
@@ -156,6 +160,7 @@ export interface PeculiaridadeResponse {
   descricao: string;
   espiritual: boolean;
   isPublic: boolean;
+  icone: string | null;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -165,6 +170,7 @@ export interface CreatePeculiaridadePayload {
   descricao: string;
   espiritual: boolean;
   isPublic?: boolean;
+  icone?: string;
 }
 
 export type UpdatePeculiaridadePayload = Partial<CreatePeculiaridadePayload>;

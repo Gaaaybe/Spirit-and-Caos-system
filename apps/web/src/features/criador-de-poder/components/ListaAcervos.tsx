@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast, DynamicIcon } from '../../../shared/ui';
 import { usePowerArrays } from '../hooks/usePowerArrays';
 import { CriadorAcervo } from './CriadorAcervo';
 import { ResumoAcervo } from './ResumoAcervo';
@@ -113,7 +113,7 @@ export function ListaAcervos() {
                       <div className="flex items-center gap-2 mb-2">
                         <Package className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                         <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          {acervo.nome}
+                          {acervo.icone && <DynamicIcon name={acervo.icone} className="inline w-4 h-4 mr-1 -mt-0.5" />}{acervo.nome}
                         </h3>
                         {acervo.isPublic && (
                           <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">

@@ -17,6 +17,7 @@ export interface Acervo {
   id: string;
   nome: string;
   descritor: string; // Descrição do tema/conceito comum
+  icone?: string;
   poderes: Poder[]; // Array de poderes completos
   dataCriacao: string;
   dataModificacao: string;

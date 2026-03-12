@@ -64,6 +64,7 @@ export function poderResponseToPoder(p: PoderResponse): Poder {
     id: p.id,
     nome: p.nome,
     descricao: p.descricao,
+    icone: p.icone ?? undefined,
     dominioId: p.dominio.name,
     dominioAreaConhecimento: p.dominio.areaConhecimento ?? undefined,
     dominioIdPeculiar: p.dominio.peculiarId ?? undefined,
@@ -112,6 +113,7 @@ export function acervoResponseToAcervo(a: AcervoResponse): Acervo {
     id: a.id,
     nome: a.nome,
     descritor: a.descricao,
+    icone: a.icone ?? undefined,
     poderes: a.powers.map(poderResponseToPoder),
     dataCriacao: a.createdAt,
     dataModificacao: a.updatedAt ?? a.createdAt,
@@ -156,6 +158,7 @@ export function poderToCreatePayload(poder: Poder): CreatePoderPayload {
       poder.descricao && poder.descricao.length >= 10
         ? poder.descricao
         : `Poder: ${poder.nome}`.padEnd(10, '.'),
+    icone: poder.icone,
     dominio: {
       name: poder.dominioId as DomainName,
       areaConhecimento: poder.dominioAreaConhecimento,

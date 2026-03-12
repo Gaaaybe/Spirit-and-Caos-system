@@ -7,7 +7,7 @@ interface FormPeculiaridadeCustomizadaProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: CreatePeculiaridadePayload) => void | Promise<void>;
-  initialValues?: { nome: string; descricao: string; espiritual: boolean };
+  initialValues?: { nome: string; descricao: string; espiritual: boolean; icone?: string };
   title?: string;
   submitLabel?: string;
 }
@@ -23,18 +23,20 @@ export function FormPeculiaridadeCustomizada({
   const [nome, setNome] = useState('');
   const [espiritual, setEspiritual] = useState(false);
   const [descricao, setDescricao] = useState('');
+  const [icone, setIcone] = useState('');
 
   useEffect(() => {
     if (isOpen) {
       setNome(initialValues?.nome ?? '');
       setDescricao(initialValues?.descricao ?? '');
       setEspiritual(initialValues?.espiritual ?? false);
+      setIcone(initialValues?.icone ?? '');
     }
   }, [isOpen, initialValues]);
 
   const handleSubmit = async () => {
     if (!nome.trim() || !descricao.trim()) return;
-    await onSubmit({ nome: nome.trim(), descricao: descricao.trim(), espiritual });
+    await onSubmit({ nome: nome.trim(), descricao: descricao.trim(), espiritual, icone: icone.trim() || undefined });
     handleClose();
   };
 
@@ -42,6 +44,7 @@ export function FormPeculiaridadeCustomizada({
     setNome('');
     setEspiritual(false);
     setDescricao('');
+    setIcone('');
     onClose();
   };
 
@@ -75,6 +78,17 @@ export function FormPeculiaridadeCustomizada({
             value={nome}
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNome(e.target.value)}
             placeholder="Ex: Poderes Lunares, Controle Temporal..."
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Ícone (opcional)
+          </label>
+          <Input
+            value={icone}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIcone(e.target.value)}
+            placeholder="Cole o link da imagem..."
           />
         </div>
 

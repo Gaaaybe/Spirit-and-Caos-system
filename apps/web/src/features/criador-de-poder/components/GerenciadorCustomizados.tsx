@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Card, Badge, ConfirmDialog, EmptyState } from '../../../shared/ui';
+import { Button, Card, Badge, ConfirmDialog, EmptyState, DynamicIcon } from '../../../shared/ui';
 import { MarkdownText } from '../../../shared/components';
 import { usePeculiaridades } from '../../../shared/hooks/usePeculiaridades';
 import { toast } from '../../../shared/ui';
@@ -86,7 +86,7 @@ export function GerenciadorCustomizados() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                        {peculiar.nome}
+                        {peculiar.icone && <DynamicIcon name={peculiar.icone} className="inline w-4 h-4 mr-1 -mt-0.5" />}{peculiar.nome}
                       </h3>
                       <Badge variant="success">Customizado</Badge>
                       {peculiar.espiritual && <Badge variant="info">Espiritual</Badge>}
@@ -165,7 +165,7 @@ export function GerenciadorCustomizados() {
         isOpen={!!editando}
         onClose={() => setEditando(null)}
         onSubmit={handleEditar}
-        initialValues={editando ? { nome: editando.nome, descricao: editando.descricao, espiritual: editando.espiritual } : undefined}
+        initialValues={editando ? { nome: editando.nome, descricao: editando.descricao, espiritual: editando.espiritual, icone: editando.icone ?? undefined } : undefined}
         title="Editar Peculiaridade"
         submitLabel="Salvar Alterações"
       />

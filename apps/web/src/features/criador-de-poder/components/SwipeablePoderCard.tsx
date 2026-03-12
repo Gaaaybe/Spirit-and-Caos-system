@@ -1,4 +1,4 @@
-import { Card, CardContent, Badge, Button } from '../../../shared/ui';
+import { Card, CardContent, Badge, Button, DynamicIcon } from '../../../shared/ui';
 import { useSwipeToDismiss, useIsTouchDevice } from '../../../shared/hooks';
 import { Trash2, FolderOpen, Copy, Download, Globe, Lock } from 'lucide-react';
 import type { PoderSalvo } from '../types';
@@ -61,7 +61,13 @@ export function SwipeablePoderCard({
                 className="flex items-start justify-between gap-3 cursor-pointer"
                 onClick={onVerResumo}
               >
-                <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  {poder.icone && (
+                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center">
+                      <DynamicIcon name={poder.icone} className="w-14 h-14 text-purple-600 dark:text-purple-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
                     {poder.nome}
                   </h3>
@@ -70,6 +76,7 @@ export function SwipeablePoderCard({
                       <Globe className="w-3 h-3" /> Público
                     </span>
                   )}
+                  </div>
                 </div>
                 <Badge variant="secondary" size="sm" className="flex-shrink-0">
                   {poder.efeitos.length} {poder.efeitos.length === 1 ? 'efeito' : 'efeitos'}

@@ -1,5 +1,5 @@
 import { ZodError } from 'zod';
-import { poderSchema, poderParaSalvarSchema } from '../schemas/poder.schema';
+import { poderSchema, poderBaseSchema, poderParaSalvarSchema } from '../schemas/poder.schema';
 import type { Poder } from '../regras/calculadoraCusto';
 
 export interface ValidationError {
@@ -75,7 +75,7 @@ export function usePoderValidation() {
    */
   const validarNome = (nome: string): ValidationResult => {
     try {
-      const schema = poderSchema.pick({ nome: true });
+      const schema = poderBaseSchema.pick({ nome: true });
       schema.parse({ nome });
       return {
         isValid: true,

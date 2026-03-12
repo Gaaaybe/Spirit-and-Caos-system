@@ -228,6 +228,20 @@ export function CriadorDePoder() {
                 />
               </div>
 
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Ícone (opcional)
+                  </label>
+                  <HelpIcon tooltip="Link de uma imagem para usar como ícone deste poder." />
+                </div>
+                <Input
+                  value={poder.icone || ''}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => atualizarInfoPoder(undefined, undefined, undefined, undefined, undefined, e.target.value)}
+                  placeholder="Cole o link da imagem..."
+                />
+              </div>
+
               {/* Seleção de Domínio */}
               <div>
                 <div className="flex items-center gap-2 mb-1">

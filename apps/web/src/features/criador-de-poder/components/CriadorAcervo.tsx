@@ -24,6 +24,7 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
   
   const [nome, setNome] = useState(acervoInicial?.nome || '');
   const [descritor, setDescritor] = useState(acervoInicial?.descritor || '');
+  const [icone, setIcone] = useState(acervoInicial?.icone || '');
   const [poderesSelecionados, setPoderesSelecionados] = useState<Poder[]>(acervoInicial?.poderes || []);
   const [buscaPoder, setBuscaPoder] = useState('');
   const [salvando, setSalvando] = useState(false);
@@ -35,11 +36,13 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
         // Modo edição: carregar dados
         setNome(acervoInicial.nome);
         setDescritor(acervoInicial.descritor);
+        setIcone(acervoInicial.icone || '');
         setPoderesSelecionados(acervoInicial.poderes);
       } else {
         // Modo criar: limpar campos
         setNome('');
         setDescritor('');
+        setIcone('');
         setPoderesSelecionados([]);
       }
       setBuscaPoder('');
@@ -125,6 +128,7 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
         peculiarId: acervoInicial?.dominioIdPeculiar,
       },
       powerIds: poderesSelecionados.map((p) => p.id),
+      icone: icone.trim() || undefined,
     };
 
     setSalvando(true);
@@ -191,6 +195,18 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             O tema/conceito comum que une todos os poderes deste acervo
           </p>
+        </div>
+
+        {/* Ícone */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Ícone (opcional)
+          </label>
+          <Input
+            value={icone}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIcone(e.target.value)}
+            placeholder="Cole o link da imagem..."
+          />
         </div>
 
         {/* Poderes Selecionados */}
