@@ -20,6 +20,7 @@ import { DurabilityStatus, ItemType } from '@/domain/item-manager/enterprise/ent
 import { Weapon, WeaponRange } from '@/domain/item-manager/enterprise/entities/weapon';
 import { DamageDescriptor } from '@/domain/item-manager/enterprise/entities/value-objects/damage-descriptor';
 import { UpgradeLevel } from '@/domain/item-manager/enterprise/entities/value-objects/upgrade-level';
+import { ItemPowerArrayIdList } from '@/domain/item-manager/enterprise/entities/watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from '@/domain/item-manager/enterprise/entities/watched-lists/item-power-id-list';
 import {
   Domain,
@@ -29,7 +30,7 @@ import {
 // ─── Type helpers ────────────────────────────────────────────────────────────
 
 export type PrismaItemFull = Prisma.ItemGetPayload<{
-  include: { itemDamages: true; itemPowers: true };
+  include: { itemDamages: true; itemPowers: true; itemPowerArrays: true };
 }>;
 
 // ─── Lookup tables ───────────────────────────────────────────────────────────
@@ -143,6 +144,10 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
   const sortedPowerIds = [...raw.itemPowers].sort((a, b) => a.posicao - b.posicao);
   powerIdList.update(sortedPowerIds.map((ip) => new UniqueEntityId(ip.powerId)));
 
+  const powerArrayIdList = new ItemPowerArrayIdList();
+  const sortedPowerArrayIds = [...raw.itemPowerArrays].sort((a, b) => a.posicao - b.posicao);
+  powerArrayIdList.update(sortedPowerArrayIds.map((ipa) => new UniqueEntityId(ipa.powerArrayId)));
+
   const base = {
     userId: raw.userId ?? undefined,
     nome: raw.nome,
@@ -150,9 +155,10 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
     dominio,
     custoBase: raw.custoBase,
     nivelItem: raw.nivelItem,
-    maxStack: raw.maxStack,
     durabilidade: DURABILITY_TO_DOMAIN[raw.durabilidade],
     powerIds: powerIdList,
+    powerArrayIds: powerArrayIdList,
+    icone: raw.icone ?? undefined,
     isPublic: raw.isPublic,
     notas: raw.notas ?? undefined,
     createdAt: raw.createdAt,
@@ -216,13 +222,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
       );
 
     case ItemType.ACCESSORY:
-      return Accessory.create(
-        {
-          ...base,
-          efeitoPassivo: raw.efeitoPassivo!,
-        },
-        entityId,
-      );
+      return Accessory.create({ ...base }, entityId);
   }
 }
 
@@ -238,6 +238,7 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
     nome: item.nome,
     descricao: item.descricao,
     isPublic: item.isPublic,
+    icone: item.icone ?? null,
     notas: item.notas ?? null,
     durabilidade: DURABILITY_TO_PRISMA[item.durabilidade],
     domainName: DOMAIN_TO_PRISMA[item.dominio.name],
@@ -245,12 +246,17 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
     domainPeculiarId: item.dominio.peculiarId ?? null,
     custoBase: item.custoBase,
     nivelItem: item.nivelItem,
-    maxStack: item.maxStack,
     createdAt: item.createdAt,
     updatedAt: item.updatedAt ?? null,
     itemPowers: {
       create: item.powerIds.getItems().map((uid, i) => ({
         powerId: uid.toString(),
+        posicao: i,
+      })),
+    },
+    itemPowerArrays: {
+      create: item.powerArrayIds.getItems().map((uid, i) => ({
+        powerArrayId: uid.toString(),
         posicao: i,
       })),
     },
@@ -300,10 +306,6 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
 
   if (item instanceof Artifact) {
     return { ...base, isAttuned: item.isAttuned };
-  }
-
-  if (item instanceof Accessory) {
-    return { ...base, efeitoPassivo: item.efeitoPassivo };
   }
 
   return base;

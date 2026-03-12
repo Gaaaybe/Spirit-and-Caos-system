@@ -95,6 +95,7 @@ export function toDomain(raw: PrismaPowerArrayFull): PowerArray {
       powers: powerList,
       custoTotal,
       isPublic: raw.isPublic,
+      icone: raw.icone ?? undefined,
       notas: raw.notas ?? undefined,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
@@ -113,6 +114,7 @@ export function toPrisma(powerArray: PowerArray): Prisma.PowerArrayUncheckedCrea
     nome: powerArray.nome,
     descricao: powerArray.descricao,
     isPublic: powerArray.isPublic,
+    icone: powerArray.icone,
     notas: powerArray.notas,
     domainName: DOMAIN_NAME_TO_PRISMA[
       powerArray.dominio.name

@@ -10,6 +10,7 @@ export function toDomain(raw: PrismaPeculiarity): Peculiarity {
       descricao: raw.descricao,
       espiritual: raw.espiritual,
       isPublic: raw.isPublic,
+      icone: raw.icone ?? undefined,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
     },
@@ -25,6 +26,7 @@ export function toPrisma(peculiarity: Peculiarity): Prisma.PeculiarityUncheckedC
     descricao: peculiarity.descricao,
     espiritual: peculiarity.espiritual,
     isPublic: peculiarity.isPublic,
+    icone: peculiarity.icone,
     createdAt: peculiarity.createdAt,
     updatedAt: peculiarity.updatedAt,
   };

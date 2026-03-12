@@ -9,6 +9,7 @@ import { PrismaService } from '../prisma.service';
 const INCLUDE = {
   itemDamages: true,
   itemPowers: true,
+  itemPowerArrays: true,
 } as const;
 
 const ITEM_TYPE_TO_PRISMA: Record<ItemType, string> = {
