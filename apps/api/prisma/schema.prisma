@@ -46,6 +46,7 @@ model Peculiarity {
   descricao   String
   espiritual  Boolean
   isPublic    Boolean   @default(false)
+  icone       String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
 
@@ -79,6 +80,7 @@ model Power {
   nome        String
   descricao   String
   isPublic    Boolean   @default(false)
+  icone       String?
   notas       String?
 
   domainName             DomainName
@@ -121,6 +123,7 @@ model PowerArray {
   nome        String
   descricao   String
   isPublic    Boolean        @default(false)
+  icone       String?
   notas       String?
 
   domainName             DomainName
@@ -141,6 +144,7 @@ model PowerArray {
   user             User?             @relation(fields: [userId], references: [id], onDelete: Cascade)
   peculiarity      Peculiarity?      @relation("PeculiarityDomainPowerArrays", fields: [domainPeculiarId], references: [id], onDelete: Restrict)
   powerArrayPowers PowerArrayPower[]
+  itemPowerArrays  ItemPowerArray[]
 
   @@index([userId])
   @@index([isPublic])
@@ -263,6 +267,7 @@ model Item {
   nome        String
   descricao   String
   isPublic    Boolean         @default(false)
+  icone       String?
   notas       String?
   durabilidade DurabilityStatus @default(INTACTO)
 
@@ -272,7 +277,6 @@ model Item {
 
   custoBase  Int
   nivelItem  Int @default(1)
-  maxStack   Int @default(1)
 
   // --- WEAPON ---
   critMargin             Int?
@@ -294,15 +298,13 @@ model Item {
   // --- ARTIFACT ---
   isAttuned Boolean?
 
-  // --- ACCESSORY ---
-  efeitoPassivo String?
-
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
 
-  user          User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  itemDamages   ItemDamage[]
-  itemPowers    ItemPower[]
+  user            User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  itemDamages     ItemDamage[]
+  itemPowers      ItemPower[]
+  itemPowerArrays ItemPowerArray[]
 
   @@index([userId])
   @@index([tipo])
@@ -339,6 +341,21 @@ model ItemPower {
   @@unique([itemId, powerId])
   @@index([itemId])
   @@map("item_powers")
+}
+
+/// Junction table: acervos de poderes associados a um item
+model ItemPowerArray {
+  id           String @id @default(uuid())
+  itemId       String
+  powerArrayId String
+  posicao      Int    @default(0)
+
+  item       Item       @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  powerArray PowerArray @relation(fields: [powerArrayId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, powerArrayId])
+  @@index([itemId])
+  @@map("item_power_arrays")
 }
 
 model EffectBase {
