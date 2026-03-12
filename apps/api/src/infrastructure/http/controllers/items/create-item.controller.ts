@@ -62,10 +62,11 @@ const commonFields = {
   dominio: dominioSchema,
   custoBase: z.number().int().min(0),
   nivelItem: z.number().int().min(1),
-  maxStack: z.number().int().min(1).optional(),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).default([]),
+  icone: z.string().min(1).max(200).optional(),
+  powerArrayIds: z.array(z.string().min(1)).default([]),
 };
 
 const createItemBodySchema = z.discriminatedUnion('tipo', [
@@ -74,7 +75,7 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
     tipo: z.literal(ItemType.WEAPON),
     danos: z.array(damageDescriptorSchema).min(1),
     critMargin: z.number().int().min(2).max(20),
-    critMultiplier: z.number().int().min(1),
+    critMultiplier: z.number().int().min(1).max(7),
     alcance: z.enum([
       WeaponRange.CORPO_A_CORPO,
       WeaponRange.CURTO,
@@ -104,7 +105,6 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
   z.object({
     ...commonFields,
     tipo: z.literal(ItemType.ACCESSORY),
-    efeitoPassivo: z.string().min(1).max(500),
   }),
 ]);
 
@@ -133,10 +133,11 @@ export class CreateItemController {
       dominio: dominioVO,
       custoBase: body.custoBase,
       nivelItem: body.nivelItem,
-      maxStack: body.maxStack,
       isPublic: body.isPublic,
       notas: body.notas,
       powerIds: body.powerIds,
+      icone: body.icone,
+      powerArrayIds: body.powerArrayIds,
     };
 
     let result: Awaited<ReturnType<CreateItemUseCase['execute']>>;
@@ -170,11 +171,7 @@ export class CreateItemController {
     } else if (body.tipo === ItemType.ARTIFACT) {
       result = await this.createItem.execute({ ...common, tipo: ItemType.ARTIFACT });
     } else {
-      result = await this.createItem.execute({
-        ...common,
-        tipo: ItemType.ACCESSORY,
-        efeitoPassivo: body.efeitoPassivo,
-      });
+      result = await this.createItem.execute({ ...common, tipo: ItemType.ACCESSORY });
     }
 
     if (result.isLeft()) {

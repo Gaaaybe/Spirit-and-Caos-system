@@ -20,6 +20,7 @@ const updatePeculiarityBodySchema = z.object({
   descricao: z.string().min(10).max(500).optional(),
   espiritual: z.boolean().optional(),
   isPublic: z.boolean().optional(),
+  icone: z.string().min(1).max(200).optional(),
 });
 
 type UpdatePeculiarityBodySchema = z.infer<typeof updatePeculiarityBodySchema>;
@@ -34,7 +35,7 @@ export class UpdatePeculiarityController {
     @Body(new ZodValidationPipe(updatePeculiarityBodySchema)) body: UpdatePeculiarityBodySchema,
     @CurrentUser() user: UserPayload,
   ) {
-    const { nome, descricao, espiritual, isPublic } = body;
+    const { nome, descricao, espiritual, isPublic, icone } = body;
 
     const result = await this.updatePeculiarity.execute({
       peculiarityId,
@@ -43,6 +44,7 @@ export class UpdatePeculiarityController {
       descricao,
       espiritual,
       isPublic,
+      icone,
     });
 
     if (result.isLeft()) {

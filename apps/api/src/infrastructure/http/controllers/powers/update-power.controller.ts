@@ -104,6 +104,7 @@ const updatePowerBodySchema = z.object({
     .optional(),
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
+  icone: z.string().min(1).max(200).optional(),
 });
 
 type UpdatePowerBodySchema = z.infer<typeof updatePowerBodySchema>;
@@ -128,6 +129,7 @@ export class UpdatePowerController {
       custoAlternativo,
       isPublic,
       notas,
+      icone,
     } = body;
 
     const buildModifications = (mods: NonNullable<typeof globalModifications>) =>
@@ -195,6 +197,7 @@ export class UpdatePowerController {
       custoAlternativo: custoAlternativoVO,
       isPublic,
       notas,
+      icone,
     });
 
     if (result.isLeft()) {

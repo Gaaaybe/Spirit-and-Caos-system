@@ -66,6 +66,7 @@ const createPowerArrayBodySchema = z.object({
   powerIds: z.array(z.string()).min(1),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
+  icone: z.string().min(1).max(200).optional(),
 });
 
 const DOMAIN_NAME_MAP: Record<string, DomainName> = {
@@ -94,7 +95,7 @@ export class CreatePowerArrayController {
     @CurrentUser() user: UserPayload,
     @Body(new ZodValidationPipe(createPowerArrayBodySchema)) body: CreatePowerArrayBody,
   ) {
-    const { nome, descricao, dominio, parametrosBase, powerIds, isPublic, notas } = body;
+    const { nome, descricao, dominio, parametrosBase, powerIds, isPublic, notas, icone } = body;
 
     const dominioVO = Domain.create({
       name: DOMAIN_NAME_MAP[dominio.name],
@@ -118,6 +119,7 @@ export class CreatePowerArrayController {
       powerIds,
       isPublic,
       notas,
+      icone,
       userId: user.sub,
     });
 

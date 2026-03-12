@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { UsersRepository } from '@/domain/accounts/application/repositories/users-repository';
 import { ItemsRepository } from '@/domain/item-manager/application/repositories/items-repository';
 import { PowersLookupPort } from '@/domain/item-manager/application/repositories/powers-lookup-port';
+import { PowerArraysLookupPort } from '@/domain/item-manager/application/repositories/power-arrays-lookup-port';
 import { EffectsRepository } from '@/domain/power-manager/application/repositories/effects-repository';
 import { ModificationsRepository } from '@/domain/power-manager/application/repositories/modifications-repository';
 import { PeculiaritiesRepository } from '@/domain/power-manager/application/repositories/peculiarities-repository';
 import { PowerArraysRepository } from '@/domain/power-manager/application/repositories/power-arrays-repository';
 import { PowersRepository } from '@/domain/power-manager/application/repositories/powers-repository';
 import { PrismaPowersLookupAdapter } from './prisma-powers-lookup-adapter';
+import { PrismaPowerArraysLookupAdapter } from './prisma-power-arrays-lookup-adapter';
 import { PrismaService } from './prisma/prisma.service';
 import { PrismaEffectsRepository } from './prisma/repositories/prisma-effects-repository';
 import { PrismaItemsRepository } from './prisma/repositories/prisma-items-repository';
@@ -28,6 +30,7 @@ import { PrismaUsersRepository } from './prisma/repositories/prisma-users-reposi
     { provide: EffectsRepository, useClass: PrismaEffectsRepository },
     { provide: ItemsRepository, useClass: PrismaItemsRepository },
     { provide: PowersLookupPort, useClass: PrismaPowersLookupAdapter },
+    { provide: PowerArraysLookupPort, useClass: PrismaPowerArraysLookupAdapter },
   ],
   exports: [
     PrismaService,
@@ -39,6 +42,7 @@ import { PrismaUsersRepository } from './prisma/repositories/prisma-users-reposi
     EffectsRepository,
     ItemsRepository,
     PowersLookupPort,
+    PowerArraysLookupPort,
   ],
 })
 export class DatabaseModule {}

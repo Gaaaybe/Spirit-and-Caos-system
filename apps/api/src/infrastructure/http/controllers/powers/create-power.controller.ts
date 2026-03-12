@@ -101,6 +101,7 @@ const createPowerBodySchema = z.object({
   custoAlternativo: custoAlternativoSchema.optional(),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
+  icone: z.string().min(1).max(200).optional(),
 });
 
 type CreatePowerBodySchema = z.infer<typeof createPowerBodySchema>;
@@ -125,6 +126,7 @@ export class CreatePowerController {
       custoAlternativo,
       isPublic,
       notas,
+      icone,
     } = body;
 
     const dominioVO = Domain.create({
@@ -185,6 +187,7 @@ export class CreatePowerController {
       custoAlternativo: custoAlternativoVO,
       isPublic,
       notas,
+      icone,
     });
 
     if (result.isLeft()) {

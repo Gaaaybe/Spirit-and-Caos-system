@@ -67,6 +67,8 @@ const commonOptional = {
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).optional(),
+  icone: z.string().min(1).max(200).optional(),
+  powerArrayIds: z.array(z.string().min(1)).optional(),
 };
 
 const updateItemBodySchema = z.discriminatedUnion('tipo', [
@@ -75,7 +77,7 @@ const updateItemBodySchema = z.discriminatedUnion('tipo', [
     tipo: z.literal(ItemType.WEAPON),
     danos: z.array(damageDescriptorSchema).min(1).optional(),
     critMargin: z.number().int().min(2).max(20).optional(),
-    critMultiplier: z.number().int().min(1).optional(),
+    critMultiplier: z.number().int().min(1).max(7).optional(),
     alcance: z
       .enum([
         WeaponRange.CORPO_A_CORPO,
@@ -106,7 +108,6 @@ const updateItemBodySchema = z.discriminatedUnion('tipo', [
   z.object({
     ...commonOptional,
     tipo: z.literal(ItemType.ACCESSORY),
-    efeitoPassivo: z.string().min(1).max(500).optional(),
   }),
 ]);
 
@@ -141,6 +142,8 @@ export class UpdateItemController {
       isPublic: body.isPublic,
       notas: body.notas,
       powerIds: body.powerIds,
+      icone: body.icone,
+      powerArrayIds: body.powerArrayIds,
     };
 
     let result: Awaited<ReturnType<UpdateItemUseCase['execute']>>;
@@ -173,11 +176,7 @@ export class UpdateItemController {
     } else if (body.tipo === ItemType.ARTIFACT) {
       result = await this.updateItem.execute({ ...common, tipo: ItemType.ARTIFACT });
     } else {
-      result = await this.updateItem.execute({
-        ...common,
-        tipo: ItemType.ACCESSORY,
-        efeitoPassivo: body.efeitoPassivo,
-      });
+      result = await this.updateItem.execute({ ...common, tipo: ItemType.ACCESSORY });
     }
 
     if (result.isLeft()) {

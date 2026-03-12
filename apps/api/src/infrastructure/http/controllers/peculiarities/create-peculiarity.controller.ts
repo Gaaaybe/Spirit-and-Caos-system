@@ -11,6 +11,7 @@ const createPeculiarityBodySchema = z.object({
   descricao: z.string().min(10).max(1000),
   espiritual: z.boolean(),
   isPublic: z.boolean().optional(),
+  icone: z.string().min(1).max(200).optional(),
 });
 
 type CreatePeculiarityBodySchema = z.infer<typeof createPeculiarityBodySchema>;
@@ -25,7 +26,7 @@ export class CreatePeculiarityController {
     @Body(new ZodValidationPipe(createPeculiarityBodySchema)) body: CreatePeculiarityBodySchema,
     @CurrentUser() user: UserPayload,
   ) {
-    const { nome, descricao, espiritual, isPublic } = body;
+    const { nome, descricao, espiritual, isPublic, icone } = body;
 
     const result = await this.createPeculiarity.execute({
       userId: user.sub,
@@ -33,6 +34,7 @@ export class CreatePeculiarityController {
       descricao,
       espiritual,
       isPublic,
+      icone,
     });
 
     return PeculiarityPresenter.toHTTP(result.value!.peculiarity);

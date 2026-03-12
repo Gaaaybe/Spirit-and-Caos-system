@@ -103,9 +103,9 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     CreateItemController,
     UpdateItemController,
     DeleteItemController,
-    GetItemByIdController,
-    FetchPublicItemsController,
     FetchUserItemsController,
+    FetchPublicItemsController,
+    GetItemByIdController,
     CopyPublicItemController,
   ],
   providers: [
