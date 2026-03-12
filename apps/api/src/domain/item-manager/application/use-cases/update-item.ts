@@ -12,8 +12,10 @@ import type { Item, ItemBaseProps } from '../../enterprise/entities/item';
 import { ItemType } from '../../enterprise/entities/item';
 import { Weapon, WeaponRange } from '../../enterprise/entities/weapon';
 import type { DamageDescriptor } from '../../enterprise/entities/value-objects/damage-descriptor';
+import { ItemPowerArrayIdList } from '../../enterprise/entities/watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from '../../enterprise/entities/watched-lists/item-power-id-list';
 import { ItemsRepository } from '../repositories/items-repository';
+import { PowerArraysLookupPort } from '../repositories/power-arrays-lookup-port';
 import { PowersLookupPort } from '../repositories/powers-lookup-port';
 import { InvalidItemDomainError } from './errors/invalid-item-domain-error';
 
@@ -26,8 +28,10 @@ interface UpdateItemCommonProps {
   custoBase?: number;
   nivelItem?: number;
   isPublic?: boolean;
+  icone?: string;
   notas?: string;
   powerIds?: string[];
+  powerArrayIds?: string[];
 }
 
 type UpdateItemRequest =
@@ -51,7 +55,7 @@ type UpdateItemRequest =
       qtdDoses?: number;
     })
   | (UpdateItemCommonProps & { tipo: ItemType.ARTIFACT })
-  | (UpdateItemCommonProps & { tipo: ItemType.ACCESSORY; efeitoPassivo?: string });
+  | (UpdateItemCommonProps & { tipo: ItemType.ACCESSORY });
 
 interface UpdateItemUseCaseResponseData {
   item: Item<ItemBaseProps>;
@@ -67,6 +71,7 @@ export class UpdateItemUseCase {
   constructor(
     private itemsRepository: ItemsRepository,
     private powersLookupPort: PowersLookupPort,
+    private powerArraysLookupPort: PowerArraysLookupPort,
   ) {}
 
   async execute(request: UpdateItemRequest): Promise<UpdateItemUseCaseResponse> {
@@ -105,14 +110,39 @@ export class UpdateItemUseCase {
       }
     }
 
+    let newPowerArrayIds: ItemPowerArrayIdList | undefined;
+    if (request.powerArrayIds !== undefined) {
+      newPowerArrayIds = new ItemPowerArrayIdList();
+
+      for (const powerArrayId of request.powerArrayIds) {
+        const powerArray = await this.powerArraysLookupPort.findById(powerArrayId);
+
+        if (!powerArray) {
+          return left(new ResourceNotFoundError());
+        }
+
+        if (powerArray.domainName !== targetDomain.name) {
+          return left(
+            new InvalidItemDomainError(
+              `Acervo "${powerArray.nome}" é do domínio "${powerArray.domainName}", mas o item é do domínio "${targetDomain.name}"`,
+            ),
+          );
+        }
+
+        newPowerArrayIds.add(new UniqueEntityId(powerArrayId));
+      }
+    }
+
     const commonPartial = {
       nome: request.nome,
       descricao: request.descricao,
       dominio: request.dominio,
       custoBase: request.custoBase,
       nivelItem: request.nivelItem,
+      icone: request.icone,
       notas: request.notas,
       powerIds: newPowerIds,
+      powerArrayIds: newPowerArrayIds,
     };
 
     let updatedItem: Item<ItemBaseProps>;
@@ -145,10 +175,7 @@ export class UpdateItemUseCase {
     } else if (existing instanceof Artifact && request.tipo === ItemType.ARTIFACT) {
       updatedItem = existing.update(commonPartial);
     } else if (existing instanceof Accessory && request.tipo === ItemType.ACCESSORY) {
-      updatedItem = existing.update({
-        ...commonPartial,
-        efeitoPassivo: request.efeitoPassivo,
-      });
+      updatedItem = existing.update(commonPartial);
     } else {
       return left(new NotAllowedError());
     }

@@ -3,19 +3,16 @@ import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import type { Optional } from '@/core/types/optional';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
 import { DurabilityStatus, Item, ItemType, validateItemBaseProps, type ItemBaseProps } from './item';
+import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
-interface AccessoryProps extends ItemBaseProps {
-  efeitoPassivo: string;
-}
+// Acessórios não possuem campos próprios além da base — os efeitos passivos
+// são representados pelos poderes referenciados via powerIds.
+type AccessoryProps = ItemBaseProps;
 
 export class Accessory extends Item<AccessoryProps> {
   get tipo(): ItemType {
     return ItemType.ACCESSORY;
-  }
-
-  get efeitoPassivo(): string {
-    return this.props.efeitoPassivo;
   }
 
   update(partial: {
@@ -24,8 +21,9 @@ export class Accessory extends Item<AccessoryProps> {
     dominio?: Domain;
     custoBase?: number;
     nivelItem?: number;
-    efeitoPassivo?: string;
     powerIds?: ItemPowerIdList;
+    powerArrayIds?: ItemPowerArrayIdList;
+    icone?: string;
     notas?: string;
   }): Accessory {
     return Accessory.create(
@@ -36,14 +34,14 @@ export class Accessory extends Item<AccessoryProps> {
         dominio: partial.dominio ?? this.props.dominio,
         custoBase: partial.custoBase ?? this.props.custoBase,
         nivelItem: partial.nivelItem ?? this.props.nivelItem,
-        maxStack: this.props.maxStack,
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
+        powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
         updatedAt: new Date(),
-        efeitoPassivo: partial.efeitoPassivo ?? this.props.efeitoPassivo,
       },
       this.id,
     );
@@ -76,29 +74,19 @@ export class Accessory extends Item<AccessoryProps> {
   }
 
   static create(
-    props: Optional<
-      AccessoryProps,
-      'maxStack' | 'durabilidade' | 'isPublic' | 'createdAt' | 'powerIds'
-    >,
+    props: Optional<AccessoryProps, 'durabilidade' | 'isPublic' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone'>,
     id?: UniqueEntityId,
   ): Accessory {
     const fullProps: AccessoryProps = {
       ...props,
-      maxStack: props.maxStack ?? 1,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       powerIds: props.powerIds ?? new ItemPowerIdList(),
+      powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
     };
 
     validateItemBaseProps(fullProps);
-
-    if (!fullProps.efeitoPassivo || fullProps.efeitoPassivo.trim().length < 5) {
-      throw new DomainValidationError(
-        'Efeito passivo deve ter pelo menos 5 caracteres',
-        'efeitoPassivo',
-      );
-    }
 
     return new Accessory(fullProps, id);
   }

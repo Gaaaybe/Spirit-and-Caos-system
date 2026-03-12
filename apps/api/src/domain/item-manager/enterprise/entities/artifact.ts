@@ -3,6 +3,7 @@ import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import type { Optional } from '@/core/types/optional';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
 import { DurabilityStatus, Item, ItemType, validateItemBaseProps, type ItemBaseProps } from './item';
+import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 interface ArtifactProps extends ItemBaseProps {
@@ -46,6 +47,8 @@ export class Artifact extends Item<ArtifactProps> {
     custoBase?: number;
     nivelItem?: number;
     powerIds?: ItemPowerIdList;
+    powerArrayIds?: ItemPowerArrayIdList;
+    icone?: string;
     notas?: string;
   }): Artifact {
     return Artifact.create(
@@ -56,9 +59,10 @@ export class Artifact extends Item<ArtifactProps> {
         dominio: partial.dominio ?? this.props.dominio,
         custoBase: partial.custoBase ?? this.props.custoBase,
         nivelItem: partial.nivelItem ?? this.props.nivelItem,
-        maxStack: this.props.maxStack,
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
+        powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
@@ -99,17 +103,17 @@ export class Artifact extends Item<ArtifactProps> {
   static create(
     props: Optional<
       ArtifactProps,
-      'maxStack' | 'durabilidade' | 'isPublic' | 'isAttuned' | 'createdAt' | 'powerIds'
+      'durabilidade' | 'isPublic' | 'isAttuned' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone'
     >,
     id?: UniqueEntityId,
   ): Artifact {
     const fullProps: ArtifactProps = {
       ...props,
-      maxStack: props.maxStack ?? 1,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       isAttuned: props.isAttuned ?? false,
       powerIds: props.powerIds ?? new ItemPowerIdList(),
+      powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
     };
 

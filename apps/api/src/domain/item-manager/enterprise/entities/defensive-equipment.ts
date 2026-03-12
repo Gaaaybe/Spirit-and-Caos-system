@@ -4,6 +4,7 @@ import type { Optional } from '@/core/types/optional';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
 import { DurabilityStatus, Item, type ItemBaseProps, ItemType, validateItemBaseProps } from './item';
 import { UpgradeLevel } from './value-objects/upgrade-level';
+import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 export enum EquipmentType {
@@ -66,6 +67,8 @@ export class DefensiveEquipment extends Item<DefensiveEquipmentProps> {
     baseRD?: number;
     atributoEscalonamento?: string;
     powerIds?: ItemPowerIdList;
+    powerArrayIds?: ItemPowerArrayIdList;
+    icone?: string;
     notas?: string;
   }): DefensiveEquipment {
     return DefensiveEquipment.create(
@@ -76,9 +79,10 @@ export class DefensiveEquipment extends Item<DefensiveEquipmentProps> {
         dominio: partial.dominio ?? this.props.dominio,
         custoBase: partial.custoBase ?? this.props.custoBase,
         nivelItem: partial.nivelItem ?? this.props.nivelItem,
-        maxStack: this.props.maxStack,
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
+        powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
@@ -127,18 +131,18 @@ export class DefensiveEquipment extends Item<DefensiveEquipmentProps> {
   static create(
     props: Optional<
       DefensiveEquipmentProps,
-      'maxStack' | 'durabilidade' | 'isPublic' | 'baseRD' | 'upgradeLevel' | 'createdAt' | 'powerIds'
+      'durabilidade' | 'isPublic' | 'baseRD' | 'upgradeLevel' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone'
     >,
     id?: UniqueEntityId,
   ): DefensiveEquipment {
     const fullProps: DefensiveEquipmentProps = {
       ...props,
-      maxStack: props.maxStack ?? 1,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       baseRD: props.baseRD ?? 2,
       upgradeLevel: props.upgradeLevel ?? UpgradeLevel.create(0, DEFENSIVE_MAX_UPGRADE),
       powerIds: props.powerIds ?? new ItemPowerIdList(),
+      powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
     };
 

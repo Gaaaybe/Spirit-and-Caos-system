@@ -5,6 +5,7 @@ import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
 import { DurabilityStatus, Item, type ItemBaseProps, ItemType, validateItemBaseProps } from './item';
 import type { DamageDescriptor } from './value-objects/damage-descriptor';
 import { UpgradeLevel } from './value-objects/upgrade-level';
+import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 export enum WeaponRange {
@@ -81,6 +82,8 @@ export class Weapon extends Item<WeaponProps> {
     alcance?: WeaponRange;
     atributoEscalonamento?: string;
     powerIds?: ItemPowerIdList;
+    powerArrayIds?: ItemPowerArrayIdList;
+    icone?: string;
     notas?: string;
   }): Weapon {
     return Weapon.create(
@@ -91,9 +94,10 @@ export class Weapon extends Item<WeaponProps> {
         dominio: partial.dominio ?? this.props.dominio,
         custoBase: partial.custoBase ?? this.props.custoBase,
         nivelItem: partial.nivelItem ?? this.props.nivelItem,
-        maxStack: this.props.maxStack,
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
+        powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
@@ -138,17 +142,17 @@ export class Weapon extends Item<WeaponProps> {
   static create(
     props: Optional<
       WeaponProps,
-      'maxStack' | 'durabilidade' | 'isPublic' | 'upgradeLevel' | 'createdAt' | 'powerIds'
+      'durabilidade' | 'isPublic' | 'upgradeLevel' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone'
     >,
     id?: UniqueEntityId,
   ): Weapon {
     const fullProps: WeaponProps = {
       ...props,
-      maxStack: props.maxStack ?? 1,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       upgradeLevel: props.upgradeLevel ?? UpgradeLevel.create(0, WEAPON_MAX_UPGRADE),
       powerIds: props.powerIds ?? new ItemPowerIdList(),
+      powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
     };
 
@@ -158,13 +162,13 @@ export class Weapon extends Item<WeaponProps> {
       throw new DomainValidationError('A arma deve ter pelo menos um tipo de dano', 'danos');
     }
 
-    if (fullProps.critMargin < 1 || fullProps.critMargin > 10) {
-      throw new DomainValidationError('Margem de crítico deve ser entre 1 e 10', 'critMargin');
+    if (fullProps.critMargin < 2 || fullProps.critMargin > 20) {
+      throw new DomainValidationError('Margem de crítico deve ser entre 2 e 20', 'critMargin');
     }
 
-    if (fullProps.critMultiplier < 1 || fullProps.critMultiplier > 5) {
+    if (fullProps.critMultiplier < 1 || fullProps.critMultiplier > 7) {
       throw new DomainValidationError(
-        'Multiplicador de crítico deve ser entre 1 e 5',
+        'Multiplicador de crítico deve ser entre 1 e 7',
         'critMultiplier',
       );
     }

@@ -3,6 +3,7 @@ import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import type { Optional } from '@/core/types/optional';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
 import { DurabilityStatus, Item, type ItemBaseProps, ItemType, validateItemBaseProps } from './item';
+import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 export enum SpoilageState {
@@ -90,6 +91,8 @@ export class Consumable extends Item<ConsumableProps> {
     descritorEfeito?: string;
     qtdDoses?: number;
     powerIds?: ItemPowerIdList;
+    powerArrayIds?: ItemPowerArrayIdList;
+    icone?: string;
     notas?: string;
   }): Consumable {
     return Consumable.create(
@@ -100,9 +103,10 @@ export class Consumable extends Item<ConsumableProps> {
         dominio: partial.dominio ?? this.props.dominio,
         custoBase: partial.custoBase ?? this.props.custoBase,
         nivelItem: partial.nivelItem ?? this.props.nivelItem,
-        maxStack: this.props.maxStack,
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
+        powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
@@ -143,15 +147,15 @@ export class Consumable extends Item<ConsumableProps> {
   }
 
   static create(
-    props: Optional<ConsumableProps, 'maxStack' | 'durabilidade' | 'isPublic' | 'createdAt' | 'powerIds' | 'spoilageState'>,
+    props: Optional<ConsumableProps, 'durabilidade' | 'isPublic' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone' | 'spoilageState'>,
     id?: UniqueEntityId,
   ): Consumable {
     const fullProps: ConsumableProps = {
       ...props,
-      maxStack: props.maxStack ?? 99,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       powerIds: props.powerIds ?? new ItemPowerIdList(),
+      powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
       spoilageState: props.isRefeicao
         ? (props.spoilageState ?? SpoilageState.BOA)

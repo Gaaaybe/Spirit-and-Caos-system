@@ -11,8 +11,10 @@ import type { Item, ItemBaseProps } from '../../enterprise/entities/item';
 import { ItemType } from '../../enterprise/entities/item';
 import { Weapon, WeaponRange } from '../../enterprise/entities/weapon';
 import type { DamageDescriptor } from '../../enterprise/entities/value-objects/damage-descriptor';
+import { ItemPowerArrayIdList } from '../../enterprise/entities/watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from '../../enterprise/entities/watched-lists/item-power-id-list';
 import { ItemsRepository } from '../repositories/items-repository';
+import { PowerArraysLookupPort } from '../repositories/power-arrays-lookup-port';
 import { PowersLookupPort } from '../repositories/powers-lookup-port';
 import { InvalidItemDomainError } from './errors/invalid-item-domain-error';
 
@@ -23,10 +25,11 @@ interface CreateItemCommonProps {
   dominio: Domain;
   custoBase: number;
   nivelItem: number;
-  maxStack?: number;
   isPublic?: boolean;
+  icone?: string;
   notas?: string;
   powerIds?: string[];
+  powerArrayIds?: string[];
 }
 
 type CreateItemRequest =
@@ -51,7 +54,7 @@ type CreateItemRequest =
       isRefeicao: boolean;
     })
   | (CreateItemCommonProps & { tipo: ItemType.ARTIFACT })
-  | (CreateItemCommonProps & { tipo: ItemType.ACCESSORY; efeitoPassivo: string });
+  | (CreateItemCommonProps & { tipo: ItemType.ACCESSORY });
 
 interface CreateItemUseCaseResponseData {
   item: Item<ItemBaseProps>;
@@ -67,6 +70,7 @@ export class CreateItemUseCase {
   constructor(
     private itemsRepository: ItemsRepository,
     private powersLookupPort: PowersLookupPort,
+    private powerArraysLookupPort: PowerArraysLookupPort,
   ) {}
 
   async execute(request: CreateItemRequest): Promise<CreateItemUseCaseResponse> {
@@ -92,6 +96,28 @@ export class CreateItemUseCase {
       }
     }
 
+    const powerArrayIdList = new ItemPowerArrayIdList();
+
+    if (request.powerArrayIds && request.powerArrayIds.length > 0) {
+      for (const powerArrayId of request.powerArrayIds) {
+        const powerArray = await this.powerArraysLookupPort.findById(powerArrayId);
+
+        if (!powerArray) {
+          return left(new ResourceNotFoundError());
+        }
+
+        if (powerArray.domainName !== request.dominio.name) {
+          return left(
+            new InvalidItemDomainError(
+              `Acervo "${powerArray.nome}" é do domínio "${powerArray.domainName}", mas o item é do domínio "${request.dominio.name}"`,
+            ),
+          );
+        }
+
+        powerArrayIdList.add(new UniqueEntityId(powerArrayId));
+      }
+    }
+
     const common = {
       userId: request.userId,
       nome: request.nome,
@@ -99,10 +125,11 @@ export class CreateItemUseCase {
       dominio: request.dominio,
       custoBase: request.custoBase,
       nivelItem: request.nivelItem,
-      maxStack: request.maxStack,
       isPublic: request.isPublic,
+      icone: request.icone,
       notas: request.notas,
       powerIds: powerIdList,
+      powerArrayIds: powerArrayIdList,
     };
 
     let item: Item<ItemBaseProps>;
@@ -142,10 +169,7 @@ export class CreateItemUseCase {
         break;
 
       case ItemType.ACCESSORY:
-        item = Accessory.create({
-          ...common,
-          efeitoPassivo: request.efeitoPassivo,
-        });
+        item = Accessory.create({ ...common });
         break;
     }
 

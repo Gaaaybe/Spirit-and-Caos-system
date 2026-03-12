@@ -1,6 +1,7 @@
 import { OwnableEntity } from '@/core/entities/ownable-entity';
 import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
+import type { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import type { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 export enum DurabilityStatus {
@@ -23,9 +24,10 @@ export interface ItemBaseProps {
   dominio: Domain;
   custoBase: number;
   nivelItem: number;
-  maxStack: number;
   durabilidade: DurabilityStatus;
   powerIds: ItemPowerIdList;
+  powerArrayIds: ItemPowerArrayIdList;
+  icone?: string;
   isPublic: boolean;
   notas?: string;
   createdAt: Date;
@@ -51,10 +53,6 @@ export function validateItemBaseProps(props: ItemBaseProps): void {
 
   if (props.nivelItem < 1) {
     throw new DomainValidationError('Nível do item deve ser pelo menos 1', 'nivelItem');
-  }
-
-  if (props.maxStack < 1) {
-    throw new DomainValidationError('MaxStack deve ser pelo menos 1', 'maxStack');
   }
 }
 
@@ -93,16 +91,20 @@ export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Pr
     return Math.floor(this.valorBase / 2);
   }
 
-  get maxStack(): number {
-    return this.props.maxStack;
-  }
-
   get durabilidade(): DurabilityStatus {
     return this.props.durabilidade;
   }
 
   get powerIds(): ItemPowerIdList {
     return this.props.powerIds;
+  }
+
+  get powerArrayIds(): ItemPowerArrayIdList {
+    return this.props.powerArrayIds;
+  }
+
+  get icone(): string | undefined {
+    return this.props.icone;
   }
 
   get isPublic(): boolean {
