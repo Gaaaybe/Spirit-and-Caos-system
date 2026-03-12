@@ -3,7 +3,7 @@ import type { OnModuleInit } from '@nestjs/common';
 import type { DomainEvent } from '@/core/events/domain-event';
 import { DomainEvents } from '@/core/events/domain-events';
 import { PowerArrayMadePublicEvent } from '../../enterprise/events/power-array-made-public-event';
-import type { PowersRepository } from '../repositories/powers-repository';
+import { PowersRepository } from '../repositories/powers-repository';
 
 @Injectable()
 export class OnPowerArrayMadePublic implements OnModuleInit {

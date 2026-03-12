@@ -25,6 +25,7 @@ interface CreatePowerUseCaseRequest {
   globalModifications?: AppliedModification[];
   custoAlternativo?: AlternativeCost;
   isPublic?: boolean;
+  icone?: string;
   notas?: string;
 }
 
@@ -54,6 +55,7 @@ export class CreatePowerUseCase {
     globalModifications = [],
     custoAlternativo,
     isPublic,
+    icone,
     notas,
   }: CreatePowerUseCaseRequest): Promise<CreatePowerUseCaseResponse> {
     const costResult = await this.powerCostCalculator.calculate({
@@ -97,6 +99,7 @@ export class CreatePowerUseCase {
       globalModifications: globalModificationsList,
       custoTotal,
       custoAlternativo,
+      icone,
       notas,
     });
 

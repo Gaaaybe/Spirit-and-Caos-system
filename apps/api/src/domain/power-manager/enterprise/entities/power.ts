@@ -23,6 +23,7 @@ interface PowerProps {
   custoTotal: PowerCost;
   custoAlternativo?: AlternativeCost;
   isPublic: boolean;
+  icone?: string;
   notas?: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -67,6 +68,10 @@ export class Power extends OwnableEntity<PowerProps> {
 
   get isPublic(): boolean {
     return this.props.isPublic;
+  }
+
+  get icone(): string | undefined {
+    return this.props.icone;
   }
 
   get notas(): string | undefined {
@@ -141,6 +146,7 @@ export class Power extends OwnableEntity<PowerProps> {
     globalModifications?: AppliedModification[];
     custoTotal?: PowerCost;
     custoAlternativo?: AlternativeCost;
+    icone?: string;
     notas?: string;
   }): Power {
     let newEffects = this.props.effects;
@@ -166,6 +172,7 @@ export class Power extends OwnableEntity<PowerProps> {
         globalModifications: newGlobalMods,
         custoTotal: partial.custoTotal ?? this.props.custoTotal,
         custoAlternativo: partial.custoAlternativo ?? this.props.custoAlternativo,
+        icone: partial.icone ?? this.props.icone,
         notas: partial.notas ?? this.props.notas,
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,
@@ -211,7 +218,7 @@ export class Power extends OwnableEntity<PowerProps> {
   }
 
   static create(
-    props: Optional<PowerProps, 'isPublic' | 'createdAt' | 'notas' | 'globalModifications'>,
+    props: Optional<PowerProps, 'isPublic' | 'createdAt' | 'notas' | 'icone' | 'globalModifications'>,
     id?: UniqueEntityId,
   ): Power {
     const power = new Power(

@@ -17,6 +17,7 @@ interface PowerArrayProps {
   powers: PowerArrayPowerList;
   custoTotal: PowerCost;
   isPublic: boolean;
+  icone?: string;
   notas?: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -55,6 +56,10 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
     return this.props.isPublic;
   }
 
+  get icone(): string | undefined {
+    return this.props.icone;
+  }
+
   get notas(): string | undefined {
     return this.props.notas;
   }
@@ -74,6 +79,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
     parametrosBase?: PowerParameters;
     powers?: PowerArrayPowerList;
     custoTotal?: PowerCost;
+    icone?: string;
     notas?: string;
   }): PowerArray {
     return PowerArray.create(
@@ -85,6 +91,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
         parametrosBase: partial.parametrosBase ?? this.props.parametrosBase,
         powers: partial.powers ?? this.props.powers,
         custoTotal: partial.custoTotal ?? this.props.custoTotal,
+        icone: partial.icone ?? this.props.icone,
         notas: partial.notas ?? this.props.notas,
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,
@@ -181,7 +188,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
   }
 
   static create(
-    props: Optional<PowerArrayProps, 'isPublic' | 'createdAt' | 'notas'>,
+    props: Optional<PowerArrayProps, 'isPublic' | 'createdAt' | 'notas' | 'icone'>,
     id?: UniqueEntityId,
   ): PowerArray {
     const arrayPower = new PowerArray(

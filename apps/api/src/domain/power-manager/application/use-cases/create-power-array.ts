@@ -21,6 +21,7 @@ interface CreatePowerArrayUseCaseRequest {
   notas?: string;
   userId?: string;
   isPublic?: boolean;
+  icone?: string;
 }
 
 interface CreatePowerArrayUseCaseResponseData {
@@ -48,6 +49,7 @@ export class CreatePowerArrayUseCase {
     notas,
     userId,
     isPublic,
+    icone,
   }: CreatePowerArrayUseCaseRequest): Promise<CreatePowerArrayUseCaseResponse> {
     const powers: Power[] = [];
     for (const powerId of powerIds) {
@@ -71,6 +73,7 @@ export class CreatePowerArrayUseCase {
         parametrosBase,
         powers: powersList,
         custoTotal,
+        icone,
         notas,
         userId,
       });

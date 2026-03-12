@@ -26,6 +26,7 @@ interface UpdatePowerUseCaseRequest {
   globalModifications?: AppliedModification[];
   custoAlternativo?: AlternativeCost;
   isPublic?: boolean;
+  icone?: string;
   notas?: string;
 }
 
@@ -57,6 +58,7 @@ export class UpdatePowerUseCase {
     globalModifications,
     custoAlternativo,
     isPublic,
+    icone,
     notas,
   }: UpdatePowerUseCaseRequest): Promise<UpdatePowerUseCaseResponse> {
     const existingPower = await this.powersRepository.findById(powerId);
@@ -93,6 +95,7 @@ export class UpdatePowerUseCase {
       globalModifications,
       custoTotal: newCustoTotal,
       custoAlternativo,
+      icone,
       notas,
     });
 

@@ -12,6 +12,7 @@ interface UpdatePeculiarityUseCaseRequest {
   descricao?: string;
   espiritual?: boolean;
   isPublic?: boolean;
+  icone?: string;
 }
 
 interface UpdatePeculiarityUseCaseResponseData {
@@ -34,6 +35,7 @@ export class UpdatePeculiarityUseCase {
     descricao,
     espiritual,
     isPublic,
+    icone,
   }: UpdatePeculiarityUseCaseRequest): Promise<UpdatePeculiarityUseCaseResponse> {
     const peculiarity = await this.peculiaritiesRepository.findById(peculiarityId);
 
@@ -49,6 +51,7 @@ export class UpdatePeculiarityUseCase {
       ...(nome !== undefined && { nome }),
       ...(descricao !== undefined && { descricao }),
       ...(espiritual !== undefined && { espiritual }),
+      ...(icone !== undefined && { icone }),
     });
 
     if (isPublic !== undefined && isPublic !== peculiarity.isPublic) {

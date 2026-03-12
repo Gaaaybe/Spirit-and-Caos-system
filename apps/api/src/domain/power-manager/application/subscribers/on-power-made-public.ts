@@ -3,7 +3,7 @@ import type { OnModuleInit } from '@nestjs/common';
 import type { DomainEvent } from '@/core/events/domain-event';
 import { DomainEvents } from '@/core/events/domain-events';
 import { PowerMadePublicEvent } from '../../enterprise/events/power-made-public-event';
-import type { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
 
 @Injectable()
 export class OnPowerMadePublic implements OnModuleInit {

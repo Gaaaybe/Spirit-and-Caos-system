@@ -23,6 +23,7 @@ interface UpdatePowerArrayUseCaseRequest {
   powerIds?: string[];
   notas?: string;
   isPublic?: boolean;
+  icone?: string;
 }
 
 interface UpdatePowerArrayUseCaseResponseData {
@@ -51,6 +52,7 @@ export class UpdatePowerArrayUseCase {
     powerIds,
     notas,
     isPublic,
+    icone,
   }: UpdatePowerArrayUseCaseRequest): Promise<UpdatePowerArrayUseCaseResponse> {
     const existingPowerArray = await this.powerArraysRepository.findById(powerArrayId);
 
@@ -88,6 +90,7 @@ export class UpdatePowerArrayUseCase {
       parametrosBase,
       powers: newPowersList,
       custoTotal: newCustoTotal,
+      icone,
       notas,
     });
 

@@ -9,6 +9,7 @@ interface PeculiarityProps {
   descricao: string;
   espiritual: boolean;
   isPublic: boolean;
+  icone?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -34,6 +35,10 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return this.props.isPublic;
   }
 
+  get icone(): string | undefined {
+    return this.props.icone;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -42,13 +47,14 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return this.props.updatedAt;
   }
 
-  update(partial: { nome?: string; descricao?: string; espiritual?: boolean }): Peculiarity {
+  update(partial: { nome?: string; descricao?: string; espiritual?: boolean; icone?: string }): Peculiarity {
     return Peculiarity.create(
       {
         userId: this.props.userId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         espiritual: partial.espiritual ?? this.props.espiritual,
+        icone: partial.icone ?? this.props.icone,
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,
         updatedAt: new Date(),
@@ -126,7 +132,7 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
   }
 
   static create(
-    props: Optional<PeculiarityProps, 'isPublic' | 'createdAt' | 'updatedAt'>,
+    props: Optional<PeculiarityProps, 'isPublic' | 'createdAt' | 'updatedAt' | 'icone'>,
     id?: UniqueEntityId,
   ): Peculiarity {
     const peculiarity = new Peculiarity(
