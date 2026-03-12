@@ -39,6 +39,7 @@ export class PowerPresenter {
       nome: power.nome,
       descricao: power.descricao,
       isPublic: power.isPublic,
+      icone: power.icone ?? null,
       notas: power.notas ?? null,
       dominio: {
         name: power.dominio.name,

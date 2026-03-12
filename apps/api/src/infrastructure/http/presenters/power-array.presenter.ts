@@ -11,6 +11,7 @@ export class PowerArrayPresenter {
       nome: powerArray.nome,
       descricao: powerArray.descricao,
       isPublic: powerArray.isPublic,
+      icone: powerArray.icone ?? null,
       notas: powerArray.notas ?? null,
       dominio: {
         name: powerArray.dominio.name,

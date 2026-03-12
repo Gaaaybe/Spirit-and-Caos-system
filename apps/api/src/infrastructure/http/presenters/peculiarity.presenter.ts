@@ -9,6 +9,7 @@ export class PeculiarityPresenter {
       descricao: peculiarity.descricao,
       espiritual: peculiarity.espiritual,
       isPublic: peculiarity.isPublic,
+      icone: peculiarity.icone ?? null,
       createdAt: peculiarity.createdAt,
       updatedAt: peculiarity.updatedAt ?? null,
     };

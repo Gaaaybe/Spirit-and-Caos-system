@@ -1,4 +1,3 @@
-import { Accessory } from '@/domain/item-manager/enterprise/entities/accessory';
 import { Artifact } from '@/domain/item-manager/enterprise/entities/artifact';
 import { Consumable } from '@/domain/item-manager/enterprise/entities/consumable';
 import { DefensiveEquipment } from '@/domain/item-manager/enterprise/entities/defensive-equipment';
@@ -14,6 +13,7 @@ export class ItemPresenter {
       nome: item.nome,
       descricao: item.descricao,
       isPublic: item.isPublic,
+      icone: item.icone ?? null,
       notas: item.notas ?? null,
       dominio: {
         name: item.dominio.name,
@@ -24,9 +24,9 @@ export class ItemPresenter {
       nivelItem: item.nivelItem,
       valorBase: item.valorBase,
       precoVenda: item.precoVenda,
-      maxStack: item.maxStack,
       durabilidade: item.durabilidade,
       powerIds: item.powerIds.getItems().map((uid) => uid.toString()),
+      powerArrayIds: item.powerArrayIds.getItems().map((uid) => uid.toString()),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt ?? null,
     };
@@ -72,10 +72,6 @@ export class ItemPresenter {
 
     if (item instanceof Artifact) {
       return { ...base, isAttuned: item.isAttuned };
-    }
-
-    if (item instanceof Accessory) {
-      return { ...base, efeitoPassivo: item.efeitoPassivo };
     }
 
     return base;
