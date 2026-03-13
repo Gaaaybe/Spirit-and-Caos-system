@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useCatalog } from '@/context/useCatalog';
 import { 
   Poder, 
@@ -15,20 +15,13 @@ export function usePoderCalculator() {
     carregarEstadoInicial, 
     salvarAutomaticamente, 
     limparPersistencia, 
-    foiCarregadoDeStorage 
+    habilitarAutoAtualizacaoParametros,
   } = usePoderPersistence();
 
   const todosEfeitos = efeitosBase;
   const todasModificacoes = modificacoesBase;
 
-  // Flag para evitar auto-update de parâmetros ao carregar poder existente
-  const isCarregandoPoder = useRef(false);
-  const primeiroCarregamentoProcessado = useRef(false);
-
   const [poder, setPoder] = useState<Poder>(carregarEstadoInicial);
-
-  // Cria uma string de IDs dos efeitos para detectar mudanças reais
-  const efeitosIds = poder.efeitos.map(e => e.efeitoBaseId).sort().join(',');
 
   // Auto-save: Salva o poder no localStorage sempre que ele mudar
   useEffect(() => {
@@ -39,50 +32,6 @@ export function usePoderCalculator() {
   const detalhes = useMemo(() => {
     return calcularDetalhesPoder(poder, todosEfeitos, todasModificacoes);
   }, [poder, todosEfeitos, todasModificacoes]);
-
-  // Auto-atualiza os parâmetros do poder quando os efeitos mudam
-  // REGRA: Parâmetros do poder = pior (menor) parâmetro entre TODOS os efeitos
-  // Esses valores podem ser modificados manualmente pelo usuário depois
-  useEffect(() => {
-    // Não atualiza parâmetros se estamos carregando um poder existente
-    if (isCarregandoPoder.current) {
-      isCarregandoPoder.current = false;
-      return;
-    }
-
-    // Se foi carregado do storage, NUNCA atualiza automaticamente os parâmetros
-    // O usuário salvou esses valores específicos, devemos respeitá-los
-    if (foiCarregadoDeStorage.current) {
-      return;
-    }
-
-    if (poder.efeitos.length === 0) {
-      // Sem efeitos, reseta para valores padrão
-      setPoder(prev => ({
-        ...prev,
-        acao: 0,
-        alcance: 0,
-        duracao: 0,
-      }));
-      return;
-    }
-
-    const parametrosPadrao = calcularParametrosPadrao(poder.efeitos, todosEfeitos);
-    
-    // Só atualiza se os valores calculados forem diferentes dos atuais
-    if (
-      poder.acao !== parametrosPadrao.acao ||
-      poder.alcance !== parametrosPadrao.alcance ||
-      poder.duracao !== parametrosPadrao.duracao
-    ) {
-      setPoder(prev => ({
-        ...prev,
-        acao: parametrosPadrao.acao,
-        alcance: parametrosPadrao.alcance,
-        duracao: parametrosPadrao.duracao,
-      }));
-    }
-  }, [efeitosIds, todosEfeitos]);
 
   // Adiciona um novo efeito ao poder
   const adicionarEfeito = (efeitoBaseId: string, grau: number = 1) => {
@@ -97,23 +46,50 @@ export function usePoderCalculator() {
     };
 
     // Ao adicionar efeito manualmente, permite auto-atualização de parâmetros
-    foiCarregadoDeStorage.current = false;
+    habilitarAutoAtualizacaoParametros();
 
-    setPoder(prev => ({
-      ...prev,
-      efeitos: [...prev.efeitos, novoEfeito],
-    }));
+    setPoder(prev => {
+      const efeitos = [...prev.efeitos, novoEfeito];
+      const parametros = calcularParametrosPadrao(efeitos, todosEfeitos);
+
+      return {
+        ...prev,
+        efeitos,
+        acao: parametros.acao,
+        alcance: parametros.alcance,
+        duracao: parametros.duracao,
+      };
+    });
   };
 
   // Remove um efeito
   const removerEfeito = (efeitoId: string) => {
     // Ao remover efeito manualmente, permite auto-atualização de parâmetros
-    foiCarregadoDeStorage.current = false;
+    habilitarAutoAtualizacaoParametros();
     
-    setPoder(prev => ({
-      ...prev,
-      efeitos: prev.efeitos.filter(e => e.id !== efeitoId),
-    }));
+    setPoder(prev => {
+      const efeitos = prev.efeitos.filter(e => e.id !== efeitoId);
+
+      if (efeitos.length === 0) {
+        return {
+          ...prev,
+          efeitos,
+          acao: 0,
+          alcance: 0,
+          duracao: 0,
+        };
+      }
+
+      const parametros = calcularParametrosPadrao(efeitos, todosEfeitos);
+
+      return {
+        ...prev,
+        efeitos,
+        acao: parametros.acao,
+        alcance: parametros.alcance,
+        duracao: parametros.duracao,
+      };
+    });
   };
 
   // Atualiza o grau de um efeito
@@ -161,7 +137,7 @@ export function usePoderCalculator() {
   const adicionarModificacaoLocal = (
     efeitoId: string,
     modificacaoBaseId: string,
-    parametros?: Record<string, any>
+    parametros?: Record<string, unknown>
   ) => {
     const novaModificacao: ModificacaoAplicada = {
       id: `mod-${Date.now()}`,
@@ -196,7 +172,7 @@ export function usePoderCalculator() {
   // Adiciona modificação global ao poder
   const adicionarModificacaoGlobal = (
     modificacaoBaseId: string,
-    parametros?: Record<string, any>
+    parametros?: Record<string, unknown>
   ) => {
     const novaModificacao: ModificacaoAplicada = {
       id: `mod-${Date.now()}`,
@@ -236,7 +212,7 @@ export function usePoderCalculator() {
       ...(dominioId !== undefined && { dominioId }),
       ...(dominioAreaConhecimento !== undefined && { dominioAreaConhecimento }),
       ...(dominioIdPeculiar !== undefined && { dominioIdPeculiar }),
-      ...(icone !== undefined && { icone }),
+      ...(icone !== undefined && { icone: icone || undefined }),
     }));
   };
 
@@ -247,8 +223,6 @@ export function usePoderCalculator() {
       id: Date.now().toString(),
     };
     setPoder(novoPoder);
-    // Reseta as flags de carregamento
-    primeiroCarregamentoProcessado.current = false;
     limparPersistencia();
   };
 
@@ -262,7 +236,6 @@ export function usePoderCalculator() {
 
   // Carrega um poder existente
   const carregarPoder = (poderParaCarregar: Poder) => {
-    isCarregandoPoder.current = true;
     setPoder(poderParaCarregar);
   };
 

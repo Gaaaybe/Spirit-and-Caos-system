@@ -18,6 +18,10 @@ export const PODER_PADRAO: Omit<Poder, 'id'> = {
 export function usePoderPersistence() {
   const foiCarregadoDeStorage = useRef(false);
 
+  const habilitarAutoAtualizacaoParametros = useCallback(() => {
+    foiCarregadoDeStorage.current = false;
+  }, []);
+
   const carregarEstadoInicial = useCallback((): Poder => {
     try {
       // 1. Verifica poder pendente (vindo da biblioteca)
@@ -58,16 +62,17 @@ export function usePoderPersistence() {
   const limparPersistencia = useCallback(() => {
     try {
       localStorage.removeItem(AUTOSAVE_KEY);
-      foiCarregadoDeStorage.current = false;
+      habilitarAutoAtualizacaoParametros();
     } catch (error) {
       console.error('Erro ao limpar auto-save:', error);
     }
-  }, []);
+  }, [habilitarAutoAtualizacaoParametros]);
 
   return {
     carregarEstadoInicial,
     salvarAutomaticamente,
     limparPersistencia,
+    habilitarAutoAtualizacaoParametros,
     foiCarregadoDeStorage,
   };
 }

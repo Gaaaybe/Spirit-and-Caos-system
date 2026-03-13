@@ -99,7 +99,7 @@ export class UpdatePowerUseCase {
 
         if (breaksArrayDomain) {
           return left(
-            new InvalidVisibilityError(
+            new DependencyConflictError(
               `Não é possível alterar o domínio deste poder enquanto ele estiver vinculado ao acervo \"${powerArray.nome}\" com poderes de outro domínio`,
             ),
           );
