@@ -79,7 +79,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
     parametrosBase?: PowerParameters;
     powers?: PowerArrayPowerList;
     custoTotal?: PowerCost;
-    icone?: string;
+    icone?: string | null;
     notas?: string;
   }): PowerArray {
     return PowerArray.create(
@@ -91,7 +91,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
         parametrosBase: partial.parametrosBase ?? this.props.parametrosBase,
         powers: partial.powers ?? this.props.powers,
         custoTotal: partial.custoTotal ?? this.props.custoTotal,
-        icone: partial.icone ?? this.props.icone,
+        icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         notas: partial.notas ?? this.props.notas,
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,

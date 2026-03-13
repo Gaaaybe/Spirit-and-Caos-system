@@ -9,8 +9,10 @@ import type { Domain } from '../../enterprise/entities/value-objects/domain';
 import { PowerCost } from '../../enterprise/entities/value-objects/power-cost';
 import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import { PowerArrayPowerList } from '../../enterprise/entities/watched-lists/power-array-power-list';
+import { PowerDependenciesRepository } from '../repositories/power-dependencies-repository';
 import { PowerArraysRepository } from '../repositories/power-arrays-repository';
 import { PowersRepository } from '../repositories/powers-repository';
+import { DependencyConflictError } from './errors/dependency-conflict-error';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
 
 interface UpdatePowerArrayUseCaseRequest {
@@ -23,7 +25,7 @@ interface UpdatePowerArrayUseCaseRequest {
   powerIds?: string[];
   notas?: string;
   isPublic?: boolean;
-  icone?: string;
+  icone?: string | null;
 }
 
 interface UpdatePowerArrayUseCaseResponseData {
@@ -31,7 +33,7 @@ interface UpdatePowerArrayUseCaseResponseData {
 }
 
 type UpdatePowerArrayUseCaseResponse = Either<
-  ResourceNotFoundError | InvalidVisibilityError | NotAllowedError,
+  ResourceNotFoundError | InvalidVisibilityError | NotAllowedError | DependencyConflictError,
   UpdatePowerArrayUseCaseResponseData
 >;
 
@@ -40,6 +42,7 @@ export class UpdatePowerArrayUseCase {
   constructor(
     private powerArraysRepository: PowerArraysRepository,
     private powersRepository: PowersRepository,
+    private powerDependenciesRepository: PowerDependenciesRepository,
   ) {}
 
   async execute({
@@ -62,6 +65,19 @@ export class UpdatePowerArrayUseCase {
 
     if (!existingPowerArray.canBeEditedBy(userId)) {
       return left(new NotAllowedError());
+    }
+
+    if (dominio && !dominio.equals(existingPowerArray.dominio)) {
+      const isLinkedToAnyItem =
+        await this.powerDependenciesRepository.isPowerArrayLinkedToAnyItem(powerArrayId);
+
+      if (isLinkedToAnyItem) {
+        return left(
+          new DependencyConflictError(
+            'Não é possível alterar o domínio deste acervo enquanto ele estiver vinculado a itens',
+          ),
+        );
+      }
     }
 
     let newPowersList: PowerArrayPowerList | undefined;

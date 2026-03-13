@@ -236,7 +236,7 @@ export function usePoderCalculator() {
       ...(dominioId !== undefined && { dominioId }),
       ...(dominioAreaConhecimento !== undefined && { dominioAreaConhecimento }),
       ...(dominioIdPeculiar !== undefined && { dominioIdPeculiar }),
-      ...(icone !== undefined && { icone: icone || undefined }),
+      ...(icone !== undefined && { icone }),
     }));
   };
 

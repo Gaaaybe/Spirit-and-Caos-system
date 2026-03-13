@@ -92,13 +92,15 @@ export class PrismaItemsRepository extends ItemsRepository {
   }
 
   async update(item: Item<ItemBaseProps>): Promise<void> {
-    const { id, itemDamages, itemPowers, ...fields } = PrismaItemMapper.toPrisma(item);
+    const { id, itemDamages, itemPowers, itemPowerArrays, ...fields } =
+      PrismaItemMapper.toPrisma(item);
     await this.prisma.$transaction([
       this.prisma.itemDamage.deleteMany({ where: { itemId: id as string } }),
       this.prisma.itemPower.deleteMany({ where: { itemId: id as string } }),
+      this.prisma.itemPowerArray.deleteMany({ where: { itemId: id as string } }),
       this.prisma.item.update({
         where: { id: id as string },
-        data: { ...fields, itemDamages, itemPowers },
+        data: { ...fields, itemDamages, itemPowers, itemPowerArrays },
       }),
     ]);
   }

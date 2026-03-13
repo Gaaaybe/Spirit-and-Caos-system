@@ -118,7 +118,9 @@ export interface CreatePoderPayload {
   icone?: string;
 }
 
-export type UpdatePoderPayload = CreatePoderPayload;
+export type UpdatePoderPayload = Omit<Partial<CreatePoderPayload>, 'icone'> & {
+  icone?: string | null;
+};
 
 // ─── Acervo ───────────────────────────────────────────────────────────────────
 
@@ -149,7 +151,9 @@ export interface CreateAcervoPayload {
   icone?: string;
 }
 
-export type UpdateAcervoPayload = CreateAcervoPayload;
+export type UpdateAcervoPayload = Omit<Partial<CreateAcervoPayload>, 'icone'> & {
+  icone?: string | null;
+};
 
 // ─── Peculiaridade ────────────────────────────────────────────────────────────
 
@@ -173,7 +177,12 @@ export interface CreatePeculiaridadePayload {
   icone?: string;
 }
 
-export type UpdatePeculiaridadePayload = Partial<CreatePeculiaridadePayload>;
+export type UpdatePeculiaridadePayload = Omit<
+  Partial<CreatePeculiaridadePayload>,
+  'icone'
+> & {
+  icone?: string | null;
+};
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 

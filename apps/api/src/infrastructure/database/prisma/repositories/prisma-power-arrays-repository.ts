@@ -25,6 +25,20 @@ export class PrismaPowerArraysRepository extends PowerArraysRepository {
     return raw ? PrismaPowerArrayMapper.toDomain(raw) : null;
   }
 
+  async findByPowerId(powerId: string): Promise<PowerArray[]> {
+    const raws = await this.prisma.powerArray.findMany({
+      where: {
+        powerArrayPowers: {
+          some: { powerId },
+        },
+      },
+      include: INCLUDE,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return raws.map(PrismaPowerArrayMapper.toDomain);
+  }
+
   async findMany({ page }: PaginationParams): Promise<PowerArray[]> {
     const raws = await this.prisma.powerArray.findMany({
       include: INCLUDE,

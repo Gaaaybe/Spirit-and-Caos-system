@@ -12,7 +12,10 @@ import type { PowerCost } from '../../enterprise/entities/value-objects/power-co
 import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
 import { PeculiaritiesRepository } from '../repositories/peculiarities-repository';
+import { PowerDependenciesRepository } from '../repositories/power-dependencies-repository';
+import { PowerArraysRepository } from '../repositories/power-arrays-repository';
 import { PowersRepository } from '../repositories/powers-repository';
+import { DependencyConflictError } from './errors/dependency-conflict-error';
 import { InvalidVisibilityError } from './errors/invalid-visibility-error';
 
 interface UpdatePowerUseCaseRequest {
@@ -26,7 +29,7 @@ interface UpdatePowerUseCaseRequest {
   globalModifications?: AppliedModification[];
   custoAlternativo?: AlternativeCost;
   isPublic?: boolean;
-  icone?: string;
+  icone?: string | null;
   notas?: string;
 }
 
@@ -35,7 +38,7 @@ interface UpdatePowerUseCaseResponseData {
 }
 
 type UpdatePowerUseCaseResponse = Either<
-  ResourceNotFoundError | InvalidVisibilityError | NotAllowedError,
+  ResourceNotFoundError | InvalidVisibilityError | NotAllowedError | DependencyConflictError,
   UpdatePowerUseCaseResponseData
 >;
 
@@ -45,6 +48,8 @@ export class UpdatePowerUseCase {
     private powersRepository: PowersRepository,
     private powerCostCalculator: PowerCostCalculator,
     private peculiaritiesRepository: PeculiaritiesRepository,
+    private powerArraysRepository: PowerArraysRepository,
+    private powerDependenciesRepository: PowerDependenciesRepository,
   ) {}
 
   async execute({
@@ -69,6 +74,37 @@ export class UpdatePowerUseCase {
 
     if (!existingPower.canBeEditedBy(userId)) {
       return left(new NotAllowedError());
+    }
+
+    if (dominio && !dominio.equals(existingPower.dominio)) {
+      const isLinkedToAnyItem = await this.powerDependenciesRepository.isPowerLinkedToAnyItem(
+        powerId,
+      );
+
+      if (isLinkedToAnyItem) {
+        return left(
+          new DependencyConflictError(
+            'Não é possível alterar o domínio deste poder enquanto ele estiver vinculado a itens',
+          ),
+        );
+      }
+
+      const linkedPowerArrays = await this.powerArraysRepository.findByPowerId(powerId);
+
+      for (const powerArray of linkedPowerArrays) {
+        const breaksArrayDomain = powerArray.powers
+          .getItems()
+          .filter((power) => !power.id.equals(existingPower.id))
+          .some((power) => !power.dominio.equals(dominio));
+
+        if (breaksArrayDomain) {
+          return left(
+            new InvalidVisibilityError(
+              `Não é possível alterar o domínio deste poder enquanto ele estiver vinculado ao acervo \"${powerArray.nome}\" com poderes de outro domínio`,
+            ),
+          );
+        }
+      }
     }
 
     let newCustoTotal: PowerCost | undefined;

@@ -12,7 +12,7 @@ interface UpdatePeculiarityUseCaseRequest {
   descricao?: string;
   espiritual?: boolean;
   isPublic?: boolean;
-  icone?: string;
+  icone?: string | null;
 }
 
 interface UpdatePeculiarityUseCaseResponseData {

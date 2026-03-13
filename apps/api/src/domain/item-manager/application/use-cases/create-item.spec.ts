@@ -1,4 +1,5 @@
 import { InMemoryItemsRepository } from '@test/repositories/in-memory-items-repository';
+import { InMemoryPowerArraysLookupPort } from '@test/repositories/in-memory-power-arrays-lookup-port';
 import { InMemoryPowersLookupPort } from '@test/repositories/in-memory-powers-lookup-port';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
@@ -17,11 +18,13 @@ describe('CreateItemUseCase', () => {
   let sut: CreateItemUseCase;
   let itemsRepository: InMemoryItemsRepository;
   let powersLookupPort: InMemoryPowersLookupPort;
+  let powerArraysLookupPort: InMemoryPowerArraysLookupPort;
 
   beforeEach(() => {
     itemsRepository = new InMemoryItemsRepository();
     powersLookupPort = new InMemoryPowersLookupPort();
-    sut = new CreateItemUseCase(itemsRepository, powersLookupPort);
+    powerArraysLookupPort = new InMemoryPowerArraysLookupPort();
+    sut = new CreateItemUseCase(itemsRepository, powersLookupPort, powerArraysLookupPort);
   });
 
   it('should create a weapon', async () => {
@@ -164,7 +167,6 @@ describe('CreateItemUseCase', () => {
       dominio: Domain.create({ name: DomainName.NATURAL }),
       custoBase: 30,
       nivelItem: 2,
-      efeitoPassivo: '+1 na iniciativa',
     });
 
     expect(result.isRight()).toBe(true);

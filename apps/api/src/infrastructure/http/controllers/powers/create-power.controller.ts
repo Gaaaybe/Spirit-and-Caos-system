@@ -101,7 +101,7 @@ const createPowerBodySchema = z.object({
   custoAlternativo: custoAlternativoSchema.optional(),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z.url('Ícone deve ser um link válido').optional(),
 });
 
 type CreatePowerBodySchema = z.infer<typeof createPowerBodySchema>;

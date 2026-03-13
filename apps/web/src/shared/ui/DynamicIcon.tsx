@@ -1,7 +1,6 @@
-import * as LucideIcons from 'lucide-react';
-import type { LucideProps } from 'lucide-react';
+import type { HTMLAttributes } from 'react';
 
-interface DynamicIconProps extends LucideProps {
+interface DynamicIconProps extends HTMLAttributes<HTMLImageElement> {
   name: string;
 }
 
@@ -10,22 +9,18 @@ function isUrl(value: string) {
 }
 
 /**
- * Renderiza um ícone Lucide pelo nome (ex: "Sword", "Flame") ou uma imagem por URL.
- * Retorna null se o nome não corresponder a nenhum ícone Lucide e não for URL.
+ * Renderiza apenas ícones baseados em link (URL absoluta ou caminho relativo).
  */
 export function DynamicIcon({ name, className, ...props }: DynamicIconProps) {
-  if (isUrl(name)) {
-    return (
-      <img
-        src={name}
-        alt=""
-        className={className as string}
-        style={{ display: 'block', objectFit: 'cover', width: '100%', height: '100%' }}
-      />
-    );
-  }
+  if (!isUrl(name)) return null;
 
-  const Icon = (LucideIcons as unknown as Record<string, React.ComponentType<LucideProps>>)[name];
-  if (!Icon) return null;
-  return <Icon className={className} {...props} />;
+  return (
+    <img
+      src={name}
+      alt=""
+      className={className as string}
+      style={{ display: 'block', objectFit: 'cover', width: '100%', height: '100%' }}
+      {...props}
+    />
+  );
 }

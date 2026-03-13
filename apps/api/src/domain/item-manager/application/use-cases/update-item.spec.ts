@@ -1,4 +1,5 @@
 import { InMemoryItemsRepository } from '@test/repositories/in-memory-items-repository';
+import { InMemoryPowerArraysLookupPort } from '@test/repositories/in-memory-power-arrays-lookup-port';
 import { InMemoryPowersLookupPort } from '@test/repositories/in-memory-powers-lookup-port';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
@@ -13,12 +14,14 @@ describe('UpdateItemUseCase', () => {
   let sut: UpdateItemUseCase;
   let itemsRepository: InMemoryItemsRepository;
   let powersLookupPort: InMemoryPowersLookupPort;
+  let powerArraysLookupPort: InMemoryPowerArraysLookupPort;
   const userId = 'user-1';
 
   beforeEach(() => {
     itemsRepository = new InMemoryItemsRepository();
     powersLookupPort = new InMemoryPowersLookupPort();
-    sut = new UpdateItemUseCase(itemsRepository, powersLookupPort);
+    powerArraysLookupPort = new InMemoryPowerArraysLookupPort();
+    sut = new UpdateItemUseCase(itemsRepository, powersLookupPort, powerArraysLookupPort);
   });
 
   function makeWeapon(ownerId: string) {

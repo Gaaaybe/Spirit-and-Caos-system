@@ -28,7 +28,7 @@ interface UpdateItemCommonProps {
   custoBase?: number;
   nivelItem?: number;
   isPublic?: boolean;
-  icone?: string;
+  icone?: string | null;
   notas?: string;
   powerIds?: string[];
   powerArrayIds?: string[];

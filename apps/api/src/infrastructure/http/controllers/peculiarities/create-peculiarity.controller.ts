@@ -11,7 +11,7 @@ const createPeculiarityBodySchema = z.object({
   descricao: z.string().min(10).max(1000),
   espiritual: z.boolean(),
   isPublic: z.boolean().optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z.url('Ícone deve ser um link válido').optional(),
 });
 
 type CreatePeculiarityBodySchema = z.infer<typeof createPeculiarityBodySchema>;

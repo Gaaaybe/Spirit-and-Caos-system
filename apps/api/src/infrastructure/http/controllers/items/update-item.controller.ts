@@ -67,7 +67,9 @@ const commonOptional = {
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z
+    .union([z.url('Ícone deve ser um link válido'), z.null()])
+    .optional(),
   powerArrayIds: z.array(z.string().min(1)).optional(),
 };
 

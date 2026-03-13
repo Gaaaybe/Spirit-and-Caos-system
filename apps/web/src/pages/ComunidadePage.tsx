@@ -56,12 +56,23 @@ function CardPoderPublico({
           onClick={onVerResumo}
         >
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-              {poder.nome}
-            </h3>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5 capitalize">
-              {poder.dominio.name}
-            </p>
+            <div className="flex items-start gap-2 mb-2">
+              {poder.icone && (
+                <img
+                  src={poder.icone}
+                  alt={poder.nome}
+                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                  {poder.nome}
+                </h3>
+                <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5 capitalize">
+                  {poder.dominio.name}
+                </p>
+              </div>
+            </div>
           </div>
           <Badge variant="secondary" size="sm" className="flex-shrink-0">
             {poder.effects.length} {poder.effects.length === 1 ? 'efeito' : 'efeitos'}
@@ -116,15 +127,25 @@ function CardAcervoPublico({
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <Package className="w-4 h-4 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
-                {acervo.nome}
-              </h3>
+            <div className="flex items-start gap-2 mb-2">
+              {acervo.icone ? (
+                <img
+                  src={acervo.icone}
+                  alt={acervo.nome}
+                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+                />
+              ) : (
+                <Package className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+              )}
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                  {acervo.nome}
+                </h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
+                  <span className="font-medium">Descritor:</span> {acervo.descricao}
+                </p>
+              </div>
             </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              <span className="font-medium">Descritor:</span> {acervo.descricao}
-            </p>
             <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
               {acervo.powers.length} {acervo.powers.length === 1 ? 'poder' : 'poderes'} ·{' '}
               {acervo.custoTotal.pda} PdA{acervo.custoTotal.pe > 0 ? ` · ${acervo.custoTotal.pe} PE` : ''}
@@ -185,17 +206,26 @@ function CardPeculiaridadePublica({
     <Card hover className="flex flex-col">
       <CardContent className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
-              {peculiaridade.nome}
-            </h3>
-            <span className={`text-xs mt-0.5 font-medium ${
-              peculiaridade.espiritual
-                ? 'text-espirito-600 dark:text-espirito-400'
-                : 'text-gray-500 dark:text-gray-500'
-            }`}>
-              {peculiaridade.espiritual ? 'Espiritual' : 'Não espiritual'}
-            </span>
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            {peculiaridade.icone && (
+              <img
+                src={peculiaridade.icone}
+                alt={peculiaridade.nome}
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                {peculiaridade.nome}
+              </h3>
+              <span className={`text-xs mt-0.5 font-medium ${
+                peculiaridade.espiritual
+                  ? 'text-espirito-600 dark:text-espirito-400'
+                  : 'text-gray-500 dark:text-gray-500'
+              }`}>
+                {peculiaridade.espiritual ? 'Espiritual' : 'Não espiritual'}
+              </span>
+            </div>
           </div>
           <Badge variant="secondary" size="sm" className="flex-shrink-0">
             <Sparkles className="w-3 h-3 mr-1" /> Peculiaridade

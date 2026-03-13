@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   ForbiddenException,
   NotFoundException,
@@ -10,6 +11,7 @@ import {
 import { z } from 'zod';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { DependencyConflictError } from '@/domain/power-manager/application/use-cases/errors/dependency-conflict-error';
 import { InvalidVisibilityError } from '@/domain/power-manager/application/use-cases/errors/invalid-visibility-error';
 import { UpdatePowerArrayUseCase } from '@/domain/power-manager/application/use-cases/update-power-array';
 import {
@@ -67,7 +69,9 @@ const updatePowerArrayBodySchema = z.object({
   powerIds: z.array(z.string()).min(1).optional(),
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z
+    .union([z.url('Ícone deve ser um link válido'), z.null()])
+    .optional(),
 });
 
 const DOMAIN_NAME_MAP: Record<string, DomainName> = {
@@ -131,6 +135,7 @@ export class UpdatePowerArrayController {
       const error = result.value;
       if (error instanceof ResourceNotFoundError) throw new NotFoundException(error.message);
       if (error instanceof NotAllowedError) throw new ForbiddenException(error.message);
+      if (error instanceof DependencyConflictError) throw new ConflictException(error.message);
       if (error instanceof InvalidVisibilityError) throw new BadRequestException(error.message);
       throw new BadRequestException();
     }

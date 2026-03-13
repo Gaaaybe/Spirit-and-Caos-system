@@ -3,10 +3,14 @@ import { Modal, ModalFooter, Button, Input, Textarea, InlineHelp } from '../../.
 import { Sparkles } from 'lucide-react';
 import type { CreatePeculiaridadePayload } from '@/services/types';
 
+type PeculiaridadeFormPayload = Omit<CreatePeculiaridadePayload, 'icone'> & {
+  icone?: string | null;
+};
+
 interface FormPeculiaridadeCustomizadaProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: CreatePeculiaridadePayload) => void | Promise<void>;
+  onSubmit: (data: PeculiaridadeFormPayload) => void | Promise<void>;
   initialValues?: { nome: string; descricao: string; espiritual: boolean; icone?: string };
   title?: string;
   submitLabel?: string;
@@ -36,7 +40,12 @@ export function FormPeculiaridadeCustomizada({
 
   const handleSubmit = async () => {
     if (!nome.trim() || !descricao.trim()) return;
-    await onSubmit({ nome: nome.trim(), descricao: descricao.trim(), espiritual, icone: icone.trim() || undefined });
+    await onSubmit({
+      nome: nome.trim(),
+      descricao: descricao.trim(),
+      espiritual,
+      icone: initialValues ? (icone.trim() ? icone.trim() : null) : (icone.trim() || undefined),
+    });
     handleClose();
   };
 

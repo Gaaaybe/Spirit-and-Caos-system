@@ -146,7 +146,7 @@ export class Power extends OwnableEntity<PowerProps> {
     globalModifications?: AppliedModification[];
     custoTotal?: PowerCost;
     custoAlternativo?: AlternativeCost;
-    icone?: string;
+    icone?: string | null;
     notas?: string;
   }): Power {
     let newEffects = this.props.effects;
@@ -172,7 +172,7 @@ export class Power extends OwnableEntity<PowerProps> {
         globalModifications: newGlobalMods,
         custoTotal: partial.custoTotal ?? this.props.custoTotal,
         custoAlternativo: partial.custoAlternativo ?? this.props.custoAlternativo,
-        icone: partial.icone ?? this.props.icone,
+        icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         notas: partial.notas ?? this.props.notas,
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,

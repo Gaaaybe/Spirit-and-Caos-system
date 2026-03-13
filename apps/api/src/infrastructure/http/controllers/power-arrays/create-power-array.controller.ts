@@ -66,7 +66,7 @@ const createPowerArrayBodySchema = z.object({
   powerIds: z.array(z.string()).min(1),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z.url('Ícone deve ser um link válido').optional(),
 });
 
 const DOMAIN_NAME_MAP: Record<string, DomainName> = {
