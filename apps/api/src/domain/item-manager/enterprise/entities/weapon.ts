@@ -9,7 +9,8 @@ import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from './watched-lists/item-power-id-list';
 
 export enum WeaponRange {
-  CORPO_A_CORPO = 'corpo-a-corpo',
+  ADJACENTE = 'adjacente',
+  NATURAL = 'natural',
   CURTO = 'curto',
   MEDIO = 'medio',
   LONGO = 'longo',
@@ -23,6 +24,7 @@ interface WeaponProps extends ItemBaseProps {
   critMargin: number;
   critMultiplier: number;
   alcance: WeaponRange;
+  alcanceExtraMetros: number;
   atributoEscalonamento?: string;
 }
 
@@ -55,6 +57,10 @@ export class Weapon extends Item<WeaponProps> {
     return this.props.alcance;
   }
 
+  get alcanceExtraMetros(): number {
+    return this.props.alcanceExtraMetros;
+  }
+
   get atributoEscalonamento(): string | undefined {
     return this.props.atributoEscalonamento;
   }
@@ -80,6 +86,7 @@ export class Weapon extends Item<WeaponProps> {
     critMargin?: number;
     critMultiplier?: number;
     alcance?: WeaponRange;
+    alcanceExtraMetros?: number;
     atributoEscalonamento?: string;
     powerIds?: ItemPowerIdList;
     powerArrayIds?: ItemPowerArrayIdList;
@@ -107,6 +114,7 @@ export class Weapon extends Item<WeaponProps> {
         critMargin: partial.critMargin ?? this.props.critMargin,
         critMultiplier: partial.critMultiplier ?? this.props.critMultiplier,
         alcance: partial.alcance ?? this.props.alcance,
+        alcanceExtraMetros: partial.alcanceExtraMetros ?? this.props.alcanceExtraMetros,
         atributoEscalonamento: partial.atributoEscalonamento ?? this.props.atributoEscalonamento,
       },
       this.id,
@@ -142,7 +150,14 @@ export class Weapon extends Item<WeaponProps> {
   static create(
     props: Optional<
       WeaponProps,
-      'durabilidade' | 'isPublic' | 'upgradeLevel' | 'createdAt' | 'powerIds' | 'powerArrayIds' | 'icone'
+      | 'durabilidade'
+      | 'isPublic'
+      | 'upgradeLevel'
+      | 'createdAt'
+      | 'powerIds'
+      | 'powerArrayIds'
+      | 'icone'
+      | 'alcanceExtraMetros'
     >,
     id?: UniqueEntityId,
   ): Weapon {
@@ -151,6 +166,7 @@ export class Weapon extends Item<WeaponProps> {
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
       upgradeLevel: props.upgradeLevel ?? UpgradeLevel.create(0, WEAPON_MAX_UPGRADE),
+      alcanceExtraMetros: props.alcanceExtraMetros ?? 0,
       powerIds: props.powerIds ?? new ItemPowerIdList(),
       powerArrayIds: props.powerArrayIds ?? new ItemPowerArrayIdList(),
       createdAt: props.createdAt ?? new Date(),
@@ -170,6 +186,27 @@ export class Weapon extends Item<WeaponProps> {
       throw new DomainValidationError(
         'Multiplicador de crítico deve ser entre 1 e 7',
         'critMultiplier',
+      );
+    }
+
+    if (fullProps.alcanceExtraMetros < 0) {
+      throw new DomainValidationError(
+        'Alcance extra não pode ser negativo',
+        'alcanceExtraMetros',
+      );
+    }
+
+    if (!Number.isInteger(fullProps.alcanceExtraMetros * 2)) {
+      throw new DomainValidationError(
+        'Alcance extra deve usar incrementos de 0,5m',
+        'alcanceExtraMetros',
+      );
+    }
+
+    if (fullProps.alcance !== WeaponRange.NATURAL && fullProps.alcanceExtraMetros > 0) {
+      throw new DomainValidationError(
+        'Apenas armas de alcance natural podem ter alcance extra',
+        'alcanceExtraMetros',
       );
     }
 

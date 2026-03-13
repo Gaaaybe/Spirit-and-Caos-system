@@ -17,7 +17,8 @@ describe('CreateItemController (e2e)', () => {
     danos: [{ dado: '1d8', base: 'FOR', espiritual: false }],
     critMargin: 18,
     critMultiplier: 2,
-    alcance: 'corpo-a-corpo',
+    alcance: 'natural',
+    alcanceExtraMetros: 0.5,
     isPublic: false,
   };
 
@@ -61,7 +62,8 @@ describe('CreateItemController (e2e)', () => {
       danos: [{ dado: '1d8', base: 'for', espiritual: false }],
       critMargin: 18,
       critMultiplier: 2,
-      alcance: 'corpo-a-corpo',
+      alcance: 'natural',
+      alcanceExtraMetros: 0.5,
       upgradeLevel: 0,
     });
   });
@@ -171,6 +173,19 @@ describe('CreateItemController (e2e)', () => {
       .post('/items')
       .set('Authorization', `Bearer ${accessToken}`)
       .send({ tipo: 'weapon', nome: 'x' }); // nome too short + missing required fields
+
+    expect(response.statusCode).toBe(400);
+  });
+
+  test('[POST] /items — should return 400 when non-natural reach has extra meters', async () => {
+    const response = await request(app.getHttpServer())
+      .post('/items')
+      .set('Authorization', `Bearer ${accessToken}`)
+      .send({
+        ...weaponBody,
+        alcance: 'curto',
+        alcanceExtraMetros: 0.5,
+      });
 
     expect(response.statusCode).toBe(400);
   });

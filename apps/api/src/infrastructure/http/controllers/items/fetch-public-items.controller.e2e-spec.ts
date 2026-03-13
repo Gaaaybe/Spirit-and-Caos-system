@@ -42,6 +42,7 @@ describe('FetchPublicItemsController (e2e)', () => {
         critMargin: 18,
         critMultiplier: 2,
         alcance: 'curto',
+        alcanceExtraMetros: 0,
         isPublic: true,
       });
 

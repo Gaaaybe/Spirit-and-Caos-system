@@ -1,0 +1,692 @@
+import { useEffect, useMemo, useState } from 'react';
+import { Package, Save, RefreshCw, Link2, Sword, Shield, FlaskConical, FileText, Plus, Eye, Sparkles, BookOpen } from 'lucide-react';
+import { DOMINIOS } from '@/data';
+import { usePeculiaridades } from '@/shared/hooks/usePeculiaridades';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Textarea, Badge, toast, Tooltip, DynamicIcon } from '@/shared/ui';
+import { usePoderes } from '@/features/criador-de-poder/hooks/usePoderes';
+import { usePowerArrays } from '@/features/criador-de-poder/hooks/usePowerArrays';
+import { useItemBuilder } from '../hooks/useItemBuilder';
+import { useItems } from '../hooks/useItems';
+import { SeletorVinculosModal } from './SeletorVinculosModal';
+import { ResumoItem } from './ResumoItem';
+import { ResumoVinculoModal } from './ResumoVinculoModal';
+import type { ItemResponse } from '@/services/types';
+
+function ItemTypeIcon({ tipo }: { tipo: 'weapon' | 'defensive-equipment' | 'consumable' | 'artifact' | 'accessory' }) {
+  if (tipo === 'weapon') return <Sword className="w-4 h-4" />;
+  if (tipo === 'defensive-equipment') return <Shield className="w-4 h-4" />;
+  if (tipo === 'consumable') return <FlaskConical className="w-4 h-4" />;
+  return <Package className="w-4 h-4" />;
+}
+
+const BASE_PRESETS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'] as const;
+const BASE_CUSTOM_VALUE = '__custom__';
+
+export function CriadorDeItem() {
+  const { criar, loading } = useItems();
+  const { poderes } = usePoderes();
+  const { acervos } = usePowerArrays();
+  const { peculiaridades } = usePeculiaridades();
+
+  const [salvando, setSalvando] = useState(false);
+  const [modalPoderesAberto, setModalPoderesAberto] = useState(false);
+  const [modalAcervosAberto, setModalAcervosAberto] = useState(false);
+  const [modalResumoAberto, setModalResumoAberto] = useState(false);
+  const [poderResumoId, setPoderResumoId] = useState<string | null>(null);
+  const [acervoResumoId, setAcervoResumoId] = useState<string | null>(null);
+
+  const {
+    state,
+    updateField,
+    updateDomain,
+    setTipo,
+    togglePower,
+    togglePowerArray,
+    updateWeaponDamage,
+    addWeaponDamage,
+    removeWeaponDamage,
+    updateWeaponField,
+    updateDefensiveField,
+    updateConsumableField,
+    hydrateFromItem,
+    getValidationErrors,
+    buildPayload,
+    reset,
+  } = useItemBuilder();
+
+  useEffect(() => {
+    const raw = localStorage.getItem('criador-de-item-carregar');
+    if (!raw) {
+      return;
+    }
+
+    try {
+      const item = JSON.parse(raw) as ItemResponse;
+      hydrateFromItem(item);
+      toast.success(`Item "${item.nome}" carregado para edição.`);
+    } catch {
+      toast.error('Não foi possível carregar o item selecionado.');
+    } finally {
+      localStorage.removeItem('criador-de-item-carregar');
+    }
+  }, [hydrateFromItem]);
+
+  const dominioAtual = state.dominio.name;
+
+  const poderesCompativeis = useMemo(
+    () => poderes.filter((p) => p.dominio.name === dominioAtual),
+    [poderes, dominioAtual],
+  );
+
+  const acervosCompativeis = useMemo(
+    () => acervos.filter((a) => a.dominio.name === dominioAtual),
+    [acervos, dominioAtual],
+  );
+
+  const dominioSelecionado = DOMINIOS.find((d) => d.id === state.dominio.name);
+
+  const poderesSelecionados = useMemo(
+    () => poderes.filter((poder) => state.powerIds.includes(poder.id)),
+    [poderes, state.powerIds],
+  );
+
+  const acervosSelecionados = useMemo(
+    () => acervos.filter((acervo) => state.powerArrayIds.includes(acervo.id)),
+    [acervos, state.powerArrayIds],
+  );
+
+  const poderResumoSelecionado = useMemo(
+    () => (poderResumoId ? poderes.find((poder) => poder.id === poderResumoId) : undefined),
+    [poderResumoId, poderes],
+  );
+
+  const acervoResumoSelecionado = useMemo(
+    () => (acervoResumoId ? acervos.find((acervo) => acervo.id === acervoResumoId) : undefined),
+    [acervoResumoId, acervos],
+  );
+
+  const nivelCalculado = useMemo(() => {
+    const somaPoderes = poderes
+      .filter((poder) => state.powerIds.includes(poder.id))
+      .reduce(
+        (total, poder) =>
+          total + poder.effects.reduce((powerTotal, effect) => powerTotal + effect.grau, 0),
+        0,
+      );
+
+    const somaAcervos = acervos
+      .filter((acervo) => state.powerArrayIds.includes(acervo.id))
+      .reduce(
+        (total, acervo) =>
+          total +
+          acervo.powers.reduce(
+            (arrayTotal, poder) =>
+              arrayTotal + poder.effects.reduce((powerTotal, effect) => powerTotal + effect.grau, 0),
+            0,
+          ),
+        0,
+      );
+
+    return Math.max(1, somaPoderes + somaAcervos);
+  }, [acervos, poderes, state.powerArrayIds, state.powerIds]);
+
+  const custoRealCalculado = useMemo(
+    () => state.custoBase * nivelCalculado,
+    [nivelCalculado, state.custoBase],
+  );
+
+  const precoVendaCalculado = useMemo(
+    () => Math.floor(custoRealCalculado / 2),
+    [custoRealCalculado],
+  );
+
+  const salvarItem = async () => {
+    const errors = getValidationErrors();
+    if (errors.length > 0) {
+      toast.error(errors[0]);
+      return;
+    }
+
+    setSalvando(true);
+    try {
+      const payload = buildPayload();
+      const item = await criar(payload);
+      toast.success(`Item "${item.nome}" criado com sucesso!`);
+      reset();
+    } catch {
+      toast.error('Erro ao salvar item. Verifique os campos e tente novamente.');
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between gap-3">
+            <CardTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5" /> Criador de Itens
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">Nível: {nivelCalculado}</Badge>
+              <Badge variant="secondary">Custo Real: {custoRealCalculado}</Badge>
+              <Badge variant="secondary">Venda: {precoVendaCalculado}</Badge>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              label="Nome"
+              value={state.nome}
+              onChange={(e) => updateField('nome', e.target.value)}
+              placeholder="Ex: Espada Solar"
+            />
+            <Select
+              label="Tipo de Item"
+              value={state.tipo}
+              onChange={(e) => setTipo(e.target.value as typeof state.tipo)}
+              options={[
+                { value: 'weapon', label: 'Arma' },
+                { value: 'defensive-equipment', label: 'Equipamento Defensivo' },
+                { value: 'consumable', label: 'Consumível' },
+                { value: 'artifact', label: 'Artefato' },
+                { value: 'accessory', label: 'Acessório' },
+              ]}
+              placeholder=""
+            />
+          </div>
+
+          <Textarea
+            label="Descrição"
+            value={state.descricao}
+            onChange={(e) => updateField('descricao', e.target.value)}
+            rows={3}
+            placeholder="Descreva o item e sua função..."
+          />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Input
+              label="Custo Base"
+              type="number"
+              min={0}
+              value={state.custoBase}
+              onChange={(e) => updateField('custoBase', Number(e.target.value || 0))}
+            />
+            <Input
+              label="Ícone (URL)"
+              value={state.icone}
+              onChange={(e) => updateField('icone', e.target.value)}
+              placeholder="https://..."
+            />
+            <Input
+              label="Nível Calculado"
+              value={String(nivelCalculado)}
+              readOnly
+              helperText="Soma dos graus de todos os efeitos dos poderes e acervos vinculados. Sem vínculos, nível 1."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Select
+              label="Domínio"
+              value={state.dominio.name}
+              onChange={(e) =>
+                updateDomain({
+                  name: e.target.value as typeof state.dominio.name,
+                  areaConhecimento: undefined,
+                  peculiarId: undefined,
+                })
+              }
+              options={DOMINIOS.map((dominio) => ({ value: dominio.id, label: dominio.nome }))}
+              placeholder=""
+            />
+            <Input
+              label="Notas"
+              value={state.notas}
+              onChange={(e) => updateField('notas', e.target.value)}
+              placeholder="Notas opcionais do item"
+            />
+          </div>
+
+          {state.dominio.name === 'cientifico' && (
+            <Select
+              label="Área de Conhecimento"
+              value={state.dominio.areaConhecimento ?? ''}
+              onChange={(e) => updateDomain({ areaConhecimento: e.target.value })}
+              options={(
+                DOMINIOS.find((d) => d.id === 'cientifico')?.areasConhecimento ?? []
+              ).map((area) => ({ value: area, label: area }))}
+              placeholder="Selecione a área"
+            />
+          )}
+
+          {state.dominio.name === 'peculiar' && (
+            <Select
+              label="Peculiaridade"
+              value={state.dominio.peculiarId ?? ''}
+              onChange={(e) => updateDomain({ peculiarId: e.target.value })}
+              options={peculiaridades.map((p) => ({ value: p.id, label: p.nome }))}
+              placeholder="Selecione a peculiaridade"
+            />
+          )}
+
+          <div className="flex items-center gap-2">
+            <input
+              id="is-public-item"
+              type="checkbox"
+              checked={state.isPublic}
+              onChange={(e) => updateField('isPublic', e.target.checked)}
+              className="rounded border-gray-300"
+            />
+            <label htmlFor="is-public-item" className="text-sm text-gray-700 dark:text-gray-300">
+              Publicar item para a comunidade
+            </label>
+          </div>
+
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-3 bg-gray-50 dark:bg-gray-900/40">
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              <span className="font-semibold">Domínio atual:</span> {dominioSelecionado?.nome ?? dominioAtual}
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              Apenas poderes e acervos do mesmo domínio podem ser vinculados.
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              `Upgrade Level` de armas e equipamentos defensivos é separado do nível do item e começa em 0.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ItemTypeIcon tipo={state.tipo} /> Configurações por Tipo
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {state.tipo === 'weapon' && (
+            <>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Danos</p>
+                  <Button size="sm" variant="outline" onClick={addWeaponDamage}>Adicionar Dano</Button>
+                </div>
+                {state.weapon.danos.map((dano, index) => {
+                  const baseNormalizada = dano.base.trim().toUpperCase();
+                  const isBasePreset = BASE_PRESETS.includes(baseNormalizada as (typeof BASE_PRESETS)[number]);
+                  const baseSelectValue = isBasePreset ? baseNormalizada : BASE_CUSTOM_VALUE;
+
+                  return (
+                  <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end">
+                    <Input
+                      label="Dado"
+                      value={dano.dado}
+                      onChange={(e) => updateWeaponDamage(index, 'dado', e.target.value)}
+                      placeholder="1d8"
+                    />
+                    <div className="space-y-2">
+                      <Select
+                        label="Base"
+                        value={baseSelectValue}
+                        onChange={(e) => {
+                          const nextValue = e.target.value;
+                          if (nextValue === BASE_CUSTOM_VALUE) {
+                            updateWeaponDamage(index, 'base', isBasePreset ? '' : dano.base);
+                            return;
+                          }
+
+                          updateWeaponDamage(index, 'base', nextValue);
+                        }}
+                        options={[
+                          ...BASE_PRESETS.map((base) => ({ value: base, label: base })),
+                          { value: BASE_CUSTOM_VALUE, label: 'Personalizado' },
+                        ]}
+                        placeholder=""
+                      />
+                      {baseSelectValue === BASE_CUSTOM_VALUE ? (
+                        <Input
+                          label="Base Personalizada"
+                          value={dano.base}
+                          onChange={(e) => updateWeaponDamage(index, 'base', e.target.value)}
+                          placeholder="Ex: FOR x2"
+                        />
+                      ) : null}
+                    </div>
+                    <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 h-10">
+                      <input
+                        type="checkbox"
+                        checked={dano.espiritual}
+                        onChange={(e) => updateWeaponDamage(index, 'espiritual', e.target.checked)}
+                      />
+                      Espiritual
+                    </label>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => removeWeaponDamage(index)}
+                      disabled={state.weapon.danos.length === 1}
+                    >
+                      Remover
+                    </Button>
+                  </div>
+                )})}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                <Input
+                  label="Margem Crítico"
+                  type="number"
+                  min={2}
+                  max={20}
+                  value={state.weapon.critMargin}
+                  onChange={(e) => updateWeaponField('critMargin', Number(e.target.value || 20))}
+                />
+                <Input
+                  label="Multiplicador"
+                  type="number"
+                  min={1}
+                  max={7}
+                  value={state.weapon.critMultiplier}
+                  onChange={(e) => updateWeaponField('critMultiplier', Number(e.target.value || 2))}
+                />
+                <Select
+                  label="Alcance"
+                  value={state.weapon.alcance}
+                  onChange={(e) => updateWeaponField('alcance', e.target.value)}
+                  options={[
+                    { value: 'adjacente', label: 'Adjacente' },
+                    { value: 'natural', label: 'Natural' },
+                    { value: 'curto', label: 'Curto' },
+                    { value: 'medio', label: 'Médio' },
+                    { value: 'longo', label: 'Longo' },
+                  ]}
+                  placeholder=""
+                />
+                <Input
+                  label="Extra Natural (m)"
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={state.weapon.alcanceExtraMetros}
+                  onChange={(e) =>
+                    updateWeaponField('alcanceExtraMetros', Number(e.target.value || 0))
+                  }
+                  disabled={state.weapon.alcance !== 'natural'}
+                  helperText={
+                    state.weapon.alcance === 'natural'
+                      ? 'Use incrementos de 0,5m para estender o alcance natural.'
+                      : 'Disponível apenas para armas de alcance natural.'
+                  }
+                />
+                <Input
+                  label="Atributo Escalonamento"
+                  value={state.weapon.atributoEscalonamento}
+                  onChange={(e) => updateWeaponField('atributoEscalonamento', e.target.value)}
+                  placeholder="FOR, DES..."
+                />
+              </div>
+            </>
+          )}
+
+          {state.tipo === 'defensive-equipment' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Select
+                label="Tipo Equipamento"
+                value={state.defensive.tipoEquipamento}
+                onChange={(e) => updateDefensiveField('tipoEquipamento', e.target.value)}
+                options={[
+                  { value: 'protecao', label: 'Proteção' },
+                  { value: 'traje', label: 'Traje' },
+                ]}
+                placeholder=""
+              />
+              <Input
+                label="RD Base"
+                type="number"
+                min={1}
+                value={state.defensive.baseRD}
+                onChange={(e) => updateDefensiveField('baseRD', Number(e.target.value || 1))}
+              />
+              <Input
+                label="Atributo Escalonamento"
+                value={state.defensive.atributoEscalonamento}
+                onChange={(e) => updateDefensiveField('atributoEscalonamento', e.target.value)}
+                placeholder="CON, DES..."
+              />
+            </div>
+          )}
+
+          {state.tipo === 'consumable' && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <Input
+                label="Descritor do Efeito"
+                value={state.consumable.descritorEfeito}
+                onChange={(e) => updateConsumableField('descritorEfeito', e.target.value)}
+                placeholder="Recupera 2d6 PV"
+              />
+              <Input
+                label="Quantidade de Doses"
+                type="number"
+                min={1}
+                value={state.consumable.qtdDoses}
+                onChange={(e) => updateConsumableField('qtdDoses', Number(e.target.value || 1))}
+              />
+              <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 h-10 mt-6">
+                <input
+                  type="checkbox"
+                  checked={state.consumable.isRefeicao}
+                  onChange={(e) => updateConsumableField('isRefeicao', e.target.checked)}
+                />
+                É refeição
+              </label>
+            </div>
+          )}
+
+          {(state.tipo === 'artifact' || state.tipo === 'accessory') && (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Este tipo não requer campos extras obrigatórios. Você já pode vincular poderes/acervos e salvar.
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Link2 className="w-4 h-4" /> Poderes Vinculados ({state.powerIds.length})
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setModalPoderesAberto(true)}>
+                <Plus className="w-4 h-4 mr-1" /> Adicionar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {poderesSelecionados.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhum poder vinculado ainda.</p>
+            ) : (
+              poderesSelecionados.map((poder) => (
+                <div key={poder.id} className="flex items-start justify-between gap-2 p-2 rounded border border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setPoderResumoId(poder.id)}
+                    className="min-w-0 flex items-start gap-2 text-left flex-1"
+                  >
+                    <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                      {poder.icone ? (
+                        <DynamicIcon name={poder.icone} className="w-full h-full" />
+                      ) : (
+                        <Sparkles className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{poder.nome}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{poder.descricao}</p>
+                    </div>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => setPoderResumoId(poder.id)}>
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => togglePower(poder.id)}>Remover</Button>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {poderesCompativeis.length === 0 && (
+              <p className="text-sm text-gray-500">Nenhum poder compatível com o domínio atual.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Link2 className="w-4 h-4" /> Acervos Vinculados ({state.powerArrayIds.length})
+              </CardTitle>
+              <Button size="sm" variant="outline" onClick={() => setModalAcervosAberto(true)}>
+                <Plus className="w-4 h-4 mr-1" /> Adicionar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {acervosSelecionados.length === 0 ? (
+              <p className="text-sm text-gray-500">Nenhum acervo vinculado ainda.</p>
+            ) : (
+              acervosSelecionados.map((acervo) => (
+                <div key={acervo.id} className="flex items-start justify-between gap-2 p-2 rounded border border-gray-200 dark:border-gray-700">
+                  <button
+                    type="button"
+                    onClick={() => setAcervoResumoId(acervo.id)}
+                    className="min-w-0 flex items-start gap-2 text-left flex-1"
+                  >
+                    <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                      {acervo.icone ? (
+                        <DynamicIcon name={acervo.icone} className="w-full h-full" />
+                      ) : (
+                        <BookOpen className="w-4 h-4 text-gray-400" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{acervo.nome}</p>
+                      <p className="text-xs text-gray-500 line-clamp-2">{acervo.descricao}</p>
+                    </div>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    <Button size="sm" variant="ghost" onClick={() => setAcervoResumoId(acervo.id)}>
+                      <Eye className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => togglePowerArray(acervo.id)}>Remover</Button>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {acervosCompativeis.length === 0 && (
+              <p className="text-sm text-gray-500">Nenhum acervo compatível com o domínio atual.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <p>
+                <span className="font-semibold">Resumo em tempo real:</span> nível {nivelCalculado}, custo real {custoRealCalculado}, venda {precoVendaCalculado},
+                {` ${state.powerIds.length}`} poderes e {` ${state.powerArrayIds.length}`} acervos vinculados.
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <Tooltip content="Ver resumo completo do item atual">
+                <Button
+                  variant="outline"
+                  onClick={() => setModalResumoAberto(true)}
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="w-4 h-4" /> Resumo
+                </Button>
+              </Tooltip>
+              <Button variant="outline" onClick={reset}>
+                <RefreshCw className="w-4 h-4 mr-1" /> Resetar
+              </Button>
+              <Button onClick={salvarItem} loading={salvando} disabled={loading}>
+                <Save className="w-4 h-4 mr-1" /> Salvar Item
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <SeletorVinculosModal
+        isOpen={modalPoderesAberto}
+        onClose={() => setModalPoderesAberto(false)}
+        title="Vincular Poderes"
+        emptyText="Nenhum poder encontrado para este domínio."
+        options={poderesCompativeis.map((poder) => ({
+          id: poder.id,
+          nome: poder.nome,
+          descricao: poder.descricao,
+          dominio: poder.dominio.name,
+          icone: poder.icone,
+        }))}
+        selectedIds={state.powerIds}
+        onToggle={togglePower}
+        onOpenDetails={(id) => setPoderResumoId(id)}
+      />
+
+      <SeletorVinculosModal
+        isOpen={modalAcervosAberto}
+        onClose={() => setModalAcervosAberto(false)}
+        title="Vincular Acervos"
+        emptyText="Nenhum acervo encontrado para este domínio."
+        options={acervosCompativeis.map((acervo) => ({
+          id: acervo.id,
+          nome: acervo.nome,
+          descricao: acervo.descricao,
+          dominio: acervo.dominio.name,
+          icone: acervo.icone,
+        }))}
+        selectedIds={state.powerArrayIds}
+        onToggle={togglePowerArray}
+        onOpenDetails={(id) => setAcervoResumoId(id)}
+      />
+
+      <ResumoItem
+        isOpen={modalResumoAberto}
+        onClose={() => setModalResumoAberto(false)}
+        tipo={state.tipo}
+        nome={state.nome.trim()}
+        icone={state.icone.trim()}
+        descricao={state.descricao.trim()}
+        dominio={state.dominio}
+        custoBase={state.custoBase}
+        nivelCalculado={nivelCalculado}
+        custoRealCalculado={custoRealCalculado}
+        precoVendaCalculado={precoVendaCalculado}
+        selectedPowers={poderesSelecionados}
+        selectedPowerArrays={acervosSelecionados}
+        onOpenPowerDetails={(id) => setPoderResumoId(id)}
+        onOpenPowerArrayDetails={(id) => setAcervoResumoId(id)}
+      />
+
+      <ResumoVinculoModal
+        isOpen={!!poderResumoSelecionado || !!acervoResumoSelecionado}
+        onClose={() => {
+          setPoderResumoId(null);
+          setAcervoResumoId(null);
+        }}
+        poder={poderResumoSelecionado}
+        acervo={acervoResumoSelecionado}
+      />
+    </div>
+  );
+}

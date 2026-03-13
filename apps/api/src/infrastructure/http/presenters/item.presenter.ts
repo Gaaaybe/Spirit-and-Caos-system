@@ -44,6 +44,7 @@ export class ItemPresenter {
         critMargin: item.critMargin,
         critMultiplier: item.critMultiplier,
         alcance: item.alcance,
+        alcanceExtraMetros: item.alcanceExtraMetros,
         atributoEscalonamento: item.atributoEscalonamento ?? null,
       };
     }

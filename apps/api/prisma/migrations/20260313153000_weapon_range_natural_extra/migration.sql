@@ -1,0 +1,6 @@
+ALTER TYPE "WeaponRange" RENAME VALUE 'CORPO_A_CORPO' TO 'NATURAL';
+
+ALTER TYPE "WeaponRange" ADD VALUE 'ADJACENTE';
+
+ALTER TABLE "items"
+ADD COLUMN "alcanceExtraMetrosMetades" INTEGER;

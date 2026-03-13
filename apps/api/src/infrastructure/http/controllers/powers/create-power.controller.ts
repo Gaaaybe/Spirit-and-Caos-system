@@ -72,7 +72,7 @@ const appliedModificationSchema = z.object({
 
 const appliedEffectSchema = z.object({
   effectBaseId: z.string().min(1, 'ID do efeito base é obrigatório'),
-  grau: z.number().int().min(1).max(30),
+  grau: z.number().int().min(-5).max(20),
   configuracaoId: z.string().min(1).optional(),
   inputValue: z.union([z.string(), z.number()]).optional(),
   modifications: z.array(appliedModificationSchema).default([]),

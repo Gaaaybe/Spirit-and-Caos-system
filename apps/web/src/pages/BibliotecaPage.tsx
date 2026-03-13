@@ -5,16 +5,25 @@ import { SwipeablePoderCard } from '../features/criador-de-poder/components/Swip
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
 import { ListaAcervos } from '../features/criador-de-poder/components/ListaAcervos';
 import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder';
+import { useItems } from '../features/criador-de-item/hooks/useItems';
 import { poderResponseToPoderSalvo, poderResponseToPoder, legacyPoderToCreatePayload } from '../features/criador-de-poder/utils/poderApiConverter';
 import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useCatalog } from '../context/useCatalog';
 import { useNavigate } from 'react-router-dom';
-import { Library, Sparkles, Plus, Package, RefreshCw, AlertCircle, Download, Upload } from 'lucide-react';
-import type { PoderResponse, CreatePoderPayload } from '../services/types';
+import { Library, Sparkles, Plus, Package, RefreshCw, AlertCircle, Download, Upload, Shield, Sword, FlaskConical, Gem, Trash2 } from 'lucide-react';
+import type { PoderResponse, CreatePoderPayload, ItemResponse } from '../services/types';
 
 export function BibliotecaPage() {
   const navigate = useNavigate();
   const { poderes, loading, error, deletar, criar, atualizar, carregar: recarregar } = usePoderes();
+  const {
+    items,
+    loading: loadingItens,
+    error: erroItens,
+    atualizar: atualizarItem,
+    deletar: deletarItem,
+    carregar: recarregarItens,
+  } = useItems();
   const { efeitos, modificacoes } = useCatalog();
   const [poderVisualizando, setPoderVisualizando] = useState<PoderResponse | null>(null);
 
@@ -33,10 +42,14 @@ export function BibliotecaPage() {
   const [exportandoTodos, setExportandoTodos] = useState(false);
   const [importando, setImportando] = useState(false);
   const [togglePublicId, setTogglePublicId] = useState<string | null>(null);
+  const [buscaItens, setBuscaItens] = useState('');
+  const [carregandoItemId, setCarregandoItemId] = useState<string | null>(null);
+  const [deletandoItemId, setDeletandoItemId] = useState<string | null>(null);
+  const [togglePublicItemId, setTogglePublicItemId] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
-  const [abaAtiva, setAbaAtiva] = useState<'poderes' | 'acervos' | 'customizados'>(() => {
+  const [abaAtiva, setAbaAtiva] = useState<'poderes' | 'itens' | 'acervos' | 'customizados'>(() => {
     const saved = localStorage.getItem('biblioteca-aba-ativa');
-    return (saved as 'poderes' | 'acervos' | 'customizados') || 'poderes';
+    return (saved as 'poderes' | 'itens' | 'acervos' | 'customizados') || 'poderes';
   });
 
   // Persistir aba ativa
@@ -51,6 +64,36 @@ export function BibliotecaPage() {
     p.nome.toLowerCase().includes(busca.toLowerCase()) ||
     (p.descricao && p.descricao.toLowerCase().includes(busca.toLowerCase())),
   );
+
+  const itensFiltrados = useMemo(
+    () =>
+      items.filter(
+        (item) =>
+          item.nome.toLowerCase().includes(buscaItens.toLowerCase()) ||
+          item.descricao.toLowerCase().includes(buscaItens.toLowerCase()),
+      ),
+    [items, buscaItens],
+  );
+
+  const getTipoItemLabel = (tipo: ItemResponse['tipo']) => {
+    const labels: Record<ItemResponse['tipo'], string> = {
+      weapon: 'Arma',
+      'defensive-equipment': 'Equipamento Defensivo',
+      consumable: 'Consumível',
+      artifact: 'Artefato',
+      accessory: 'Acessório',
+    };
+
+    return labels[tipo] ?? tipo;
+  };
+
+  const getTipoItemIcon = (tipo: ItemResponse['tipo']) => {
+    if (tipo === 'weapon') return <Sword className="w-4 h-4" />;
+    if (tipo === 'defensive-equipment') return <Shield className="w-4 h-4" />;
+    if (tipo === 'consumable') return <FlaskConical className="w-4 h-4" />;
+    if (tipo === 'artifact') return <Gem className="w-4 h-4" />;
+    return <Package className="w-4 h-4" />;
+  };
 
   // ─── Ações ────────────────────────────────────────────────────────────────────
 
@@ -140,6 +183,47 @@ export function BibliotecaPage() {
     }
   };
 
+  const handleCarregarItem = (item: ItemResponse) => {
+    setCarregandoItemId(item.id);
+    try {
+      localStorage.setItem('criador-de-item-carregar', JSON.stringify(item));
+      localStorage.setItem('criador-aba-ativa', 'itens');
+      navigate('/criador');
+      toast.success(`Item "${item.nome}" carregado no criador.`);
+    } catch {
+      toast.error('Erro ao carregar item no criador.');
+    } finally {
+      setCarregandoItemId(null);
+    }
+  };
+
+  const handleDeletarItem = async (item: ItemResponse) => {
+    setDeletandoItemId(item.id);
+    try {
+      await deletarItem(item.id);
+      toast.success(`Item "${item.nome}" deletado.`);
+    } catch {
+      toast.error(`Erro ao deletar "${item.nome}".`);
+    } finally {
+      setDeletandoItemId(null);
+    }
+  };
+
+  const handleTogglePublicItem = async (item: ItemResponse) => {
+    setTogglePublicItemId(item.id);
+    try {
+      await atualizarItem(item.id, {
+        tipo: item.tipo,
+        isPublic: !item.isPublic,
+      });
+      toast.success(item.isPublic ? `"${item.nome}" agora é privado.` : `"${item.nome}" publicado!`);
+    } catch {
+      toast.error('Erro ao alterar visibilidade do item.');
+    } finally {
+      setTogglePublicItemId(null);
+    }
+  };
+
   const handleExportarTodos = () => {
     if (poderes.length === 0) return;
     setExportandoTodos(true);
@@ -220,14 +304,16 @@ export function BibliotecaPage() {
     <div className="space-y-6">
       {/* Abas de navegação */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-        {(['poderes', 'acervos', 'customizados'] as const).map((aba) => {
+        {(['poderes', 'itens', 'acervos', 'customizados'] as const).map((aba) => {
           const labels = {
             poderes: 'Poderes Salvos',
+            itens: 'Itens Salvos',
             acervos: 'Acervos',
             customizados: 'Itens Customizados',
           };
           const icons = {
             poderes: <Library className="w-4 h-4" />,
+            itens: <Package className="w-4 h-4" />,
             acervos: <Package className="w-4 h-4" />,
             customizados: <Sparkles className="w-4 h-4" />,
           };
@@ -366,6 +452,128 @@ export function BibliotecaPage() {
                   />
                 );
               })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Aba Itens ── */}
+      {abaAtiva === 'itens' && (
+        <>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5" /> Biblioteca de Itens
+                  </CardTitle>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {loadingItens
+                      ? 'Carregando…'
+                      : `${items.length} ${items.length === 1 ? 'item salvo' : 'itens salvos'}`}
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => recarregarItens()}
+                  disabled={loadingItens}
+                  className="flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingItens ? 'animate-spin' : ''}`} />
+                  Atualizar
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {items.length > 0 && !loadingItens && (
+                <Input
+                  placeholder="Buscar por nome ou descrição..."
+                  value={buscaItens}
+                  onChange={(e) => setBuscaItens(e.target.value)}
+                />
+              )}
+            </CardContent>
+          </Card>
+
+          {erroItens && (
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span className="text-sm">{erroItens}</span>
+            </div>
+          )}
+
+          {!loadingItens && itensFiltrados.length === 0 ? (
+            <EmptyState
+              icon={<Package className="w-12 h-12 text-gray-400" />}
+              title={items.length === 0 ? 'Nenhum item salvo ainda' : 'Nenhum item encontrado'}
+              description={
+                items.length === 0
+                  ? 'Crie seu primeiro item para gerenciar por aqui.'
+                  : 'Tente buscar com outros termos.'
+              }
+              action={{
+                label: 'Criar Novo Item',
+                onClick: () => {
+                  localStorage.setItem('criador-aba-ativa', 'itens');
+                  navigate('/criador');
+                },
+                icon: <Plus className="w-4 h-4" />,
+              }}
+            />
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {itensFiltrados.map((item) => (
+                <Card key={item.id} hover>
+                  <CardContent className="p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-1">
+                          {getTipoItemIcon(item.tipo)}
+                          <span className="text-xs uppercase tracking-wide">{getTipoItemLabel(item.tipo)}</span>
+                        </div>
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{item.nome}</h3>
+                        <p className="text-xs text-gray-500 line-clamp-2">{item.descricao}</p>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-gray-500 space-y-1">
+                      <p>Nível {item.nivelItem} · Base {item.custoBase} · Venda {item.precoVenda}</p>
+                      <p>{item.powerIds.length} poderes · {item.powerArrayIds.length} acervos</p>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCarregarItem(item)}
+                        loading={carregandoItemId === item.id}
+                        disabled={carregandoItemId !== null}
+                      >
+                        Carregar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleTogglePublicItem(item)}
+                        loading={togglePublicItemId === item.id}
+                        disabled={togglePublicItemId !== null}
+                      >
+                        {item.isPublic ? 'Privar' : 'Publicar'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="danger"
+                        onClick={() => handleDeletarItem(item)}
+                        loading={deletandoItemId === item.id}
+                        disabled={deletandoItemId !== null}
+                      >
+                        <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           )}
         </>

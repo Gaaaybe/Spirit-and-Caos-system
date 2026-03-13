@@ -27,7 +27,12 @@ export class PrismaPowersLookupAdapter extends PowersLookupPort {
   async findById(id: string): Promise<PowerInfo | null> {
     const raw = await this.prisma.power.findUnique({
       where: { id },
-      select: { id: true, nome: true, domainName: true },
+      select: {
+        id: true,
+        nome: true,
+        domainName: true,
+        appliedEffects: { select: { grau: true } },
+      },
     });
 
     if (!raw) return null;
@@ -36,6 +41,7 @@ export class PrismaPowersLookupAdapter extends PowersLookupPort {
       id: raw.id,
       nome: raw.nome,
       domainName: DOMAIN_NAME_MAP[raw.domainName],
+      itemLevelContribution: raw.appliedEffects.reduce((sum, effect) => sum + effect.grau, 0),
     };
   }
 }

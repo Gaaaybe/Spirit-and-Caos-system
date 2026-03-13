@@ -13,6 +13,7 @@ import {
 import { fetchPublicPowers } from '../services/powers.service';
 import { fetchPublicPowerArrays, copyPowerArray } from '../services/powerArrays.service';
 import { fetchPublicPeculiarities, copyPeculiarity } from '../services/peculiarities.service';
+import { fetchPublicItems, copyPublicItem } from '../services/items.service';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder';
 import { poderResponseToPoder } from '../features/criador-de-poder/utils/poderApiConverter';
@@ -20,7 +21,7 @@ import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calcu
 import { useCatalog } from '../context/useCatalog';
 import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
-import type { PoderResponse, AcervoResponse, PeculiaridadeResponse } from '../services/types';
+import type { PoderResponse, AcervoResponse, PeculiaridadeResponse, ItemResponse } from '../services/types';
 import {
   Globe,
   Zap,
@@ -191,6 +192,77 @@ function CardAcervoPublico({
   );
 }
 
+function CardItemPublico({
+  item,
+  onCopiar,
+  copiandoId,
+}: {
+  item: ItemResponse;
+  onCopiar: (id: string) => void;
+  copiandoId: string | null;
+}) {
+  const tipoLabel: Record<ItemResponse['tipo'], string> = {
+    weapon: 'Arma',
+    'defensive-equipment': 'Equipamento Defensivo',
+    consumable: 'Consumível',
+    artifact: 'Artefato',
+    accessory: 'Acessório',
+  };
+
+  return (
+    <Card hover className="flex flex-col">
+      <CardContent className="p-4 flex flex-col gap-3 flex-1">
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex items-start gap-2 flex-1 min-w-0">
+            {item.icone ? (
+              <img
+                src={item.icone}
+                alt={item.nome}
+                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
+              />
+            ) : (
+              <Package className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+            )}
+            <div className="flex-1 min-w-0">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                {item.nome}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
+                {tipoLabel[item.tipo]} · Nível {item.nivelItem}
+              </p>
+            </div>
+          </div>
+          <Badge variant="secondary" size="sm" className="flex-shrink-0">
+            {item.precoVenda} R$
+          </Badge>
+        </div>
+
+        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words flex-1">
+          {item.descricao}
+        </p>
+
+        <div className="flex items-center justify-between text-xs text-gray-500">
+          <span>{item.powerIds.length} poderes</span>
+          <span>{item.powerArrayIds.length} acervos</span>
+        </div>
+
+        <div className="flex justify-end pt-1 mt-auto">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => onCopiar(item.id)}
+            loading={copiandoId === item.id}
+            disabled={copiandoId !== null}
+            className="flex items-center gap-1.5"
+          >
+            <Copy className="w-3.5 h-3.5" /> Copiar
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 function CardPeculiaridadePublica({
@@ -259,22 +331,27 @@ export function ComunidadePage() {
   const { copiar } = usePoderes();
   const { efeitos, modificacoes } = useCatalog();
 
-  const [aba, setAba] = useState<'poderes' | 'acervos' | 'peculiaridades'>('poderes');
+  const [aba, setAba] = useState<'poderes' | 'itens' | 'acervos' | 'peculiaridades'>('poderes');
   const [buscaPoderes, setBuscaPoderes] = useState('');
+  const [buscaItens, setBuscaItens] = useState('');
   const [buscaAcervos, setBuscaAcervos] = useState('');
   const [buscaPeculiaridades, setBuscaPeculiaridades] = useState('');
   const [poderVisualizando, setPoderVisualizando] = useState<PoderResponse | null>(null);
 
   const [poderes, setPoderes] = useState<PoderResponse[]>([]);
+  const [itens, setItens] = useState<ItemResponse[]>([]);
   const [acervos, setAcervos] = useState<AcervoResponse[]>([]);
   const [peculiaridades, setPeculiaridades] = useState<PeculiaridadeResponse[]>([]);
   const [loadingPoderes, setLoadingPoderes] = useState(true);
+  const [loadingItens, setLoadingItens] = useState(true);
   const [loadingAcervos, setLoadingAcervos] = useState(true);
   const [loadingPeculiaridades, setLoadingPeculiaridades] = useState(true);
   const [erroPoderes, setErroPoderes] = useState<string | null>(null);
+  const [erroItens, setErroItens] = useState<string | null>(null);
   const [erroAcervos, setErroAcervos] = useState<string | null>(null);
   const [erroPeculiaridades, setErroPeculiaridades] = useState<string | null>(null);
   const [copiandoId, setCopiandoId] = useState<string | null>(null);
+  const [copiandoItemId, setCopiandoItemId] = useState<string | null>(null);
   const [copiandoAcervoId, setCopiandoAcervoId] = useState<string | null>(null);
   const [copiandoPeculiaridadeId, setCopiandoPeculiaridadeId] = useState<string | null>(null);
 
@@ -295,6 +372,19 @@ export function ComunidadePage() {
       setErroPoderes('Não foi possível carregar os poderes públicos.');
     } finally {
       setLoadingPoderes(false);
+    }
+  }, []);
+
+  const carregarItens = useCallback(async () => {
+    setLoadingItens(true);
+    setErroItens(null);
+    try {
+      const data = await fetchPublicItems();
+      setItens(data);
+    } catch {
+      setErroItens('Não foi possível carregar os itens públicos.');
+    } finally {
+      setLoadingItens(false);
     }
   }, []);
 
@@ -326,9 +416,10 @@ export function ComunidadePage() {
 
   useEffect(() => {
     carregarPoderes();
+    carregarItens();
     carregarAcervos();
     carregarPeculiaridades();
-  }, [carregarPoderes, carregarAcervos, carregarPeculiaridades]);
+  }, [carregarPoderes, carregarItens, carregarAcervos, carregarPeculiaridades]);
 
   const handleCopiar = async (powerId: string) => {
     if (!isAuthenticated) {
@@ -364,6 +455,23 @@ export function ComunidadePage() {
     }
   };
 
+  const handleCopiarItem = async (itemId: string) => {
+    if (!isAuthenticated) {
+      toast.error('Faça login para copiar itens.');
+      navigate('/entrar');
+      return;
+    }
+    setCopiandoItemId(itemId);
+    try {
+      const novo = await copyPublicItem(itemId);
+      toast.success(`"${novo.nome}" copiado para sua biblioteca!`);
+    } catch {
+      toast.error('Erro ao copiar item. Tente novamente.');
+    } finally {
+      setCopiandoItemId(null);
+    }
+  };
+
   const handleCopiarPeculiaridade = async (peculiarityId: string) => {
     if (!isAuthenticated) {
       toast.error('Faça login para copiar peculiaridades.');
@@ -389,6 +497,14 @@ export function ComunidadePage() {
         (p.descricao && p.descricao.toLowerCase().includes(buscaPoderes.toLowerCase())),
     );
 
+  const itensFiltrados = itens
+    .filter((item) => item.userId !== user?.id)
+    .filter(
+      (item) =>
+        item.nome.toLowerCase().includes(buscaItens.toLowerCase()) ||
+        item.descricao.toLowerCase().includes(buscaItens.toLowerCase()),
+    );
+
   const acervosFiltrados = acervos
     .filter((a) => a.userId !== user?.id)
     .filter(
@@ -405,7 +521,14 @@ export function ComunidadePage() {
         p.descricao.toLowerCase().includes(buscaPeculiaridades.toLowerCase()),
     );
 
-  const isLoading = aba === 'poderes' ? loadingPoderes : aba === 'acervos' ? loadingAcervos : loadingPeculiaridades;
+  const isLoading =
+    aba === 'poderes'
+      ? loadingPoderes
+      : aba === 'itens'
+        ? loadingItens
+        : aba === 'acervos'
+          ? loadingAcervos
+          : loadingPeculiaridades;
 
   return (
     <div className="space-y-6">
@@ -434,15 +557,17 @@ export function ComunidadePage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
-        {(['poderes', 'acervos', 'peculiaridades'] as const).map((tab) => {
-          const labels = { poderes: 'Poderes', acervos: 'Acervos', peculiaridades: 'Peculiaridades' };
+        {(['poderes', 'itens', 'acervos', 'peculiaridades'] as const).map((tab) => {
+          const labels = { poderes: 'Poderes', itens: 'Itens', acervos: 'Acervos', peculiaridades: 'Peculiaridades' };
           const icons = {
             poderes: <Zap className="w-4 h-4" />,
+            itens: <Package className="w-4 h-4" />,
             acervos: <Package className="w-4 h-4" />,
             peculiaridades: <Sparkles className="w-4 h-4" />,
           };
           const counts = {
             poderes: poderesFiltrados.length,
+            itens: itensFiltrados.length,
             acervos: acervosFiltrados.length,
             peculiaridades: peculiaridadesFiltradas.length,
           };
@@ -530,6 +655,75 @@ export function ComunidadePage() {
                   onCopiar={handleCopiar}
                   copiandoId={copiandoId}
                   onVerResumo={() => setPoderVisualizando(poder)}
+                />
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* ── Aba Itens ── */}
+      {aba === 'itens' && (
+        <>
+          <Card>
+            <CardHeader>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <CardTitle className="flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  {loadingItens ? 'Carregando…' : `${itensFiltrados.length} ${itensFiltrados.length === 1 ? 'item público' : 'itens públicos'}`}
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  {itens.length > 0 && (
+                    <div className="relative flex-1 min-w-48">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        value={buscaItens}
+                        onChange={(e) => setBuscaItens(e.target.value)}
+                        placeholder="Buscar itens..."
+                        className="pl-9"
+                      />
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={carregarItens}
+                    disabled={loadingItens}
+                    className="flex items-center gap-1.5 flex-shrink-0"
+                  >
+                    <RefreshCw className={`w-4 h-4 ${loadingItens ? 'animate-spin' : ''}`} />
+                    Atualizar
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {erroItens && (
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span className="text-sm">{erroItens}</span>
+            </div>
+          )}
+
+          {!loadingItens && itensFiltrados.length === 0 ? (
+            <EmptyState
+              icon={<Package className="w-12 h-12 text-gray-400" />}
+              title={buscaItens ? 'Nenhum resultado' : 'Nenhum item público ainda'}
+              description={
+                buscaItens
+                  ? `Nenhum item corresponde a "${buscaItens}"`
+                  : 'Seja o primeiro a publicar um item na comunidade!'
+              }
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {itensFiltrados.map((item) => (
+                <CardItemPublico
+                  key={item.id}
+                  item={item}
+                  onCopiar={handleCopiarItem}
+                  copiandoId={copiandoItemId}
                 />
               ))}
             </div>

@@ -35,7 +35,7 @@ describe('UpdateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
   }
 
@@ -109,5 +109,30 @@ describe('UpdateItemUseCase', () => {
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(NotAllowedError);
+  });
+
+  it('should recalculate item level from linked powers on update', async () => {
+    const weapon = makeWeapon(userId);
+    await itemsRepository.create(weapon);
+
+    powersLookupPort.powers.push({
+      id: 'power-1',
+      nome: 'Fio Cortante',
+      domainName: DomainName.ARMA_BRANCA,
+      itemLevelContribution: 4,
+    });
+
+    const result = await sut.execute({
+      tipo: ItemType.WEAPON,
+      itemId: weapon.id.toString(),
+      userId,
+      powerIds: ['power-1'],
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.item.nivelItem).toBe(4);
+      expect(result.value.item.valorBase).toBe(40);
+    }
   });
 });
