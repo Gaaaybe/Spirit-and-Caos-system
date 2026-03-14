@@ -1,11 +1,14 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState } from '../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState, DynamicIcon } from '../shared/ui';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { SwipeablePoderCard } from '../features/criador-de-poder/components/SwipeablePoderCard';
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
 import { ListaAcervos } from '../features/criador-de-poder/components/ListaAcervos';
+import { usePowerArrays } from '../features/criador-de-poder/hooks/usePowerArrays';
 import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder';
 import { useItems } from '../features/criador-de-item/hooks/useItems';
+import { ResumoItem } from '../features/criador-de-item/components/ResumoItem';
+import { ResumoVinculoModal } from '../features/criador-de-item/components/ResumoVinculoModal';
 import { poderResponseToPoderSalvo, poderResponseToPoder, legacyPoderToCreatePayload } from '../features/criador-de-poder/utils/poderApiConverter';
 import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useCatalog } from '../context/useCatalog';
@@ -16,6 +19,7 @@ import type { PoderResponse, CreatePoderPayload, ItemResponse } from '../service
 export function BibliotecaPage() {
   const navigate = useNavigate();
   const { poderes, loading, error, deletar, criar, atualizar, carregar: recarregar } = usePoderes();
+  const { acervos } = usePowerArrays();
   const {
     items,
     loading: loadingItens,
@@ -26,6 +30,9 @@ export function BibliotecaPage() {
   } = useItems();
   const { efeitos, modificacoes } = useCatalog();
   const [poderVisualizando, setPoderVisualizando] = useState<PoderResponse | null>(null);
+  const [itemVisualizando, setItemVisualizando] = useState<ItemResponse | null>(null);
+  const [itemPoderResumoId, setItemPoderResumoId] = useState<string | null>(null);
+  const [itemAcervoResumoId, setItemAcervoResumoId] = useState<string | null>(null);
 
   const poderVisualizandoConvertido = useMemo(() => {
     if (!poderVisualizando) return null;
@@ -33,6 +40,26 @@ export function BibliotecaPage() {
     const detalhes = calcularDetalhesPoder(poder, efeitos, modificacoes);
     return { poder, detalhes };
   }, [poderVisualizando, efeitos, modificacoes]);
+
+  const itemPoderesSelecionados = useMemo(
+    () => (itemVisualizando ? poderes.filter((poder) => itemVisualizando.powerIds.includes(poder.id)) : []),
+    [itemVisualizando, poderes],
+  );
+
+  const itemAcervosSelecionados = useMemo(
+    () => (itemVisualizando ? acervos.filter((acervo) => itemVisualizando.powerArrayIds.includes(acervo.id)) : []),
+    [itemVisualizando, acervos],
+  );
+
+  const itemPoderResumoSelecionado = useMemo(
+    () => (itemPoderResumoId ? poderes.find((poder) => poder.id === itemPoderResumoId) : undefined),
+    [itemPoderResumoId, poderes],
+  );
+
+  const itemAcervoResumoSelecionado = useMemo(
+    () => (itemAcervoResumoId ? acervos.find((acervo) => acervo.id === itemAcervoResumoId) : undefined),
+    [itemAcervoResumoId, acervos],
+  );
 
   const [busca, setBusca] = useState('');
   const [carregandoId, setCarregandoId] = useState<string | null>(null);
@@ -105,6 +132,7 @@ export function BibliotecaPage() {
     try {
       const poderSalvo = poderResponseToPoderSalvo(poderResp);
       localStorage.setItem('criador-de-poder-carregar', JSON.stringify(poderSalvo));
+      localStorage.setItem('criador-aba-ativa', JSON.stringify('poderes'));
       navigate('/criador');
       toast.success(`Poder "${poderResp.nome}" carregado!`);
     } catch {
@@ -187,7 +215,7 @@ export function BibliotecaPage() {
     setCarregandoItemId(item.id);
     try {
       localStorage.setItem('criador-de-item-carregar', JSON.stringify(item));
-      localStorage.setItem('criador-aba-ativa', 'itens');
+      localStorage.setItem('criador-aba-ativa', JSON.stringify('itens'));
       navigate('/criador');
       toast.success(`Item "${item.nome}" carregado no criador.`);
     } catch {
@@ -515,7 +543,7 @@ export function BibliotecaPage() {
               action={{
                 label: 'Criar Novo Item',
                 onClick: () => {
-                  localStorage.setItem('criador-aba-ativa', 'itens');
+                  localStorage.setItem('criador-aba-ativa', JSON.stringify('itens'));
                   navigate('/criador');
                 },
                 icon: <Plus className="w-4 h-4" />,
@@ -524,16 +552,30 @@ export function BibliotecaPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {itensFiltrados.map((item) => (
-                <Card key={item.id} hover>
+                <Card
+                  key={item.id}
+                  hover
+                  className="cursor-pointer group"
+                  onClick={() => setItemVisualizando(item)}
+                >
                   <CardContent className="p-4 space-y-3">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-1">
-                          {getTipoItemIcon(item.tipo)}
-                          <span className="text-xs uppercase tracking-wide">{getTipoItemLabel(item.tipo)}</span>
+                      <div className="min-w-0 flex items-start gap-3 flex-1">
+                        <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                          {item.icone ? (
+                            <DynamicIcon name={item.icone} className="w-full h-full" />
+                          ) : (
+                            <Package className="w-5 h-5 text-gray-400" />
+                          )}
                         </div>
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate">{item.nome}</h3>
-                        <p className="text-xs text-gray-500 line-clamp-2">{item.descricao}</p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-1">
+                            {getTipoItemIcon(item.tipo)}
+                            <span className="text-xs uppercase tracking-wide">{getTipoItemLabel(item.tipo)}</span>
+                          </div>
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{item.nome}</h3>
+                          <p className="text-xs text-gray-500 line-clamp-2">{item.descricao}</p>
+                        </div>
                       </div>
                     </div>
 
@@ -546,7 +588,10 @@ export function BibliotecaPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleCarregarItem(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCarregarItem(item);
+                        }}
                         loading={carregandoItemId === item.id}
                         disabled={carregandoItemId !== null}
                       >
@@ -555,7 +600,10 @@ export function BibliotecaPage() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => handleTogglePublicItem(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleTogglePublicItem(item);
+                        }}
                         loading={togglePublicItemId === item.id}
                         disabled={togglePublicItemId !== null}
                       >
@@ -564,7 +612,10 @@ export function BibliotecaPage() {
                       <Button
                         size="sm"
                         variant="danger"
-                        onClick={() => handleDeletarItem(item)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletarItem(item);
+                        }}
                         loading={deletandoItemId === item.id}
                         disabled={deletandoItemId !== null}
                       >
@@ -594,6 +645,36 @@ export function BibliotecaPage() {
           detalhes={poderVisualizandoConvertido.detalhes}
         />
       )}
+
+      {itemVisualizando && (
+        <ResumoItem
+          isOpen={!!itemVisualizando}
+          onClose={() => setItemVisualizando(null)}
+          tipo={itemVisualizando.tipo}
+          nome={itemVisualizando.nome}
+          icone={itemVisualizando.icone ?? undefined}
+          descricao={itemVisualizando.descricao}
+          dominio={itemVisualizando.dominio}
+          custoBase={itemVisualizando.custoBase}
+          nivelCalculado={itemVisualizando.nivelItem}
+          custoRealCalculado={itemVisualizando.valorBase}
+          precoVendaCalculado={itemVisualizando.precoVenda}
+          selectedPowers={itemPoderesSelecionados}
+          selectedPowerArrays={itemAcervosSelecionados}
+          onOpenPowerDetails={(powerId) => setItemPoderResumoId(powerId)}
+          onOpenPowerArrayDetails={(powerArrayId) => setItemAcervoResumoId(powerArrayId)}
+        />
+      )}
+
+      <ResumoVinculoModal
+        isOpen={!!itemPoderResumoSelecionado || !!itemAcervoResumoSelecionado}
+        onClose={() => {
+          setItemPoderResumoId(null);
+          setItemAcervoResumoId(null);
+        }}
+        poder={itemPoderResumoSelecionado}
+        acervo={itemAcervoResumoSelecionado}
+      />
     </div>
   );
 }

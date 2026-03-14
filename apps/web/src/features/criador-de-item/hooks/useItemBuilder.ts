@@ -21,6 +21,7 @@ interface ItemBuilderState {
   notas: string;
   powerIds: string[];
   powerArrayIds: string[];
+  editingItemId: string | null;
   weapon: {
     danos: { dado: string; base: string; espiritual: boolean }[];
     critMargin: number;
@@ -52,6 +53,7 @@ const createInitialState = (): ItemBuilderState => ({
   notas: '',
   powerIds: [],
   powerArrayIds: [],
+  editingItemId: null,
   weapon: {
     danos: [{ dado: '1d6', base: 'FOR', espiritual: false }],
     critMargin: 20,
@@ -93,6 +95,7 @@ export function useItemBuilder() {
         notas: item.notas ?? '',
         powerIds: item.powerIds,
         powerArrayIds: item.powerArrayIds,
+        editingItemId: item.id,
         // Preserva seções não relacionadas quando o tipo atual for o mesmo.
         weapon: prev.tipo === item.tipo ? prev.weapon : createInitialState().weapon,
         defensive: prev.tipo === item.tipo ? prev.defensive : createInitialState().defensive,

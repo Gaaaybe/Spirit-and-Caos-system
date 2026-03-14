@@ -10,7 +10,7 @@ import { useItems } from '../hooks/useItems';
 import { SeletorVinculosModal } from './SeletorVinculosModal';
 import { ResumoItem } from './ResumoItem';
 import { ResumoVinculoModal } from './ResumoVinculoModal';
-import type { ItemResponse } from '@/services/types';
+import type { ItemResponse, UpdateItemPayload } from '@/services/types';
 
 function ItemTypeIcon({ tipo }: { tipo: 'weapon' | 'defensive-equipment' | 'consumable' | 'artifact' | 'accessory' }) {
   if (tipo === 'weapon') return <Sword className="w-4 h-4" />;
@@ -23,7 +23,7 @@ const BASE_PRESETS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'] as const;
 const BASE_CUSTOM_VALUE = '__custom__';
 
 export function CriadorDeItem() {
-  const { criar, loading } = useItems();
+  const { criar, atualizar, loading } = useItems();
   const { poderes } = usePoderes();
   const { acervos } = usePowerArrays();
   const { peculiaridades } = usePeculiaridades();
@@ -150,9 +150,15 @@ export function CriadorDeItem() {
     setSalvando(true);
     try {
       const payload = buildPayload();
-      const item = await criar(payload);
-      toast.success(`Item "${item.nome}" criado com sucesso!`);
-      reset();
+      if (state.editingItemId) {
+        const updated = await atualizar(state.editingItemId, payload as UpdateItemPayload);
+        hydrateFromItem(updated);
+        toast.success(`Item "${updated.nome}" atualizado com sucesso!`);
+      } else {
+        const item = await criar(payload);
+        toast.success(`Item "${item.nome}" criado com sucesso!`);
+        reset();
+      }
     } catch {
       toast.error('Erro ao salvar item. Verifique os campos e tente novamente.');
     } finally {
@@ -616,10 +622,10 @@ export function CriadorDeItem() {
                 </Button>
               </Tooltip>
               <Button variant="outline" onClick={reset}>
-                <RefreshCw className="w-4 h-4 mr-1" /> Resetar
+                <RefreshCw className="w-4 h-4 mr-1" /> {state.editingItemId ? 'Cancelar Edição' : 'Resetar'}
               </Button>
               <Button onClick={salvarItem} loading={salvando} disabled={loading}>
-                <Save className="w-4 h-4 mr-1" /> Salvar Item
+                <Save className="w-4 h-4 mr-1" /> {state.editingItemId ? 'Atualizar Item' : 'Salvar Item'}
               </Button>
             </div>
           </div>

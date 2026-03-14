@@ -9,6 +9,8 @@ import {
   Badge,
   EmptyState,
   toast,
+  DynamicIcon,
+  Modal,
 } from '../shared/ui';
 import { fetchPublicPowers } from '../services/powers.service';
 import { fetchPublicPowerArrays, copyPowerArray } from '../services/powerArrays.service';
@@ -16,7 +18,10 @@ import { fetchPublicPeculiarities, copyPeculiarity } from '../services/peculiari
 import { fetchPublicItems, copyPublicItem } from '../services/items.service';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder';
-import { poderResponseToPoder } from '../features/criador-de-poder/utils/poderApiConverter';
+import { ResumoAcervo } from '../features/criador-de-poder/components/ResumoAcervo';
+import { ResumoItem } from '../features/criador-de-item/components/ResumoItem';
+import { ResumoVinculoModal } from '../features/criador-de-item/components/ResumoVinculoModal';
+import { acervoResponseToAcervo, poderResponseToPoder } from '../features/criador-de-poder/utils/poderApiConverter';
 import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useCatalog } from '../context/useCatalog';
 import { useAuth } from '../context/useAuth';
@@ -31,8 +36,6 @@ import {
   RefreshCw,
   AlertCircle,
   Lock,
-  ChevronDown,
-  ChevronUp,
   Sparkles,
 } from 'lucide-react';
 
@@ -113,19 +116,16 @@ function CardAcervoPublico({
   acervo,
   onCopiar,
   copiandoId,
+  onVerResumo,
 }: {
   acervo: AcervoResponse;
   onCopiar: (id: string) => void;
   copiandoId: string | null;
+  onVerResumo: () => void;
 }) {
-  const [expandido, setExpandido] = useState(false);
-
   return (
-    <Card className="overflow-hidden">
-      <div
-        className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-        onClick={() => setExpandido((v) => !v)}
-      >
+    <Card hover className="overflow-hidden cursor-pointer group" onClick={onVerResumo}>
+      <div className="p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
             <div className="flex items-start gap-2 mb-2">
@@ -139,7 +139,7 @@ function CardAcervoPublico({
                 <Package className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
               )}
               <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                   {acervo.nome}
                 </h3>
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
@@ -163,31 +163,9 @@ function CardAcervoPublico({
             >
               <Copy className="w-3.5 h-3.5" /> Copiar
             </Button>
-            <button className="text-gray-400">
-              {expandido ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
           </div>
         </div>
       </div>
-
-      {expandido && acervo.powers.length > 0 && (
-        <div className="border-t border-gray-100 dark:border-gray-700 px-4 pb-4 pt-3">
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">
-            Poderes do acervo
-          </p>
-          <div className="space-y-1.5">
-            {acervo.powers.map((p) => (
-              <div
-                key={p.id}
-                className="flex items-center justify-between text-sm rounded bg-gray-50 dark:bg-gray-800 px-3 py-1.5"
-              >
-                <span className="text-gray-800 dark:text-gray-200">{p.nome}</span>
-                <span className="text-xs text-gray-500">{p.custoTotal.pda} PdA</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </Card>
   );
 }
@@ -196,10 +174,12 @@ function CardItemPublico({
   item,
   onCopiar,
   copiandoId,
+  onVerResumo,
 }: {
   item: ItemResponse;
   onCopiar: (id: string) => void;
   copiandoId: string | null;
+  onVerResumo: () => void;
 }) {
   const tipoLabel: Record<ItemResponse['tipo'], string> = {
     weapon: 'Arma',
@@ -210,18 +190,18 @@ function CardItemPublico({
   };
 
   return (
-    <Card hover className="flex flex-col">
+    <Card hover className="flex flex-col cursor-pointer" onClick={onVerResumo}>
       <CardContent className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
             {item.icone ? (
-              <img
-                src={item.icone}
-                alt={item.nome}
-                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-              />
+              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                <DynamicIcon name={item.icone} className="w-full h-full" />
+              </div>
             ) : (
-              <Package className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                <Package className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
             )}
             <div className="flex-1 min-w-0">
               <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
@@ -233,7 +213,7 @@ function CardItemPublico({
             </div>
           </div>
           <Badge variant="secondary" size="sm" className="flex-shrink-0">
-            {item.precoVenda} R$
+            {item.precoVenda} R
           </Badge>
         </div>
 
@@ -250,7 +230,10 @@ function CardItemPublico({
           <Button
             variant="primary"
             size="sm"
-            onClick={() => onCopiar(item.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopiar(item.id);
+            }}
             loading={copiandoId === item.id}
             disabled={copiandoId !== null}
             className="flex items-center gap-1.5"
@@ -269,13 +252,15 @@ function CardPeculiaridadePublica({
   peculiaridade,
   onCopiar,
   copiandoId,
+  onVerResumo,
 }: {
   peculiaridade: PeculiaridadeResponse;
   onCopiar: (id: string) => void;
   copiandoId: string | null;
+  onVerResumo: () => void;
 }) {
   return (
-    <Card hover className="flex flex-col">
+    <Card hover className="flex flex-col cursor-pointer group" onClick={onVerResumo}>
       <CardContent className="p-4 flex flex-col gap-3 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-2 flex-1 min-w-0">
@@ -287,7 +272,7 @@ function CardPeculiaridadePublica({
               />
             )}
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                 {peculiaridade.nome}
               </h3>
               <span className={`text-xs mt-0.5 font-medium ${
@@ -312,7 +297,10 @@ function CardPeculiaridadePublica({
           <Button
             variant="primary"
             size="sm"
-            onClick={() => onCopiar(peculiaridade.id)}
+            onClick={(e) => {
+              e.stopPropagation();
+              onCopiar(peculiaridade.id);
+            }}
             loading={copiandoId === peculiaridade.id}
             disabled={copiandoId !== null}
             className="flex items-center gap-1.5"
@@ -337,6 +325,11 @@ export function ComunidadePage() {
   const [buscaAcervos, setBuscaAcervos] = useState('');
   const [buscaPeculiaridades, setBuscaPeculiaridades] = useState('');
   const [poderVisualizando, setPoderVisualizando] = useState<PoderResponse | null>(null);
+  const [itemVisualizando, setItemVisualizando] = useState<ItemResponse | null>(null);
+  const [acervoVisualizando, setAcervoVisualizando] = useState<AcervoResponse | null>(null);
+  const [peculiaridadeVisualizando, setPeculiaridadeVisualizando] = useState<PeculiaridadeResponse | null>(null);
+  const [itemPoderResumoId, setItemPoderResumoId] = useState<string | null>(null);
+  const [itemAcervoResumoId, setItemAcervoResumoId] = useState<string | null>(null);
 
   const [poderes, setPoderes] = useState<PoderResponse[]>([]);
   const [itens, setItens] = useState<ItemResponse[]>([]);
@@ -361,6 +354,31 @@ export function ComunidadePage() {
     const detalhes = calcularDetalhesPoder(poder, efeitos, modificacoes);
     return { poder, detalhes };
   }, [poderVisualizando, efeitos, modificacoes]);
+
+  const acervoVisualizandoConvertido = useMemo(
+    () => (acervoVisualizando ? acervoResponseToAcervo(acervoVisualizando) : null),
+    [acervoVisualizando],
+  );
+
+  const itemPoderesSelecionados = useMemo(
+    () => (itemVisualizando ? poderes.filter((poder) => itemVisualizando.powerIds.includes(poder.id)) : []),
+    [itemVisualizando, poderes],
+  );
+
+  const itemAcervosSelecionados = useMemo(
+    () => (itemVisualizando ? acervos.filter((acervo) => itemVisualizando.powerArrayIds.includes(acervo.id)) : []),
+    [itemVisualizando, acervos],
+  );
+
+  const itemPoderResumoSelecionado = useMemo(
+    () => (itemPoderResumoId ? poderes.find((poder) => poder.id === itemPoderResumoId) : undefined),
+    [itemPoderResumoId, poderes],
+  );
+
+  const itemAcervoResumoSelecionado = useMemo(
+    () => (itemAcervoResumoId ? acervos.find((acervo) => acervo.id === itemAcervoResumoId) : undefined),
+    [itemAcervoResumoId, acervos],
+  );
 
   const carregarPoderes = useCallback(async () => {
     setLoadingPoderes(true);
@@ -724,6 +742,7 @@ export function ComunidadePage() {
                   item={item}
                   onCopiar={handleCopiarItem}
                   copiandoId={copiandoItemId}
+                  onVerResumo={() => setItemVisualizando(item)}
                 />
               ))}
             </div>
@@ -793,6 +812,7 @@ export function ComunidadePage() {
                   acervo={acervo}
                   onCopiar={handleCopiarAcervo}
                   copiandoId={copiandoAcervoId}
+                  onVerResumo={() => setAcervoVisualizando(acervo)}
                 />
               ))}
             </div>
@@ -862,6 +882,7 @@ export function ComunidadePage() {
                   peculiaridade={p}
                   onCopiar={handleCopiarPeculiaridade}
                   copiandoId={copiandoPeculiaridadeId}
+                  onVerResumo={() => setPeculiaridadeVisualizando(p)}
                 />
               ))}
             </div>
@@ -877,6 +898,86 @@ export function ComunidadePage() {
           poder={poderVisualizandoConvertido.poder}
           detalhes={poderVisualizandoConvertido.detalhes}
         />
+      )}
+
+      {acervoVisualizandoConvertido && (
+        <ResumoAcervo
+          isOpen={!!acervoVisualizando}
+          onClose={() => setAcervoVisualizando(null)}
+          acervo={acervoVisualizandoConvertido}
+        />
+      )}
+
+      {itemVisualizando && (
+        <ResumoItem
+          isOpen={!!itemVisualizando}
+          onClose={() => setItemVisualizando(null)}
+          tipo={itemVisualizando.tipo}
+          nome={itemVisualizando.nome}
+          icone={itemVisualizando.icone ?? undefined}
+          descricao={itemVisualizando.descricao}
+          dominio={{
+            name: itemVisualizando.dominio.name,
+            areaConhecimento: itemVisualizando.dominio.areaConhecimento ?? undefined,
+            peculiarId: itemVisualizando.dominio.peculiarId ?? undefined,
+          }}
+          custoBase={itemVisualizando.custoBase}
+          nivelCalculado={itemVisualizando.nivelItem}
+          custoRealCalculado={itemVisualizando.valorBase}
+          precoVendaCalculado={itemVisualizando.precoVenda}
+          selectedPowers={itemPoderesSelecionados}
+          selectedPowerArrays={itemAcervosSelecionados}
+          onOpenPowerDetails={(powerId) => setItemPoderResumoId(powerId)}
+          onOpenPowerArrayDetails={(powerArrayId) => setItemAcervoResumoId(powerArrayId)}
+        />
+      )}
+
+      <ResumoVinculoModal
+        isOpen={!!itemPoderResumoSelecionado || !!itemAcervoResumoSelecionado}
+        onClose={() => {
+          setItemPoderResumoId(null);
+          setItemAcervoResumoId(null);
+        }}
+        poder={itemPoderResumoSelecionado}
+        acervo={itemAcervoResumoSelecionado}
+      />
+
+      {peculiaridadeVisualizando && (
+        <Modal
+          isOpen={!!peculiaridadeVisualizando}
+          onClose={() => setPeculiaridadeVisualizando(null)}
+          title={peculiaridadeVisualizando.nome}
+          size="md"
+        >
+          <div className="space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                {peculiaridadeVisualizando.icone ? (
+                  <DynamicIcon name={peculiaridadeVisualizando.icone} className="w-full h-full" />
+                ) : (
+                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wide">Peculiaridade</p>
+                <p className={`text-sm font-medium ${
+                  peculiaridadeVisualizando.espiritual
+                    ? 'text-espirito-600 dark:text-espirito-400'
+                    : 'text-gray-500 dark:text-gray-400'
+                }`}>
+                  {peculiaridadeVisualizando.espiritual ? 'Espiritual' : 'Nao espiritual'}
+                </p>
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/40">
+              <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">Descricao</p>
+              <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
+                {peculiaridadeVisualizando.descricao || 'Sem descricao preenchida.'}
+              </p>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );
