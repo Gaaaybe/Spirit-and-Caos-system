@@ -61,15 +61,15 @@ export function VitaisPanel({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <h4 className="font-bold">Pontos de Vida (PV)</h4>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               {vitals.pv.current}
-              {vitals.pv.temp > 0 && <span className="text-blue-600"> +{vitals.pv.temp}</span>} /{' '}
+              {vitals.pv.temp > 0 && <span className="text-blue-600 dark:text-blue-400"> +{vitals.pv.temp}</span>} /{' '}
               {pvMax}
             </span>
           </div>
 
           {/* Barra de progresso */}
-          <div className="h-6 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-6 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all ${
                 pvPercentage > 50
@@ -105,7 +105,7 @@ export function VitaisPanel({
               +5
             </Button>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-600 mb-1">Temp</label>
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">Temp</label>
               <Input
                 type="number"
                 value={vitals.pv.temp || 0}
@@ -121,15 +121,15 @@ export function VitaisPanel({
         <div className="space-y-2">
           <div className="flex justify-between items-center">
             <h4 className="font-bold">Pontos de Energia (PE)</h4>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               {vitals.pe.current}
-              {vitals.pe.temp > 0 && <span className="text-blue-600"> +{vitals.pe.temp}</span>} /{' '}
+              {vitals.pe.temp > 0 && <span className="text-blue-600 dark:text-blue-400"> +{vitals.pe.temp}</span>} /{' '}
               {peMax}
             </span>
           </div>
 
           {/* Barra de progresso */}
-          <div className="h-6 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-6 bg-gray-200 dark:bg-slate-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-blue-500 transition-all"
               style={{ width: `${pePercentage}%` }}
@@ -159,7 +159,7 @@ export function VitaisPanel({
               +5
             </Button>
             <div className="flex flex-col">
-              <label className="text-xs text-gray-600 mb-1">Temp</label>
+              <label className="text-xs text-gray-600 dark:text-gray-400 mb-1">Temp</label>
               <Input
                 type="number"
                 value={vitals.pe.temp || 0}
@@ -172,17 +172,17 @@ export function VitaisPanel({
         </div>
 
         {/* Contadores da Morte */}
-        <div className="space-y-2 pt-4 border-t">
+        <div className="space-y-2 pt-4 border-t border-gray-100 dark:border-slate-800">
           <h4 className="font-bold">Contadores da Morte</h4>
           <div className="flex gap-2 items-center">
             {[0, 1, 2, 3].map((i) => (
               <button
                 key={i}
                 onClick={() => onUpdateDeathCounters(i)}
-                className={`w-12 h-12 rounded-full border-2 ${
+                className={`w-12 h-12 rounded-full border-2 transition-colors ${
                   vitals.deathCounters >= i
-                    ? 'bg-red-500 border-red-700'
-                    : 'bg-gray-200 border-gray-400'
+                    ? 'bg-red-500 border-red-700 dark:border-red-900'
+                    : 'bg-gray-200 dark:bg-slate-700 border-gray-400 dark:border-slate-600'
                 }`}
               >
                 {i}

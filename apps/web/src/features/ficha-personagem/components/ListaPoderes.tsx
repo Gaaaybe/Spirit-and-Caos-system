@@ -3,12 +3,16 @@
  * Cards com ações: ativar/desativar, remover, ver detalhes
  */
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { PersonagemPoder } from '../types';
 import { Card } from '../../../shared/ui/Card';
 import { Button } from '../../../shared/ui/Button';
 import { Badge } from '../../../shared/ui/Badge';
-import { Modal } from '../../../shared/ui/Modal';
+import { DynamicIcon } from '../../../shared/ui/DynamicIcon';
+import { ResumoPoder } from '../../criador-de-poder/components/ResumoPoder';
+import { calcularDetalhesPoder } from '../../criador-de-poder/regras/calculadoraCusto';
+import { useCatalog } from '../../../context/useCatalog';
+import { Zap } from 'lucide-react';
 
 interface ListaPoderesProps {
   poderes: PersonagemPoder[];
@@ -21,7 +25,13 @@ export function ListaPoderes({
   onAlternarAtivo,
   onRemover,
 }: ListaPoderesProps) {
+  const { efeitos, modificacoes } = useCatalog();
   const [detalhesPoderAberto, setDetalhesPoderAberto] = useState<PersonagemPoder | null>(null);
+
+  const powerDetailsForModal = useMemo(() => {
+    if (!detalhesPoderAberto) return null;
+    return calcularDetalhesPoder(detalhesPoderAberto.poder, efeitos, modificacoes);
+  }, [detalhesPoderAberto, efeitos, modificacoes]);
 
   const handleRemover = (poder: PersonagemPoder) => {
     if (confirm(`Deseja realmente remover o poder "${poder.poder.nome}"?`)) {
@@ -32,7 +42,7 @@ export function ListaPoderes({
   if (poderes.length === 0) {
     return (
       <Card className="p-8">
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-500 dark:text-gray-400">
           <p className="text-lg">Nenhum poder adicionado ainda</p>
           <p className="text-sm mt-1">
             Clique em "Adicionar Poder" para vincular poderes da biblioteca
@@ -49,14 +59,21 @@ export function ListaPoderes({
           key={poder.id}
           className={`p-3 border rounded-lg transition-all ${
             poder.ativo
-              ? 'bg-green-50 border-green-300'
-              : 'bg-gray-50 border-gray-300'
+              ? 'bg-green-50 dark:bg-green-950/20 border-green-300 dark:border-green-800'
+              : 'bg-gray-50 dark:bg-slate-800/50 border-gray-300 dark:border-slate-700'
           }`}
         >
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               {/* Nome e Status */}
               <div className="flex items-center gap-2 mb-1">
+                <div className="w-8 h-8 rounded-md overflow-hidden bg-white/50 dark:bg-gray-700/50 flex items-center justify-center flex-shrink-0">
+                  {poder.poder.icone ? (
+                    <DynamicIcon name={poder.poder.icone} className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  ) : (
+                    <Zap className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                  )}
+                </div>
                 <h5 className="font-bold truncate">{poder.poder.nome}</h5>
                 {poder.ativo ? (
                   <Badge variant="success" size="sm">Ativo</Badge>
@@ -67,7 +84,7 @@ export function ListaPoderes({
 
               {/* Descrição */}
               {poder.poder.descricao && (
-                <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 line-clamp-2">
                   {poder.poder.descricao}
                 </p>
               )}
@@ -75,20 +92,20 @@ export function ListaPoderes({
               {/* Estatísticas */}
               <div className="flex flex-wrap gap-3 text-xs">
                 <div>
-                  <span className="text-gray-600">PdA:</span>
+                  <span className="text-gray-600 dark:text-gray-400">PdA:</span>
                   <span className="ml-1 font-semibold">{poder.pdaCost}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Espaços:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Espaços:</span>
                   <span className="ml-1 font-semibold">{poder.espacosOccupied}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600">Efeitos:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Efeitos:</span>
                   <span className="ml-1 font-semibold">{poder.poder.efeitos.length}</span>
                 </div>
                 {poder.usosRestantes !== undefined && (
                   <div>
-                    <span className="text-gray-600">Usos:</span>
+                    <span className="text-gray-600 dark:text-gray-400">Usos:</span>
                     <span className="ml-1 font-semibold">{poder.usosRestantes}</span>
                   </div>
                 )}
@@ -106,7 +123,7 @@ export function ListaPoderes({
               </Button>
               <Button
                 size="sm"
-                variant="secondary"
+                variant="outline"
                 onClick={() => setDetalhesPoderAberto(poder)}
               >
                 Detalhes
@@ -123,57 +140,14 @@ export function ListaPoderes({
         </div>
       ))}
 
-      {/* Modal de Detalhes */}
-      {detalhesPoderAberto && (
-        <Modal
+      {/* Modal de Detalhes - Usando ResumoPoder */}
+      {detalhesPoderAberto && powerDetailsForModal && (
+        <ResumoPoder
           isOpen={true}
           onClose={() => setDetalhesPoderAberto(null)}
-          title={`Detalhes: ${detalhesPoderAberto.poder.nome}`}
-          size="lg"
-        >
-          <div className="space-y-4">
-            <div className="p-3 bg-gray-100 rounded space-y-1 text-sm">
-              <p><strong>Status:</strong> {detalhesPoderAberto.ativo ? 'Ativo' : 'Inativo'}</p>
-              <p><strong>Custo PdA:</strong> {detalhesPoderAberto.pdaCost}</p>
-              <p><strong>Espaços:</strong> {detalhesPoderAberto.espacosOccupied}</p>
-            </div>
-
-            {/* Detalhes do Poder */}
-            <div className="space-y-3">
-              {detalhesPoderAberto.poder.descricao && (
-                <div>
-                  <h4 className="font-bold mb-1">Descrição</h4>
-                  <p className="text-sm text-gray-600">{detalhesPoderAberto.poder.descricao}</p>
-                </div>
-              )}
-
-              <div>
-                <h4 className="font-bold mb-2">Efeitos ({detalhesPoderAberto.poder.efeitos.length})</h4>
-                <div className="space-y-2">
-                  {detalhesPoderAberto.poder.efeitos.map((efeito, idx) => (
-                    <div key={idx} className="p-2 bg-gray-50 rounded text-sm">
-                      <p className="font-semibold">{efeito.efeitoBaseId}</p>
-                      <p className="text-xs text-gray-600">Grau: {efeito.grau}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {detalhesPoderAberto.poder.modificacoesGlobais.length > 0 && (
-                <div>
-                  <h4 className="font-bold mb-2">Modificações Globais</h4>
-                  <div className="space-y-1">
-                    {detalhesPoderAberto.poder.modificacoesGlobais.map((mod, idx) => (
-                      <div key={idx} className="text-sm p-2 bg-blue-50 rounded">
-                        {mod.modificacaoBaseId}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </Modal>
+          poder={detalhesPoderAberto.poder}
+          detalhes={powerDetailsForModal}
+        />
       )}
     </div>
   );

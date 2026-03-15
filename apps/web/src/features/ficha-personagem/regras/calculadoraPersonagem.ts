@@ -123,19 +123,27 @@ export function calcularEspacosDisponiveis(modInteligencia: number): number {
 }
 
 /**
- * Calcula PdA usados (soma dos custos de todos os poderes)
+ * Calcula PdA usados (soma dos custos de todos os poderes e acervos)
  */
-export function calcularPdAUsados(poderes: PersonagemPoder[]): number {
-  return poderes.reduce((total, poder) => total + poder.pdaCost, 0);
+export function calcularPdAUsados(poderes: PersonagemPoder[], acervos?: import('../types').PersonagemAcervo[]): number {
+  const custoPoderes = poderes.reduce((total, poder) => total + poder.pdaCost, 0);
+  const custoAcervos = (acervos || []).reduce((total, acervo) => total + acervo.pdaCost, 0);
+  return custoPoderes + custoAcervos;
 }
 
 /**
- * Calcula Espaços usados (soma dos espaços apenas dos poderes ATIVOS)
+ * Calcula Espaços usados (soma dos espaços apenas dos poderes e acervos ATIVOS)
  */
-export function calcularEspacosUsados(poderes: PersonagemPoder[]): number {
-  return poderes
+export function calcularEspacosUsados(poderes: PersonagemPoder[], acervos?: import('../types').PersonagemAcervo[]): number {
+  const espacosPoderes = poderes
     .filter(poder => poder.ativo) // Apenas poderes ativos consomem espaços
     .reduce((total, poder) => total + poder.espacosOccupied, 0);
+    
+  const espacosAcervos = (acervos || [])
+    .filter(acervo => acervo.ativo) // Apenas acervos ativos consomem espaços
+    .reduce((total, acervo) => total + acervo.espacosOccupied, 0);
+    
+  return espacosPoderes + espacosAcervos;
 }
 
 // ========================================

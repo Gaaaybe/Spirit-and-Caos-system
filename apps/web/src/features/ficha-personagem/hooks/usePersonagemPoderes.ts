@@ -5,8 +5,10 @@
 
 import { useCallback } from 'react';
 import type { Poder } from '../../criador-de-poder/types';
-import type { PersonagemPoder } from '../types';
+import type { Acervo } from '../../criador-de-poder/types/acervo.types';
+import type { PersonagemPoder, PersonagemAcervo } from '../types';
 import { calcularDetalhesPoder } from '../../criador-de-poder/regras/calculadoraCusto';
+import { calcularDetalhesAcervo } from '../../criador-de-poder/regras/calculadoraAcervo';
 import { useCatalog } from '@/context/useCatalog';
 
 // ========================================
@@ -15,7 +17,9 @@ import { useCatalog } from '@/context/useCatalog';
 
 interface UsePersonagemPoderesProps {
   poderes: PersonagemPoder[];
+  acervos: PersonagemAcervo[];
   onPoderChange: (poderes: PersonagemPoder[]) => void;
+  onAcervoChange: (acervos: PersonagemAcervo[]) => void;
 }
 
 interface UsePersonagemPoderesReturn {
@@ -31,6 +35,12 @@ interface UsePersonagemPoderesReturn {
   // Atualizar poder (recalcula custos)
   atualizarPoder: (poderId: string, novosPoder: Poder) => void;
   
+  // Acervos
+  vincularAcervo: (acervo: Acervo) => PersonagemAcervo | null;
+  desvincularAcervo: (acervoId: string) => void;
+  toggleAcervoAtivo: (acervoId: string) => void;
+  atualizarAcervo: (acervoId: string, novoAcervo: Acervo) => void;
+
   // Calcular custos totais
   calcularCustosTotal: () => { pdaTotal: number; espacosTotal: number };
 }
@@ -41,14 +51,16 @@ interface UsePersonagemPoderesReturn {
 
 export function usePersonagemPoderes({
   poderes,
+  acervos,
   onPoderChange,
+  onAcervoChange,
 }: UsePersonagemPoderesProps): UsePersonagemPoderesReturn {
   const { efeitos, modificacoes } = useCatalog();
   
   /**
    * Calcula custos do poder
    */
-  const calcularCustos = useCallback((poder: Poder) => {
+  const calcularCustosPoder = useCallback((poder: Poder) => {
     const detalhes = calcularDetalhesPoder(poder, efeitos, modificacoes);
     
     return {
@@ -58,11 +70,27 @@ export function usePersonagemPoderes({
   }, [efeitos, modificacoes]);
   
   /**
+   * Calcula custos do acervo
+   */
+  const calcularCustosAcervo = useCallback((acervo: Acervo) => {
+    const detalhes = calcularDetalhesAcervo(acervo, efeitos, modificacoes);
+
+    return {
+      pdaCost: detalhes.custoPdaTotal,
+      espacosOccupied: detalhes.espacosTotal,
+    };
+  }, [efeitos, modificacoes]);
+
+  // ========================================
+  // PODERES
+  // ========================================
+
+  /**
    * Vincula um poder ao personagem
    */
   const vincularPoder = useCallback((poder: Poder): PersonagemPoder | null => {
     // Calcular custos
-    const { pdaCost, espacosOccupied } = calcularCustos(poder);
+    const { pdaCost, espacosOccupied } = calcularCustosPoder(poder);
     
     const agora = new Date().toISOString();
     
@@ -79,7 +107,7 @@ export function usePersonagemPoderes({
     
     onPoderChange([...poderes, personagemPoder]);
     return personagemPoder;
-  }, [poderes, calcularCustos, onPoderChange]);
+  }, [poderes, calcularCustosPoder, onPoderChange]);
   
   /**
    * Desvincula um poder do personagem
@@ -105,7 +133,7 @@ export function usePersonagemPoderes({
    * Atualiza um poder existente (recalcula custos)
    */
   const atualizarPoder = useCallback((poderId: string, novosPoder: Poder) => {
-    const { pdaCost, espacosOccupied } = calcularCustos(novosPoder);
+    const { pdaCost, espacosOccupied } = calcularCustosPoder(novosPoder);
     
     onPoderChange(
       poderes.map(p => 
@@ -120,26 +148,117 @@ export function usePersonagemPoderes({
           : p
       )
     );
-  }, [poderes, calcularCustos, onPoderChange]);
+  }, [poderes, calcularCustosPoder, onPoderChange]);
   
+
+  // ========================================
+  // ACERVOS
+  // ========================================
+
+  /**
+   * Vincula um acervo ao personagem
+   */
+  const vincularAcervo = useCallback((acervo: Acervo): PersonagemAcervo | null => {
+    // Calcular custos
+    const { pdaCost, espacosOccupied } = calcularCustosAcervo(acervo);
+
+    const agora = new Date().toISOString();
+
+    const personagemAcervo: PersonagemAcervo = {
+      id: `pa-${Date.now()}`,
+      acervoId: acervo.id,
+      acervo: acervo,
+      ativo: true,
+      pdaCost,
+      espacosOccupied,
+      dataCriacao: agora,
+      dataModificacao: agora,
+    };
+
+    onAcervoChange([...acervos, personagemAcervo]);
+    return personagemAcervo;
+  }, [acervos, calcularCustosAcervo, onAcervoChange]);
+
+  /**
+   * Desvincula um acervo do personagem
+   */
+  const desvincularAcervo = useCallback((acervoId: string) => {
+    onAcervoChange(acervos.filter(a => a.id !== acervoId));
+  }, [acervos, onAcervoChange]);
+
+  /**
+   * Ativa/Desativa um acervo
+   */
+  const toggleAcervoAtivo = useCallback((acervoId: string) => {
+    onAcervoChange(
+      acervos.map(a =>
+        a.id === acervoId
+          ? { ...a, ativo: !a.ativo, dataModificacao: new Date().toISOString() }
+          : a
+      )
+    );
+  }, [acervos, onAcervoChange]);
+
+  /**
+   * Atualiza um acervo existente (recalcula custos)
+   */
+  const atualizarAcervo = useCallback((acervoId: string, novoAcervo: Acervo) => {
+    const { pdaCost, espacosOccupied } = calcularCustosAcervo(novoAcervo);
+    
+    onAcervoChange(
+      acervos.map(a =>
+        a.id === acervoId
+          ? { 
+              ...a, 
+              acervo: novoAcervo, 
+              pdaCost, 
+              espacosOccupied,
+              dataModificacao: new Date().toISOString() 
+            }
+          : a
+      )
+    );
+  }, [acervos, calcularCustosAcervo, onAcervoChange]);
+
+  // ========================================
+  // TOTAIS
+  // ========================================
+
   /**
    * Calcula custos totais de PdA e Espaços
    */
   const calcularCustosTotal = useCallback(() => {
-    return poderes.reduce(
+    const totalPoderes = poderes.reduce(
       (acc, poder) => ({
         pdaTotal: acc.pdaTotal + poder.pdaCost,
         espacosTotal: acc.espacosTotal + poder.espacosOccupied,
       }),
       { pdaTotal: 0, espacosTotal: 0 }
     );
-  }, [poderes]);
+
+    const totalAcervos = acervos.reduce(
+      (acc, acervo) => ({
+        pdaTotal: acc.pdaTotal + acervo.pdaCost,
+        espacosTotal: acc.espacosTotal + acervo.espacosOccupied,
+      }),
+      { pdaTotal: 0, espacosTotal: 0 }
+    );
+
+    return {
+      pdaTotal: totalPoderes.pdaTotal + totalAcervos.pdaTotal,
+      espacosTotal: totalPoderes.espacosTotal + totalAcervos.espacosTotal,
+    };
+  }, [poderes, acervos]);
   
   return {
     vincularPoder,
     desvincularPoder,
     togglePoderAtivo,
     atualizarPoder,
+    vincularAcervo,
+    desvincularAcervo,
+    toggleAcervoAtivo,
+    atualizarAcervo,
     calcularCustosTotal,
   };
 }

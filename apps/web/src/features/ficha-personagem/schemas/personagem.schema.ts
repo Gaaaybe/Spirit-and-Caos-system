@@ -137,6 +137,27 @@ export const personagemPoderSchema = z.object({
   dataModificacao: z.string(),
 });
 
+
+/**
+ * Schema para acervo do personagem
+ */
+export const personagemAcervoSchema = z.object({
+  id: z.string(),
+  acervoId: z.string(),
+  acervo: z.any(), // Usar schema do Acervo quando importado
+  
+  ativo: z.boolean().default(true),
+  poderAtivoId: z.string().optional(),
+  
+  pdaCost: z.number().int().min(0),
+  espacosOccupied: z.number().int().min(0),
+  
+  usosRestantes: z.number().int().min(0).optional(),
+  
+  dataCriacao: z.string(),
+  dataModificacao: z.string(),
+});
+
 /**
  * Schema para inventário
  */
@@ -174,6 +195,7 @@ export const personagemSchema = z.object({
   vitals: vitalsSchema,
   skills: skillsStateSchema,
   poderes: z.array(personagemPoderSchema),
+  acervos: z.array(personagemAcervoSchema).default([]),
   inventory: inventorySchema,
   
   // Economia de poder
@@ -192,19 +214,21 @@ export const personagemSchema = z.object({
 .refine(
   (data) => {
     // Validação: PdA usados não pode exceder PdA total
-    const pdaUsados = data.poderes.reduce((sum, p) => sum + p.pdaCost, 0);
-    return pdaUsados <= data.pdaTotal;
+    const pdaUsadosPoderes = data.poderes.reduce((sum, p) => sum + p.pdaCost, 0);
+    const pdaUsadosAcervos = (data.acervos || []).reduce((sum, a) => sum + a.pdaCost, 0);
+    return (pdaUsadosPoderes + pdaUsadosAcervos) <= data.pdaTotal;
   },
   {
     message: 'PdA usados excede o total disponível',
-    path: ['poderes'],
+    path: ['poderes'], // Could be changed to something more generic
   }
 )
 .refine(
   (data) => {
     // Validação: Espaços usados não pode exceder espaços disponíveis
-    const espacosUsados = data.poderes.reduce((sum, p) => sum + p.espacosOccupied, 0);
-    return espacosUsados <= data.espacosDisponiveis;
+    const espacosUsadosPoderes = data.poderes.reduce((sum, p) => sum + p.espacosOccupied, 0);
+    const espacosUsadosAcervos = (data.acervos || []).reduce((sum, a) => sum + a.espacosOccupied, 0);
+    return (espacosUsadosPoderes + espacosUsadosAcervos) <= data.espacosDisponiveis;
   },
   {
     message: 'Espaços usados excede o total disponível',
@@ -251,3 +275,4 @@ export type CharacterHeaderSchemaType = z.infer<typeof characterHeaderSchema>;
 export type AttributesSchemaType = z.infer<typeof attributesSchema>;
 export type VitalsSchemaType = z.infer<typeof vitalsSchema>;
 export type PersonagemPoderSchemaType = z.infer<typeof personagemPoderSchema>;
+export type PersonagemAcervoSchemaType = z.infer<typeof personagemAcervoSchema>;

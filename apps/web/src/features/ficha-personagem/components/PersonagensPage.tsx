@@ -32,7 +32,7 @@ export function PersonagensPage() {
     <div className="container mx-auto p-4 max-w-7xl">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Personagens</h1>
-        <p className="text-gray-600">Gerencie seus personagens de Spirit & Caos</p>
+        <p className="text-gray-600 dark:text-gray-400">Gerencie seus personagens de Spirit & Caos</p>
       </div>
 
       {viewMode === 'biblioteca' && (

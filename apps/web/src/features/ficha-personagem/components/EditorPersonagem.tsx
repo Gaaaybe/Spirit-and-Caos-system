@@ -9,6 +9,7 @@ import { useBibliotecaPersonagens } from '../hooks/useBibliotecaPersonagens';
 import { usePersonagemPoderes } from '../hooks/usePersonagemPoderes';
 import type { SkillName } from '../types';
 import type { Poder } from '../../criador-de-poder/types';
+import type { Acervo } from '../../criador-de-poder/types/acervo.types';
 import { Card } from '../../../shared/ui/Card';
 import { Button } from '../../../shared/ui/Button';
 import { Input } from '../../../shared/ui/Input';
@@ -19,7 +20,9 @@ import { VitaisPanel } from './VitaisPanel';
 import { PericiasList } from './PericiasList';
 import { OrcamentoPdA } from './OrcamentoPdA';
 import { ListaPoderes } from './ListaPoderes';
+import { ListaAcervos } from './ListaAcervos';
 import { BibliotecaPoderesModal } from '../../gerenciador-criaturas/components/BibliotecaPoderesModal';
+import { BibliotecaAcervosModal } from './BibliotecaAcervosModal';
 import type { Personagem } from '../types';
 
 interface EditorPersonagemProps {
@@ -28,7 +31,7 @@ interface EditorPersonagemProps {
   onCancel?: () => void;
 }
 
-type TabId = 'info' | 'atributos' | 'pericias' | 'vitais' | 'poderes';
+type TabId = 'info' | 'atributos' | 'pericias' | 'vitais' | 'poderes' | 'acervos';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'info', label: 'Informações' },
@@ -36,6 +39,7 @@ const TABS: { id: TabId; label: string }[] = [
   { id: 'pericias', label: 'Perícias' },
   { id: 'vitais', label: 'Vitais' },
   { id: 'poderes', label: 'Poderes' },
+  { id: 'acervos', label: 'Acervos' },
 ];
 
 export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave, onCancel }: EditorPersonagemProps) {
@@ -45,15 +49,21 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
   const [salvando, setSalvando] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('info');
   const [modalBibliotecaAberto, setModalBibliotecaAberto] = useState(false);
+  const [modalBibliotecaAcervosAberto, setModalBibliotecaAcervosAberto] = useState(false);
 
   // Hook de gerenciamento de poderes
   const {
     vincularPoder,
     desvincularPoder,
     togglePoderAtivo,
+    vincularAcervo,
+    desvincularAcervo,
+    toggleAcervoAtivo,
   } = usePersonagemPoderes({
     poderes: personagem.poderes,
+    acervos: personagem.acervos,
     onPoderChange: (poderes) => setPersonagem({ ...personagem, poderes }),
+    onAcervoChange: (acervos) => setPersonagem({ ...personagem, acervos }),
   });
 
   // Carregar personagem quando personagemId muda
@@ -92,6 +102,11 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
   const handleSelecionarPoder = (poder: Poder) => {
     vincularPoder(poder);
     setModalBibliotecaAberto(false);
+  };
+  
+  const handleSelecionarAcervo = (acervo: Acervo) => {
+    vincularAcervo(acervo);
+    setModalBibliotecaAcervosAberto(false);
   };
 
   return (
@@ -184,8 +199,8 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
 
                 <div>
                   <label className="block text-sm font-semibold mb-1">Rank de Calamidade</label>
-                  <Input value={calculado.calamityRank} disabled className="bg-gray-100" />
-                  <p className="text-xs text-gray-500 mt-1">Calculado automaticamente pelo nível</p>
+                  <Input value={calculado.calamityRank} disabled className="bg-gray-100 dark:bg-slate-700" />
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Calculado automaticamente pelo nível</p>
                 </div>
 
                 <div>
@@ -197,7 +212,7 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
                     min={0}
                     placeholder="0"
                   />
-                  <p className="text-xs text-gray-500 mt-1">PdA Total: {calculado.pdaTotal} (base + extras)</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">PdA Total: {calculado.pdaTotal} (base + extras)</p>
                 </div>
 
                 <div>
@@ -284,36 +299,36 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
               <div className="pt-4 border-t">
                 <h4 className="font-bold mb-3">Estatísticas Calculadas</h4>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">CD Mental</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">CD Mental</p>
                     <p className="text-xl font-bold">{calculado.cdMental}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">CD Físico</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">CD Físico</p>
                     <p className="text-xl font-bold">{calculado.cdPhysical}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">PV Máximo</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">PV Máximo</p>
                     <p className="text-xl font-bold">{calculado.pvMax}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">PE Máximo</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">PE Máximo</p>
                     <p className="text-xl font-bold">{calculado.peMax}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">Deslocamento</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Deslocamento</p>
                     <p className="text-xl font-bold">{calculado.deslocamento}m</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">Bônus Eficiência</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Bônus Eficiência</p>
                     <p className="text-xl font-bold">+{calculado.bonusEficiencia}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">RD Bloqueio</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">RD Bloqueio</p>
                     <p className="text-xl font-bold">{calculado.rdBloqueio}</p>
                   </div>
-                  <div className="p-3 bg-gray-50 rounded">
-                    <p className="text-xs text-gray-600">Pontos Atributo</p>
+                  <div className="p-3 bg-gray-50 dark:bg-slate-800 rounded">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Pontos Atributo</p>
                     <p className="text-xl font-bold">{calculado.pontosAtributoDisponiveis}</p>
                   </div>
                 </div>
@@ -394,6 +409,33 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
             </Card>
           </div>
         )}
+
+        {/* Tab: Acervos */}
+        {activeTab === 'acervos' && (
+          <div className="space-y-4">
+            <OrcamentoPdA
+              pdaTotal={calculado.pdaTotal}
+              pdaUsado={calculado.pdaUsados}
+              espacosTotal={calculado.espacosDisponiveis}
+              espacosUsado={calculado.espacosUsados}
+            />
+            
+            <Card className="p-4">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold">Acervos do Personagem</h3>
+                <Button onClick={() => setModalBibliotecaAcervosAberto(true)}>
+                  + Adicionar Acervo
+                </Button>
+              </div>
+
+              <ListaAcervos
+                acervos={personagem.acervos}
+                onAlternarAtivo={toggleAcervoAtivo}
+                onRemover={desvincularAcervo}
+              />
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Modal Biblioteca de Poderes */}
@@ -402,6 +444,15 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
         onClose={() => setModalBibliotecaAberto(false)}
         onSelectPoder={handleSelecionarPoder}
       />
+      
+      {/* Modal Biblioteca de Acervos */}
+      {modalBibliotecaAcervosAberto && (
+        <BibliotecaAcervosModal
+          isOpen={modalBibliotecaAcervosAberto}
+          onClose={() => setModalBibliotecaAcervosAberto(false)}
+          onSelectAcervo={handleSelecionarAcervo}
+        />
+      )}
     </div>
   );
 }

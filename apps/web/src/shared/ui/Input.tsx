@@ -22,7 +22,7 @@ export function Input({
   const baseClasses = "w-full px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1";
   const stateClasses = error 
     ? "border-caos-300 focus:border-caos-500 focus:ring-caos-500" 
-    : "border-gray-300 focus:border-espirito-500 focus:ring-espirito-500";
+    : "border-gray-300 dark:border-gray-700 focus:border-espirito-500 focus:ring-espirito-500";
   
   return (
     <div className={`space-y-1 ${containerClassName}`}>
@@ -38,7 +38,7 @@ export function Input({
       <input
         id={inputId}
         type={type}
-        className={`${baseClasses} ${stateClasses} ${className} dark:bg-gray-800 dark:text-gray-100`}
+        className={`${baseClasses} ${stateClasses} ${className} bg-white dark:bg-gray-800 dark:text-gray-100`}
         {...props}
       />
       
@@ -75,7 +75,7 @@ export function Textarea({
   const baseClasses = "w-full px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 resize-y";
   const stateClasses = error 
     ? "border-caos-300 focus:border-caos-500 focus:ring-caos-500" 
-    : "border-gray-300 focus:border-espirito-500 focus:ring-espirito-500";
+    : "border-gray-300 dark:border-gray-700 focus:border-espirito-500 focus:ring-espirito-500";
   
   return (
     <div className={`space-y-1 ${containerClassName}`}>
@@ -91,7 +91,7 @@ export function Textarea({
       <textarea
         id={inputId}
         rows={rows}
-        className={`${baseClasses} ${stateClasses} ${className} dark:bg-gray-800 dark:text-gray-100`}
+        className={`${baseClasses} ${stateClasses} ${className} bg-white dark:bg-gray-800 dark:text-gray-100`}
         {...props}
       />
       

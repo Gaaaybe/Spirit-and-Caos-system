@@ -49,7 +49,7 @@ export function AtributosEditor({
         <div className="flex justify-between items-center pb-4 border-b">
           <h3 className="text-xl font-bold">Atributos</h3>
           <div className="text-right">
-            <p className="text-sm text-gray-600">Pontos Disponíveis</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Pontos Disponíveis</p>
             <Badge variant={pontosDisponiveis > 0 ? 'success' : 'secondary'} className="text-lg">
               {pontosDisponiveis}
             </Badge>
@@ -59,12 +59,12 @@ export function AtributosEditor({
         {/* Grid de atributos */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {(Object.keys(attributes) as Array<keyof Attributes>).map((attr) => (
-            <Card key={attr} className="p-4 bg-gray-50">
+            <Card key={attr} className="p-4 bg-gray-50 dark:bg-slate-800/50">
               <div className="space-y-2">
                 {/* Nome e descrição */}
                 <div>
                   <h4 className="font-bold text-lg">{attr}</h4>
-                  <p className="text-xs text-gray-600">{ATRIBUTOS_INFO[attr].desc}</p>
+                  <p className="text-xs text-gray-600 dark:text-gray-400">{ATRIBUTOS_INFO[attr].desc}</p>
                 </div>
 
                 {/* Controles */}
@@ -72,7 +72,7 @@ export function AtributosEditor({
                   <button
                     onClick={() => handleDecrement(attr)}
                     disabled={attributes[attr] <= 1}
-                    className="w-8 h-8 rounded bg-red-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-red-600"
+                    className="w-8 h-8 rounded bg-red-500 text-white disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed hover:bg-red-600"
                   >
                     −
                   </button>
@@ -93,14 +93,14 @@ export function AtributosEditor({
                   <button
                     onClick={() => handleIncrement(attr)}
                     disabled={pontosDisponiveis <= 0}
-                    className="w-8 h-8 rounded bg-green-500 text-white disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-600"
+                    className="w-8 h-8 rounded bg-green-500 text-white disabled:bg-gray-300 dark:disabled:bg-gray-700 disabled:cursor-not-allowed hover:bg-green-600"
                   >
                     +
                   </button>
 
                   {/* Modificador */}
                   <div className="ml-auto text-right">
-                    <p className="text-xs text-gray-600">Modificador</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Modificador</p>
                     <Badge
                       variant={modificadores[attr] >= 0 ? 'success' : 'warning'}
                       className="text-lg font-mono"
@@ -117,7 +117,7 @@ export function AtributosEditor({
 
         {/* Avisos */}
         {pontosDisponiveis < 0 && (
-          <div className="p-3 bg-red-100 text-red-800 rounded text-sm">
+          <div className="p-3 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 rounded text-sm border border-red-200 dark:border-red-800">
             ⚠️ Você está usando {Math.abs(pontosDisponiveis)} pontos a mais do que deveria!
           </div>
         )}

@@ -42,11 +42,11 @@ export function PericiasList({
         <h3 className="text-xl font-bold">Perícias</h3>
 
         {/* Info do bônus de eficiência */}
-        <div className="p-3 bg-blue-50 rounded text-sm">
-          <p className="text-blue-800">
+        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded text-sm border border-blue-100 dark:border-blue-800/30">
+          <p className="text-blue-800 dark:text-blue-300">
             <strong>Bônus de Eficiência:</strong> +{bonusEficiencia}
           </p>
-          <p className="text-blue-600 text-xs mt-1">
+          <p className="text-blue-600 dark:text-blue-400 text-xs mt-1">
             Aplicado quando a perícia está marcada como "Eficiente"
           </p>
         </div>
@@ -79,7 +79,7 @@ export function PericiasList({
                 return (
                   <div
                     key={skillId}
-                    className="flex items-center gap-3 p-3 bg-gray-50 rounded hover:bg-gray-100"
+                    className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-slate-800/50 rounded hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     {/* Nome da perícia */}
                     <div className="flex-1 min-w-0">
@@ -137,10 +137,10 @@ export function PericiasList({
                               isInefficient: false, // Desativa ineficiente se ativar eficiente
                             })
                           }
-                          className={`px-3 py-1 rounded text-sm font-semibold ${
+                          className={`px-3 py-1 rounded text-sm font-semibold transition-colors ${
                             skill.isEfficient
                               ? 'bg-green-500 text-white'
-                              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                              : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                           }`}
                         >
                           EF
@@ -155,10 +155,10 @@ export function PericiasList({
                               isEfficient: false, // Desativa eficiente se ativar ineficiente
                             })
                           }
-                          className={`px-3 py-1 rounded text-sm font-semibold ${
+                          className={`px-3 py-1 rounded text-sm font-semibold transition-colors ${
                             skill.isInefficient
                               ? 'bg-red-500 text-white'
-                              : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                              : 'bg-gray-200 dark:bg-slate-700 text-gray-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
                           }`}
                         >
                           IN

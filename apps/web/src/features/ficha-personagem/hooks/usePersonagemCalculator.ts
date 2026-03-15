@@ -108,6 +108,7 @@ function criarPersonagemInicial(): Personagem {
     },
     skills,
     poderes: [],
+    acervos: [],
     inventory: {
       equipped: {
         mainHand: null,
@@ -169,8 +170,8 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
     const peMax = calcularPEMax(modMental, modPhysical);
     
     // PdA e Espaços
-    const pdaUsados = calcularPdAUsados(personagem.poderes);
-    const espacosUsados = calcularEspacosUsados(personagem.poderes);
+    const pdaUsados = calcularPdAUsados(personagem.poderes, personagem.acervos);
+    const espacosUsados = calcularEspacosUsados(personagem.poderes, personagem.acervos);
     const espacosDisponiveis = calcularEspacosDisponiveis(mods.Inteligência);
     
     // Bônus de Fortitude (para RD)
@@ -216,6 +217,7 @@ export function usePersonagemCalculator(personagemInicial?: Personagem) {
     personagem.header.keyAttributeMental,
     personagem.header.keyAttributePhysical,
     personagem.poderes,
+    personagem.acervos,
     personagem.pdaExtras,
     personagem.inventory.equipped,
     personagem.deslocamento,

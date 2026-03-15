@@ -4,6 +4,7 @@
  */
 
 import type { Poder } from '../../criador-de-poder/types';
+import type { Acervo } from '../../criador-de-poder/types/acervo.types';
 
 // ========================================
 // CABEÇALHO DO PERSONAGEM
@@ -177,6 +178,30 @@ export interface PersonagemPoder {
   dataModificacao: string;
 }
 
+/**
+ * Acervo vinculado ao personagem
+ */
+export interface PersonagemAcervo {
+  id: string;                    // ID único da instância (vínculo)
+  acervoId: string;              // ID do Acervo na biblioteca
+  acervo: Acervo;                // Dados completos do acervo
+  
+  // Estado
+  ativo: boolean;                // Está ativo/equipado?
+  poderAtivoId?: string;         // ID do poder atualmente ativo dentro do acervo
+  
+  // Custos calculados
+  pdaCost: number;               // Custo total em PdA do acervo
+  espacosOccupied: number;       // Espaços ocupados pelo acervo
+  
+  // Configuração
+  usosRestantes?: number;        // Se tiver limite de usos
+  
+  // Metadata
+  dataCriacao: string;
+  dataModificacao: string;
+}
+
 // ========================================
 // INVENTÁRIO
 // ========================================
@@ -236,6 +261,7 @@ export interface Personagem {
   vitals: Vitals;
   skills: SkillsState;
   poderes: PersonagemPoder[];
+  acervos: PersonagemAcervo[];
   inventory: Inventory;
   
   // Recursos de Economia de Poder

@@ -92,7 +92,7 @@ export function BibliotecaPersonagens({ onEdit, onCreateNew }: BibliotecaPersona
                 {/* Nome e nível */}
                 <div>
                   <h3 className="text-lg font-bold">{personagem.header.name}</h3>
-                  <div className="flex gap-2 items-center text-sm text-gray-600">
+                  <div className="flex gap-2 items-center text-sm text-gray-600 dark:text-gray-400">
                     <Badge variant="info">Nível {personagem.header.level}</Badge>
                     <Badge variant="secondary">{calcularRankCalamidade(personagem.header.level)}</Badge>
                   </div>
@@ -100,20 +100,20 @@ export function BibliotecaPersonagens({ onEdit, onCreateNew }: BibliotecaPersona
 
                 {/* Identidade e Origem */}
                 {personagem.header.identity && (
-                  <p className="text-sm text-gray-700 italic">{personagem.header.identity}</p>
+                  <p className="text-sm text-gray-700 dark:text-gray-300 italic">{personagem.header.identity}</p>
                 )}
                 {personagem.header.origin && (
-                  <p className="text-xs text-gray-500">Origem: {personagem.header.origin}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Origem: {personagem.header.origin}</p>
                 )}
 
                 {/* Stats rápidos */}
-                <div className="flex gap-3 text-xs text-gray-600">
+                <div className="flex gap-3 text-xs text-gray-600 dark:text-gray-400">
                   <span>PdA: {personagem.pdaTotal}</span>
                   <span>Poderes: {personagem.poderes.length}</span>
                 </div>
 
                 {/* Ações */}
-                <div className="flex gap-2 pt-2 border-t">
+                <div className="flex gap-2 pt-2 border-t dark:border-slate-700">
                   <Button
                     onClick={() => onEdit(personagem.id)}
                     variant="primary"
