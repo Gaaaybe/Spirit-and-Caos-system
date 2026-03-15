@@ -1,5 +1,6 @@
 import { InMemoryEffectsRepository } from '@test/repositories/in-memory-effects-repository';
 import { InMemoryPeculiaritiesRepository } from '@test/repositories/in-memory-peculiarities-repository';
+import { InMemoryPowerDependenciesRepository } from '@test/repositories/in-memory-power-dependencies-repository';
 import { InMemoryPowerArraysRepository } from '@test/repositories/in-memory-power-arrays-repository';
 import { InMemoryPowersRepository } from '@test/repositories/in-memory-powers-repository';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -21,6 +22,7 @@ describe('UpdatePowerArrayUseCase', () => {
   let sut: UpdatePowerArrayUseCase;
   let powerArraysRepository: InMemoryPowerArraysRepository;
   let powersRepository: InMemoryPowersRepository;
+  let powerDependenciesRepository: InMemoryPowerDependenciesRepository;
   let effectsRepository: InMemoryEffectsRepository;
   let peculiaritiesRepository: InMemoryPeculiaritiesRepository;
   const userId = 'user-1';
@@ -28,6 +30,7 @@ describe('UpdatePowerArrayUseCase', () => {
   beforeEach(() => {
     powerArraysRepository = new InMemoryPowerArraysRepository();
     powersRepository = new InMemoryPowersRepository();
+    powerDependenciesRepository = new InMemoryPowerDependenciesRepository();
     effectsRepository = new InMemoryEffectsRepository();
     peculiaritiesRepository = new InMemoryPeculiaritiesRepository();
 
@@ -36,7 +39,11 @@ describe('UpdatePowerArrayUseCase', () => {
     new OnPowerArrayMadePublic(powersRepository).onModuleInit();
     new OnPowerMadePublic(peculiaritiesRepository).onModuleInit();
 
-    sut = new UpdatePowerArrayUseCase(powerArraysRepository, powersRepository);
+    sut = new UpdatePowerArrayUseCase(
+      powerArraysRepository,
+      powersRepository,
+      powerDependenciesRepository,
+    );
   });
 
   afterEach(() => {
@@ -362,5 +369,64 @@ describe('UpdatePowerArrayUseCase', () => {
     });
 
     expect(result.isLeft()).toBe(true);
+  });
+
+  it('should reject domain change when power array is linked to items', async () => {
+    const effectBase = EffectBase.create({
+      id: 'dano',
+      nome: 'Dano',
+      custoBase: 1,
+      descricao: 'Causa dano',
+      categorias: ['Ofensivo'],
+    });
+
+    await effectsRepository.create(effectBase);
+
+    const appliedEffect = AppliedEffect.create({
+      effectBaseId: 'dano',
+      grau: 10,
+      custo: PowerCost.createZero(),
+    });
+
+    const effectsList = new PowerEffectList();
+    effectsList.update([appliedEffect]);
+
+    const power = Power.create({
+      nome: 'Rajada',
+      descricao: 'Poder de rajada',
+      dominio: Domain.create({ name: DomainName.NATURAL }),
+      parametros: PowerParameters.createDefault(),
+      effects: effectsList,
+      custoTotal: PowerCost.create({ pda: 10, pe: 0, espacos: 10 }),
+      userId,
+    });
+
+    await powersRepository.create(power);
+
+    const powersList = new PowerArrayPowerList();
+    powersList.update([power]);
+
+    const powerArray = PowerArray.create({
+      nome: 'Acervo',
+      descricao: 'Descrição',
+      dominio: Domain.create({ name: DomainName.NATURAL }),
+      powers: powersList,
+      custoTotal: PowerCost.create({ pda: 10, pe: 0, espacos: 10 }),
+      userId,
+    });
+
+    await powerArraysRepository.create(powerArray);
+    powerDependenciesRepository.linkedPowerArrayIds.add(powerArray.id.toString());
+
+    const result = await sut.execute({
+      powerArrayId: powerArray.id.toString(),
+      userId,
+      dominio: Domain.create({ name: DomainName.SAGRADO }),
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.message).toContain('vinculado a itens');
+    }
   });
 });

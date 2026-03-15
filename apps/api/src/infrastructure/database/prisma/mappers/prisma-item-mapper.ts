@@ -80,14 +80,16 @@ const ITEM_TYPE_TO_PRISMA: Record<ItemType, PrismaItemType> = {
 };
 
 const WEAPON_RANGE_TO_DOMAIN: Record<PrismaWeaponRange, WeaponRange> = {
-  CORPO_A_CORPO: WeaponRange.CORPO_A_CORPO,
+  ADJACENTE: WeaponRange.ADJACENTE,
+  NATURAL: WeaponRange.NATURAL,
   CURTO: WeaponRange.CURTO,
   MEDIO: WeaponRange.MEDIO,
   LONGO: WeaponRange.LONGO,
 };
 
 const WEAPON_RANGE_TO_PRISMA: Record<WeaponRange, PrismaWeaponRange> = {
-  [WeaponRange.CORPO_A_CORPO]: 'CORPO_A_CORPO',
+  [WeaponRange.ADJACENTE]: 'ADJACENTE',
+  [WeaponRange.NATURAL]: 'NATURAL',
   [WeaponRange.CURTO]: 'CURTO',
   [WeaponRange.MEDIO]: 'MEDIO',
   [WeaponRange.LONGO]: 'LONGO',
@@ -180,6 +182,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
           critMargin: raw.critMargin!,
           critMultiplier: raw.critMultiplier!,
           alcance: WEAPON_RANGE_TO_DOMAIN[raw.alcance!],
+          alcanceExtraMetros: (raw.alcanceExtraMetrosMetades ?? 0) / 2,
           atributoEscalonamento: raw.atributoEscalonamento ?? undefined,
         },
         entityId,
@@ -269,6 +272,7 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
       critMargin: item.critMargin,
       critMultiplier: item.critMultiplier,
       alcance: WEAPON_RANGE_TO_PRISMA[item.alcance],
+      alcanceExtraMetrosMetades: item.alcanceExtraMetros * 2,
       atributoEscalonamento: item.atributoEscalonamento ?? null,
       upgradeLevelValue: item.upgradeLevel.value,
       upgradeLevelMax: item.upgradeLevel.maxLevel,

@@ -91,12 +91,12 @@ export class AppliedEffect extends Entity<AppliedEffectProps> {
   }
 
   updateGrau(grau: number): AppliedEffect {
-    if (grau < 1) {
-      throw new DomainValidationError('Grau do efeito deve ser no mínimo 1', 'grau');
+    if (grau < -5) {
+      throw new DomainValidationError('Grau do efeito deve ser no mínimo -5', 'grau');
     }
 
-    if (grau > 30) {
-      throw new DomainValidationError('Grau do efeito não pode exceder 30', 'grau');
+    if (grau > 20) {
+      throw new DomainValidationError('Grau do efeito não pode exceder 20', 'grau');
     }
 
     return new AppliedEffect(
@@ -123,12 +123,12 @@ export class AppliedEffect extends Entity<AppliedEffectProps> {
       throw new DomainValidationError('effectBaseId é obrigatório', 'effectBaseId');
     }
 
-    if (props.grau < 1) {
-      throw new DomainValidationError('Grau do efeito deve ser no mínimo 1', 'grau');
+    if (props.grau < -5) {
+      throw new DomainValidationError('Grau do efeito deve ser no mínimo -5', 'grau');
     }
 
-    if (props.grau > 30) {
-      throw new DomainValidationError('Grau do efeito não pode exceder 30', 'grau');
+    if (props.grau > 20) {
+      throw new DomainValidationError('Grau do efeito não pode exceder 20', 'grau');
     }
   }
 

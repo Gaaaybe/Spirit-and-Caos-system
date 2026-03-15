@@ -118,7 +118,9 @@ export interface CreatePoderPayload {
   icone?: string;
 }
 
-export type UpdatePoderPayload = CreatePoderPayload;
+export type UpdatePoderPayload = Omit<Partial<CreatePoderPayload>, 'icone'> & {
+  icone?: string | null;
+};
 
 // ─── Acervo ───────────────────────────────────────────────────────────────────
 
@@ -149,7 +151,168 @@ export interface CreateAcervoPayload {
   icone?: string;
 }
 
-export type UpdateAcervoPayload = CreateAcervoPayload;
+export type UpdateAcervoPayload = Omit<Partial<CreateAcervoPayload>, 'icone'> & {
+  icone?: string | null;
+};
+
+// ─── Itens ───────────────────────────────────────────────────────────────────
+
+export type ItemType =
+  | 'weapon'
+  | 'defensive-equipment'
+  | 'consumable'
+  | 'artifact'
+  | 'accessory';
+
+export type WeaponRange = 'adjacente' | 'natural' | 'curto' | 'medio' | 'longo';
+export type EquipmentType = 'traje' | 'protecao';
+export type DurabilityStatus = 'INTACTO' | 'DANIFICADO';
+export type SpoilageState = 'PERFEITA' | 'BOA' | 'NORMAL' | 'RUIM' | 'TERRIVEL';
+
+export interface DamageDescriptorResponse {
+  dado: string;
+  base: string;
+  espiritual: boolean;
+}
+
+export interface ItemBaseResponse {
+  id: string;
+  userId: string | null;
+  tipo: ItemType;
+  nome: string;
+  descricao: string;
+  isPublic: boolean;
+  icone: string | null;
+  notas: string | null;
+  dominio: DominioResponse;
+  custoBase: number;
+  nivelItem: number;
+  valorBase: number;
+  precoVenda: number;
+  durabilidade: DurabilityStatus;
+  powerIds: string[];
+  powerArrayIds: string[];
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface WeaponItemResponse extends ItemBaseResponse {
+  tipo: 'weapon';
+  danos: DamageDescriptorResponse[];
+  upgradeLevel: number;
+  upgradeLevelMax: number;
+  critMargin: number;
+  critMultiplier: number;
+  alcance: WeaponRange;
+  alcanceExtraMetros: number;
+  atributoEscalonamento: string | null;
+}
+
+export interface DefensiveItemResponse extends ItemBaseResponse {
+  tipo: 'defensive-equipment';
+  tipoEquipamento: EquipmentType;
+  baseRD: number;
+  rdAtual: number;
+  upgradeLevel: number;
+  upgradeLevelMax: number;
+  atributoEscalonamento: string | null;
+}
+
+export interface ConsumableItemResponse extends ItemBaseResponse {
+  tipo: 'consumable';
+  descritorEfeito: string;
+  qtdDoses: number;
+  isRefeicao: boolean;
+  spoilageState: SpoilageState | null;
+}
+
+export interface ArtifactItemResponse extends ItemBaseResponse {
+  tipo: 'artifact';
+  isAttuned: boolean;
+}
+
+export interface AccessoryItemResponse extends ItemBaseResponse {
+  tipo: 'accessory';
+}
+
+export type ItemResponse =
+  | WeaponItemResponse
+  | DefensiveItemResponse
+  | ConsumableItemResponse
+  | ArtifactItemResponse
+  | AccessoryItemResponse;
+
+export interface DamageDescriptorPayload {
+  dado: string;
+  base: string;
+  espiritual: boolean;
+}
+
+interface ItemCommonPayload {
+  nome: string;
+  descricao: string;
+  dominio: { name: DomainName; areaConhecimento?: string; peculiarId?: string };
+  custoBase: number;
+  nivelItem?: number;
+  isPublic?: boolean;
+  notas?: string;
+  powerIds?: string[];
+  powerArrayIds?: string[];
+  icone?: string;
+}
+
+export type CreateItemPayload =
+  | (ItemCommonPayload & {
+      tipo: 'weapon';
+      danos: DamageDescriptorPayload[];
+      critMargin: number;
+      critMultiplier: number;
+      alcance: WeaponRange;
+      alcanceExtraMetros?: number;
+      atributoEscalonamento?: string;
+    })
+  | (ItemCommonPayload & {
+      tipo: 'defensive-equipment';
+      tipoEquipamento: EquipmentType;
+      baseRD?: number;
+      atributoEscalonamento?: string;
+    })
+  | (ItemCommonPayload & {
+      tipo: 'consumable';
+      descritorEfeito: string;
+      qtdDoses: number;
+      isRefeicao: boolean;
+    })
+  | (ItemCommonPayload & { tipo: 'artifact' })
+  | (ItemCommonPayload & { tipo: 'accessory' });
+
+interface ItemCommonUpdatePayload extends Omit<Partial<ItemCommonPayload>, 'icone'> {
+  icone?: string | null;
+}
+
+export type UpdateItemPayload =
+  | (ItemCommonUpdatePayload & {
+      tipo: 'weapon';
+      danos?: DamageDescriptorPayload[];
+      critMargin?: number;
+      critMultiplier?: number;
+      alcance?: WeaponRange;
+      alcanceExtraMetros?: number;
+      atributoEscalonamento?: string;
+    })
+  | (ItemCommonUpdatePayload & {
+      tipo: 'defensive-equipment';
+      tipoEquipamento?: EquipmentType;
+      baseRD?: number;
+      atributoEscalonamento?: string;
+    })
+  | (ItemCommonUpdatePayload & {
+      tipo: 'consumable';
+      descritorEfeito?: string;
+      qtdDoses?: number;
+    })
+  | (ItemCommonUpdatePayload & { tipo: 'artifact' })
+  | (ItemCommonUpdatePayload & { tipo: 'accessory' });
 
 // ─── Peculiaridade ────────────────────────────────────────────────────────────
 
@@ -173,7 +336,12 @@ export interface CreatePeculiaridadePayload {
   icone?: string;
 }
 
-export type UpdatePeculiaridadePayload = Partial<CreatePeculiaridadePayload>;
+export type UpdatePeculiaridadePayload = Omit<
+  Partial<CreatePeculiaridadePayload>,
+  'icone'
+> & {
+  icone?: string | null;
+};
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 

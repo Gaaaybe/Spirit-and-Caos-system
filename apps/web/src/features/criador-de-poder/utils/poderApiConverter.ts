@@ -158,7 +158,7 @@ export function poderToCreatePayload(poder: Poder): CreatePoderPayload {
       poder.descricao && poder.descricao.length >= 10
         ? poder.descricao
         : `Poder: ${poder.nome}`.padEnd(10, '.'),
-    icone: poder.icone,
+    icone: poder.icone?.trim() || undefined,
     dominio: {
       name: poder.dominioId as DomainName,
       areaConhecimento: poder.dominioAreaConhecimento,

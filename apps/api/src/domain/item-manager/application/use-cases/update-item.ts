@@ -26,9 +26,8 @@ interface UpdateItemCommonProps {
   descricao?: string;
   dominio?: Domain;
   custoBase?: number;
-  nivelItem?: number;
   isPublic?: boolean;
-  icone?: string;
+  icone?: string | null;
   notas?: string;
   powerIds?: string[];
   powerArrayIds?: string[];
@@ -41,6 +40,7 @@ type UpdateItemRequest =
       critMargin?: number;
       critMultiplier?: number;
       alcance?: WeaponRange;
+      alcanceExtraMetros?: number;
       atributoEscalonamento?: string;
     })
   | (UpdateItemCommonProps & {
@@ -86,6 +86,7 @@ export class UpdateItemUseCase {
     }
 
     const targetDomain = request.dominio ?? existing.dominio;
+    let totalItemLevelContribution = 0;
 
     let newPowerIds: ItemPowerIdList | undefined;
     if (request.powerIds !== undefined) {
@@ -107,6 +108,25 @@ export class UpdateItemUseCase {
         }
 
         newPowerIds.add(new UniqueEntityId(powerId));
+        totalItemLevelContribution += power.itemLevelContribution;
+      }
+    } else {
+      for (const currentPowerId of existing.powerIds.getItems()) {
+        const power = await this.powersLookupPort.findById(currentPowerId.toString());
+
+        if (!power) {
+          return left(new ResourceNotFoundError());
+        }
+
+        if (power.domainName !== targetDomain.name) {
+          return left(
+            new InvalidItemDomainError(
+              `Poder "${power.nome}" é do domínio "${power.domainName}", mas o item é do domínio "${targetDomain.name}"`,
+            ),
+          );
+        }
+
+        totalItemLevelContribution += power.itemLevelContribution;
       }
     }
 
@@ -130,15 +150,36 @@ export class UpdateItemUseCase {
         }
 
         newPowerArrayIds.add(new UniqueEntityId(powerArrayId));
+        totalItemLevelContribution += powerArray.itemLevelContribution;
+      }
+    } else {
+      for (const currentPowerArrayId of existing.powerArrayIds.getItems()) {
+        const powerArray = await this.powerArraysLookupPort.findById(currentPowerArrayId.toString());
+
+        if (!powerArray) {
+          return left(new ResourceNotFoundError());
+        }
+
+        if (powerArray.domainName !== targetDomain.name) {
+          return left(
+            new InvalidItemDomainError(
+              `Acervo "${powerArray.nome}" é do domínio "${powerArray.domainName}", mas o item é do domínio "${targetDomain.name}"`,
+            ),
+          );
+        }
+
+        totalItemLevelContribution += powerArray.itemLevelContribution;
       }
     }
+
+    const computedItemLevel = Math.max(1, totalItemLevelContribution);
 
     const commonPartial = {
       nome: request.nome,
       descricao: request.descricao,
       dominio: request.dominio,
       custoBase: request.custoBase,
-      nivelItem: request.nivelItem,
+      nivelItem: computedItemLevel,
       icone: request.icone,
       notas: request.notas,
       powerIds: newPowerIds,
@@ -154,6 +195,7 @@ export class UpdateItemUseCase {
         critMargin: request.critMargin,
         critMultiplier: request.critMultiplier,
         alcance: request.alcance,
+        alcanceExtraMetros: request.alcanceExtraMetros,
         atributoEscalonamento: request.atributoEscalonamento,
       });
     } else if (

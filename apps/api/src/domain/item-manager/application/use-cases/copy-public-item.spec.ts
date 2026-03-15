@@ -27,7 +27,7 @@ describe('CopyPublicItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       isPublic: overrides.isPublic ?? false,
     });
   }

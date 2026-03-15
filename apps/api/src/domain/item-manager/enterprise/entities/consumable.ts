@@ -92,7 +92,7 @@ export class Consumable extends Item<ConsumableProps> {
     qtdDoses?: number;
     powerIds?: ItemPowerIdList;
     powerArrayIds?: ItemPowerArrayIdList;
-    icone?: string;
+    icone?: string | null;
     notas?: string;
   }): Consumable {
     return Consumable.create(
@@ -106,7 +106,7 @@ export class Consumable extends Item<ConsumableProps> {
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
         powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
-        icone: partial.icone ?? this.props.icone,
+        icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,

@@ -113,7 +113,10 @@ export function CriadorDePoder() {
       const isApiId = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(poder.id);
 
       if (isApiId) {
-        await atualizar(poder.id, payload);
+        await atualizar(poder.id, {
+          ...payload,
+          icone: poder.icone?.trim() ? poder.icone.trim() : null,
+        });
         toast.success(`Poder "${poder.nome}" atualizado com sucesso!`);
       } else {
         const novo = await criar(payload);
@@ -792,7 +795,10 @@ export function CriadorDePoder() {
         isOpen={modalFormPeculiaridade}
         onClose={() => setModalFormPeculiaridade(false)}
         onSubmit={async (data) => {
-          const novaP = await criarPeculiaridade(data);
+          const novaP = await criarPeculiaridade({
+            ...data,
+            icone: data.icone ?? undefined,
+          });
           atualizarInfoPoder(undefined, undefined, undefined, undefined, novaP.id);
           setModalFormPeculiaridade(false);
           toast.success(`Peculiaridade "${novaP.nome}" criada com sucesso!`);

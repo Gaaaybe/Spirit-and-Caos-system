@@ -55,7 +55,8 @@ describe('FetchUserItemsController (e2e)', () => {
         danos: [{ dado: '1d4', base: 'DES', espiritual: false }],
         critMargin: 17,
         critMultiplier: 2,
-        alcance: 'corpo-a-corpo',
+        alcance: 'adjacente',
+        alcanceExtraMetros: 0,
         isPublic: false,
       });
 

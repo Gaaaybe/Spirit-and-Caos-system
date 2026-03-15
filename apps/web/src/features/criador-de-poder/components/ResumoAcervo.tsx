@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Modal, Badge, Card } from '../../../shared/ui';
+import { Modal, Badge, Card, DynamicIcon } from '../../../shared/ui';
 import { useCatalog } from '@/context/useCatalog';
 import { calcularDetalhesPoder } from '../regras/calculadoraCusto';
 import { useAcervoCalculator } from '../hooks/useAcervoCalculator';
@@ -53,8 +53,12 @@ export function ResumoAcervo({ isOpen, onClose, acervo }: ResumoAcervoProps) {
       <div className="space-y-4">
         {/* Header com ícone e descritor */}
         <div className="flex items-start gap-3 pb-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-            <Package className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+          <div className="w-16 h-16 rounded-lg overflow-hidden bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+            {acervo.icone ? (
+              <DynamicIcon name={acervo.icone} className="w-12 h-12 text-purple-600 dark:text-purple-400" />
+            ) : (
+              <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+            )}
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-1">
@@ -135,6 +139,13 @@ export function ResumoAcervo({ isOpen, onClose, acervo }: ResumoAcervoProps) {
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
+                        <div className="w-8 h-8 rounded-md overflow-hidden bg-gray-100 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
+                          {item.poder.icone ? (
+                            <DynamicIcon name={item.poder.icone} className="w-6 h-6 text-purple-600 dark:text-purple-300" />
+                          ) : (
+                            <Zap className="w-4 h-4 text-purple-500 dark:text-purple-400" />
+                          )}
+                        </div>
                         {isPrincipal ? (
                           <CheckCircle2 className="w-4 h-4 text-yellow-600 dark:text-yellow-400 flex-shrink-0" />
                         ) : (

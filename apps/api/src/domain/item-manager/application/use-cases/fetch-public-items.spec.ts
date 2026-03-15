@@ -27,7 +27,7 @@ describe('FetchPublicItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d6', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     const publicWeapon = Weapon.create({
@@ -40,7 +40,7 @@ describe('FetchPublicItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 3,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       isPublic: true,
     });
 
@@ -54,7 +54,7 @@ describe('FetchPublicItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d4', 'perfuração', false)],
       critMargin: 3,
       critMultiplier: 3,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       isPublic: false,
     });
 
@@ -81,7 +81,7 @@ describe('FetchPublicItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 3,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       isPublic: true,
     });
 

@@ -28,7 +28,7 @@ describe('FetchUserItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     const otherWeapon = Weapon.create({
@@ -41,7 +41,7 @@ describe('FetchUserItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d10', 'corte', false)],
       critMargin: 3,
       critMultiplier: 3,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     await itemsRepository.create(weapon);
@@ -67,7 +67,7 @@ describe('FetchUserItemsUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     const consumable = Consumable.create({

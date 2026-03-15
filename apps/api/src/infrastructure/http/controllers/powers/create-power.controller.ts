@@ -72,7 +72,7 @@ const appliedModificationSchema = z.object({
 
 const appliedEffectSchema = z.object({
   effectBaseId: z.string().min(1, 'ID do efeito base é obrigatório'),
-  grau: z.number().int().min(1).max(30),
+  grau: z.number().int().min(-5).max(20),
   configuracaoId: z.string().min(1).optional(),
   inputValue: z.union([z.string(), z.number()]).optional(),
   modifications: z.array(appliedModificationSchema).default([]),
@@ -101,7 +101,7 @@ const createPowerBodySchema = z.object({
   custoAlternativo: custoAlternativoSchema.optional(),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z.url('Ícone deve ser um link válido').optional(),
 });
 
 type CreatePowerBodySchema = z.infer<typeof createPowerBodySchema>;

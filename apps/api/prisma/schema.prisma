@@ -236,7 +236,8 @@ enum ItemType {
 }
 
 enum WeaponRange {
-  CORPO_A_CORPO
+  ADJACENTE
+  NATURAL
   CURTO
   MEDIO
   LONGO
@@ -282,6 +283,7 @@ model Item {
   critMargin             Int?
   critMultiplier         Int?
   alcance                WeaponRange?
+  alcanceExtraMetrosMetades Int?
   atributoEscalonamento  String?
   upgradeLevelValue      Int?
   upgradeLevelMax        Int?

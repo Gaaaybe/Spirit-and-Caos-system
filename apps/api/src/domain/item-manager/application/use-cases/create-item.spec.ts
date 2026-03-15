@@ -1,4 +1,5 @@
 import { InMemoryItemsRepository } from '@test/repositories/in-memory-items-repository';
+import { InMemoryPowerArraysLookupPort } from '@test/repositories/in-memory-power-arrays-lookup-port';
 import { InMemoryPowersLookupPort } from '@test/repositories/in-memory-powers-lookup-port';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
@@ -17,11 +18,13 @@ describe('CreateItemUseCase', () => {
   let sut: CreateItemUseCase;
   let itemsRepository: InMemoryItemsRepository;
   let powersLookupPort: InMemoryPowersLookupPort;
+  let powerArraysLookupPort: InMemoryPowerArraysLookupPort;
 
   beforeEach(() => {
     itemsRepository = new InMemoryItemsRepository();
     powersLookupPort = new InMemoryPowersLookupPort();
-    sut = new CreateItemUseCase(itemsRepository, powersLookupPort);
+    powerArraysLookupPort = new InMemoryPowerArraysLookupPort();
+    sut = new CreateItemUseCase(itemsRepository, powersLookupPort, powerArraysLookupPort);
   });
 
   it('should create a weapon', async () => {
@@ -36,7 +39,7 @@ describe('CreateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     expect(result.isRight()).toBe(true);
@@ -63,7 +66,7 @@ describe('CreateItemUseCase', () => {
       ],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     expect(result.isRight()).toBe(true);
@@ -86,7 +89,7 @@ describe('CreateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d6', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
     });
 
     expect(result.isRight()).toBe(true);
@@ -164,7 +167,6 @@ describe('CreateItemUseCase', () => {
       dominio: Domain.create({ name: DomainName.NATURAL }),
       custoBase: 30,
       nivelItem: 2,
-      efeitoPassivo: '+1 na iniciativa',
     });
 
     expect(result.isRight()).toBe(true);
@@ -178,6 +180,7 @@ describe('CreateItemUseCase', () => {
       id: 'power-1',
       nome: 'Fio Cortante',
       domainName: DomainName.ARMA_BRANCA,
+      itemLevelContribution: 3,
     });
 
     const result = await sut.execute({
@@ -191,7 +194,7 @@ describe('CreateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 3,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       powerIds: ['power-1'],
     });
 
@@ -206,6 +209,7 @@ describe('CreateItemUseCase', () => {
       id: 'power-sagrado',
       nome: 'Chama Divina',
       domainName: DomainName.SAGRADO,
+      itemLevelContribution: 2,
     });
 
     const result = await sut.execute({
@@ -219,7 +223,7 @@ describe('CreateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       powerIds: ['power-sagrado'],
     });
 
@@ -239,12 +243,89 @@ describe('CreateItemUseCase', () => {
       danos: [DamageDescriptor.create('1d8', 'corte', false)],
       critMargin: 2,
       critMultiplier: 2,
-      alcance: WeaponRange.CORPO_A_CORPO,
+      alcance: WeaponRange.NATURAL,
       powerIds: ['power-inexistente'],
     });
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+  });
+
+  it('should calculate item level from linked powers and power arrays', async () => {
+    powersLookupPort.powers.push({
+      id: 'power-1',
+      nome: 'Fio Cortante',
+      domainName: DomainName.ARMA_BRANCA,
+      itemLevelContribution: 3,
+    });
+
+    powerArraysLookupPort.powerArrays.push({
+      id: 'array-1',
+      nome: 'Arsenal Cortante',
+      domainName: DomainName.ARMA_BRANCA,
+      itemLevelContribution: 5,
+    });
+
+    const result = await sut.execute({
+      tipo: ItemType.WEAPON,
+      userId: 'user-1',
+      nome: 'Espada Mestra',
+      descricao: 'Uma espada mestra que canaliza técnicas e estilos de combate avançados',
+      dominio: Domain.create({ name: DomainName.ARMA_BRANCA }),
+      custoBase: 10,
+      danos: [DamageDescriptor.create('1d8', 'corte', false)],
+      critMargin: 2,
+      critMultiplier: 2,
+      alcance: WeaponRange.NATURAL,
+      powerIds: ['power-1'],
+      powerArrayIds: ['array-1'],
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.item.nivelItem).toBe(8);
+      expect(result.value.item.valorBase).toBe(80);
+    }
+  });
+
+  it('should default item level to 1 when there are no linked powers', async () => {
+    const result = await sut.execute({
+      tipo: ItemType.ARTIFACT,
+      userId: 'user-1',
+      nome: 'Pedra Neutra',
+      descricao: 'Uma pedra sem poderes vinculados usada para validar o nível automático',
+      dominio: Domain.create({ name: DomainName.NATURAL }),
+      custoBase: 4,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.item.nivelItem).toBe(1);
+      expect(result.value.item.valorBase).toBe(4);
+    }
+  });
+
+  it('should create a natural weapon with extra reach in meters', async () => {
+    const result = await sut.execute({
+      tipo: ItemType.WEAPON,
+      userId: 'user-1',
+      nome: 'Lanca Longa',
+      descricao: 'Uma arma com alcance natural estendido em meio metro para manter distancia.',
+      dominio: Domain.create({ name: DomainName.ARMA_BRANCA }),
+      custoBase: 12,
+      danos: [DamageDescriptor.create('1d8', 'perfuracao', false)],
+      critMargin: 2,
+      critMultiplier: 2,
+      alcance: WeaponRange.NATURAL,
+      alcanceExtraMetros: 0.5,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      const weapon = result.value.item as Weapon;
+      expect(weapon.alcance).toBe(WeaponRange.NATURAL);
+      expect(weapon.alcanceExtraMetros).toBe(0.5);
+    }
   });
 });
 

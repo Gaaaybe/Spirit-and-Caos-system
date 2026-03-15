@@ -24,7 +24,7 @@ interface CreateItemCommonProps {
   descricao: string;
   dominio: Domain;
   custoBase: number;
-  nivelItem: number;
+  nivelItem?: number;
   isPublic?: boolean;
   icone?: string;
   notas?: string;
@@ -39,6 +39,7 @@ type CreateItemRequest =
       critMargin: number;
       critMultiplier: number;
       alcance: WeaponRange;
+      alcanceExtraMetros?: number;
       atributoEscalonamento?: string;
     })
   | (CreateItemCommonProps & {
@@ -75,6 +76,7 @@ export class CreateItemUseCase {
 
   async execute(request: CreateItemRequest): Promise<CreateItemUseCaseResponse> {
     const powerIdList = new ItemPowerIdList();
+    let totalItemLevelContribution = 0;
 
     if (request.powerIds && request.powerIds.length > 0) {
       for (const powerId of request.powerIds) {
@@ -93,6 +95,7 @@ export class CreateItemUseCase {
         }
 
         powerIdList.add(new UniqueEntityId(powerId));
+        totalItemLevelContribution += power.itemLevelContribution;
       }
     }
 
@@ -115,8 +118,11 @@ export class CreateItemUseCase {
         }
 
         powerArrayIdList.add(new UniqueEntityId(powerArrayId));
+        totalItemLevelContribution += powerArray.itemLevelContribution;
       }
     }
+
+    const computedItemLevel = Math.max(1, totalItemLevelContribution);
 
     const common = {
       userId: request.userId,
@@ -124,7 +130,7 @@ export class CreateItemUseCase {
       descricao: request.descricao,
       dominio: request.dominio,
       custoBase: request.custoBase,
-      nivelItem: request.nivelItem,
+      nivelItem: computedItemLevel,
       isPublic: request.isPublic,
       icone: request.icone,
       notas: request.notas,
@@ -142,6 +148,7 @@ export class CreateItemUseCase {
           critMargin: request.critMargin,
           critMultiplier: request.critMultiplier,
           alcance: request.alcance,
+          alcanceExtraMetros: request.alcanceExtraMetros,
           atributoEscalonamento: request.atributoEscalonamento,
         });
         break;

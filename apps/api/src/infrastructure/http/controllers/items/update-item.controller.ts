@@ -67,7 +67,9 @@ const commonOptional = {
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z
+    .union([z.url('Ícone deve ser um link válido'), z.null()])
+    .optional(),
   powerArrayIds: z.array(z.string().min(1)).optional(),
 };
 
@@ -80,13 +82,29 @@ const updateItemBodySchema = z.discriminatedUnion('tipo', [
     critMultiplier: z.number().int().min(1).max(7).optional(),
     alcance: z
       .enum([
-        WeaponRange.CORPO_A_CORPO,
+        WeaponRange.ADJACENTE,
+        WeaponRange.NATURAL,
         WeaponRange.CURTO,
         WeaponRange.MEDIO,
         WeaponRange.LONGO,
       ])
       .optional(),
+    alcanceExtraMetros: z.number().min(0).multipleOf(0.5).optional(),
     atributoEscalonamento: z.string().min(1).optional(),
+  }).superRefine((data, ctx) => {
+    const alcanceEfetivo = data.alcance;
+
+    if (
+      alcanceEfetivo !== undefined &&
+      alcanceEfetivo !== WeaponRange.NATURAL &&
+      (data.alcanceExtraMetros ?? 0) > 0
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['alcanceExtraMetros'],
+        message: 'Apenas armas de alcance natural podem ter alcance extra',
+      });
+    }
   }),
   z.object({
     ...commonOptional,
@@ -156,6 +174,7 @@ export class UpdateItemController {
         critMargin: body.critMargin,
         critMultiplier: body.critMultiplier,
         alcance: body.alcance as WeaponRange | undefined,
+        alcanceExtraMetros: body.alcanceExtraMetros,
         atributoEscalonamento: body.atributoEscalonamento,
       });
     } else if (body.tipo === ItemType.DEFENSIVE_EQUIPMENT) {

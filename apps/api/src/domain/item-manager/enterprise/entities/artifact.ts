@@ -48,7 +48,7 @@ export class Artifact extends Item<ArtifactProps> {
     nivelItem?: number;
     powerIds?: ItemPowerIdList;
     powerArrayIds?: ItemPowerArrayIdList;
-    icone?: string;
+    icone?: string | null;
     notas?: string;
   }): Artifact {
     return Artifact.create(
@@ -62,7 +62,7 @@ export class Artifact extends Item<ArtifactProps> {
         durabilidade: this.props.durabilidade,
         powerIds: partial.powerIds ?? this.props.powerIds,
         powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
-        icone: partial.icone ?? this.props.icone,
+        icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         isPublic: this.props.isPublic,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,

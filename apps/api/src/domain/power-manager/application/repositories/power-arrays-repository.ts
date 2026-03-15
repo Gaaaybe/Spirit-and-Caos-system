@@ -3,6 +3,7 @@ import type { PowerArray } from '../../enterprise/entities/power-array';
 
 export abstract class PowerArraysRepository {
   abstract findById(id: string): Promise<PowerArray | null>;
+  abstract findByPowerId(powerId: string): Promise<PowerArray[]>;
   abstract findMany(params: PaginationParams): Promise<PowerArray[]>;
   abstract findByUserId(userId: string, params: PaginationParams): Promise<PowerArray[]>;
   abstract findByDomain(domainName: string, params: PaginationParams): Promise<PowerArray[]>;

@@ -47,14 +47,19 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return this.props.updatedAt;
   }
 
-  update(partial: { nome?: string; descricao?: string; espiritual?: boolean; icone?: string }): Peculiarity {
+  update(partial: {
+    nome?: string;
+    descricao?: string;
+    espiritual?: boolean;
+    icone?: string | null;
+  }): Peculiarity {
     return Peculiarity.create(
       {
         userId: this.props.userId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         espiritual: partial.espiritual ?? this.props.espiritual,
-        icone: partial.icone ?? this.props.icone,
+        icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         isPublic: this.props.isPublic,
         createdAt: this.props.createdAt,
         updatedAt: new Date(),

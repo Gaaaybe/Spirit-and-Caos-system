@@ -40,7 +40,7 @@ export function SwipeablePoderCard({
   const swipeHandlers = useSwipeToDismiss(onDeletar, 80);
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="relative overflow-hidden h-full">
       {/* Botão de deletar revelado ao swipe (apenas touch) */}
       {isTouchDevice && (
         <div className="absolute inset-y-0 right-0 flex items-center justify-end bg-red-600 dark:bg-red-700 px-6">
@@ -51,11 +51,11 @@ export function SwipeablePoderCard({
       {/* Card principal */}
       <div
         {...(isTouchDevice ? swipeHandlers : {})}
-        className="bg-white dark:bg-gray-800"
+        className="bg-white dark:bg-gray-800 h-full"
       >
-        <Card hover>
-          <CardContent className="p-4">
-            <div className="flex flex-col gap-3">
+        <Card hover className="h-full min-h-[18rem]">
+          <CardContent className="p-3 h-full">
+            <div className="flex flex-col gap-3 h-full">
               {/* Cabeçalho com nome e badge — clicável para abrir resumo */}
               <div
                 className="flex items-start justify-between gap-3 cursor-pointer"
@@ -83,18 +83,21 @@ export function SwipeablePoderCard({
                 </Badge>
               </div>
 
-              {/* Descrição — clicável */}
-              {poder.descricao && (
-                <p
-                  className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words cursor-pointer"
-                  onClick={onVerResumo}
-                >
-                  {poder.descricao}
-                </p>
-              )}
-              
-              {/* Rodapé — linha 1: data + ações secundárias */}
-              <div className="flex items-center justify-between gap-2 pt-1">
+              <div className="flex-1 flex flex-col justify-between gap-3">
+                {/* Descrição — clicável */}
+                {poder.descricao ? (
+                  <p
+                    className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words cursor-pointer min-h-[3rem]"
+                    onClick={onVerResumo}
+                  >
+                    {poder.descricao}
+                  </p>
+                ) : (
+                  <div className="min-h-[3rem]" />
+                )}
+
+                {/* Rodapé — linha 1: data + ações secundárias */}
+                <div className="flex items-center justify-between gap-2 pt-1">
                 <p className="text-xs text-gray-500 dark:text-gray-500 flex-shrink-0">
                   {formatarData(poder.dataCriacao)}
                 </p>
@@ -156,6 +159,7 @@ export function SwipeablePoderCard({
                 <FolderOpen className="w-4 h-4" /> Carregar no Editor
               </Button>
             </div>
+          </div>
           </CardContent>
         </Card>
       </div>

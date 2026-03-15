@@ -19,7 +19,8 @@ describe('UpdateItemController (e2e)', () => {
     danos: [{ dado: '1d10', base: 'FOR', espiritual: false }],
     critMargin: 19,
     critMultiplier: 2,
-    alcance: 'corpo-a-corpo',
+    alcance: 'natural',
+    alcanceExtraMetros: 0,
     isPublic: false,
   };
 
@@ -74,6 +75,7 @@ describe('UpdateItemController (e2e)', () => {
       .send({
         tipo: 'weapon',
         nome: 'Machado de Guerra Aprimorado',
+        alcanceExtraMetros: 1,
         isPublic: true,
       });
 
@@ -83,6 +85,7 @@ describe('UpdateItemController (e2e)', () => {
       nome: 'Machado de Guerra Aprimorado',
       isPublic: true,
       tipo: 'weapon',
+      alcanceExtraMetros: 1,
     });
   });
 

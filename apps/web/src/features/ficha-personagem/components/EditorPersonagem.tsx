@@ -136,7 +136,7 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
             className={`px-4 py-2 font-semibold border-b-2 transition-colors ${
               activeTab === tab.id
                 ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900'
+                : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
             }`}
           >
             {tab.label}

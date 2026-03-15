@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Body,
+  ConflictException,
   Controller,
   ForbiddenException,
   NotFoundException,
@@ -10,6 +11,7 @@ import {
 import { z } from 'zod';
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { DependencyConflictError } from '@/domain/power-manager/application/use-cases/errors/dependency-conflict-error';
 import { InvalidVisibilityError } from '@/domain/power-manager/application/use-cases/errors/invalid-visibility-error';
 import { UpdatePowerUseCase } from '@/domain/power-manager/application/use-cases/update-power';
 import { AppliedEffect } from '@/domain/power-manager/enterprise/entities/applied-effect';
@@ -47,7 +49,7 @@ const appliedModificationSchema = z.object({
 
 const appliedEffectSchema = z.object({
   effectBaseId: z.string().min(1),
-  grau: z.number().int().min(1).max(30),
+  grau: z.number().int().min(-5).max(20),
   configuracaoId: z.string().min(1).optional(),
   inputValue: z.union([z.string(), z.number()]).optional(),
   modifications: z.array(appliedModificationSchema).default([]),
@@ -104,7 +106,9 @@ const updatePowerBodySchema = z.object({
     .optional(),
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z
+    .union([z.url('Ícone deve ser um link válido'), z.null()])
+    .optional(),
 });
 
 type UpdatePowerBodySchema = z.infer<typeof updatePowerBodySchema>;
@@ -208,6 +212,8 @@ export class UpdatePowerController {
           throw new NotFoundException(error.message);
         case NotAllowedError:
           throw new ForbiddenException(error.message);
+        case DependencyConflictError:
+          throw new ConflictException(error.message);
         case InvalidVisibilityError:
           throw new BadRequestException(error.message);
         default:

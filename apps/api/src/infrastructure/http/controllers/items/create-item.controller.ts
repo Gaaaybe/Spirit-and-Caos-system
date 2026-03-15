@@ -61,11 +61,11 @@ const commonFields = {
   descricao: z.string().min(10).max(1000),
   dominio: dominioSchema,
   custoBase: z.number().int().min(0),
-  nivelItem: z.number().int().min(1),
+  nivelItem: z.number().int().min(1).optional(),
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).default([]),
-  icone: z.string().min(1).max(200).optional(),
+  icone: z.url('Ícone deve ser um link válido').optional(),
   powerArrayIds: z.array(z.string().min(1)).default([]),
 };
 
@@ -77,12 +77,22 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
     critMargin: z.number().int().min(2).max(20),
     critMultiplier: z.number().int().min(1).max(7),
     alcance: z.enum([
-      WeaponRange.CORPO_A_CORPO,
+      WeaponRange.ADJACENTE,
+      WeaponRange.NATURAL,
       WeaponRange.CURTO,
       WeaponRange.MEDIO,
       WeaponRange.LONGO,
     ]),
+    alcanceExtraMetros: z.number().min(0).multipleOf(0.5).default(0),
     atributoEscalonamento: z.string().min(1).optional(),
+  }).superRefine((data, ctx) => {
+    if (data.alcance !== WeaponRange.NATURAL && data.alcanceExtraMetros > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['alcanceExtraMetros'],
+        message: 'Apenas armas de alcance natural podem ter alcance extra',
+      });
+    }
   }),
   z.object({
     ...commonFields,
@@ -150,6 +160,7 @@ export class CreateItemController {
         critMargin: body.critMargin,
         critMultiplier: body.critMultiplier,
         alcance: body.alcance as WeaponRange,
+        alcanceExtraMetros: body.alcanceExtraMetros,
         atributoEscalonamento: body.atributoEscalonamento,
       });
     } else if (body.tipo === ItemType.DEFENSIVE_EQUIPMENT) {

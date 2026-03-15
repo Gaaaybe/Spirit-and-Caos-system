@@ -8,7 +8,7 @@ import { calcularDetalhesPoder } from '../regras/calculadoraCusto';
 import type { Acervo } from '../types/acervo.types';
 import type { Poder } from '../regras/calculadoraCusto';
 import type { DomainName } from '@/services/types';
-import { Package, Plus, X, Zap, AlertCircle, CheckCircle } from 'lucide-react';
+import { Package, X, Zap, AlertCircle, CheckCircle } from 'lucide-react';
 
 interface CriadorAcervoProps {
   isOpen: boolean;
@@ -119,7 +119,10 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
       poderesSelecionados[0]?.dominioId ||
       'natural') as DomainName;
 
-    const payload = {
+    const isApiId = acervoInicial?.id && /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(acervoInicial.id);
+    const iconeTrimmed = icone.trim();
+
+    const payload: any = {
       nome: nome.trim(),
       descricao: descritor.trim(),
       dominio: {
@@ -128,12 +131,16 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
         peculiarId: acervoInicial?.dominioIdPeculiar,
       },
       powerIds: poderesSelecionados.map((p) => p.id),
-      icone: icone.trim() || undefined,
     };
+
+    if (isApiId) {
+      payload.icone = iconeTrimmed ? iconeTrimmed : null;
+    } else if (iconeTrimmed) {
+      payload.icone = iconeTrimmed;
+    }
 
     setSalvando(true);
     try {
-      const isApiId = /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(acervoInicial?.id ?? '');
       if (acervoInicial?.id && isApiId) {
         await atualizarAcervo(acervoInicial.id, payload);
         toast.success(`Acervo "${nome}" atualizado!`);
@@ -216,7 +223,7 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
               Poderes no Acervo ({poderesSelecionados.length})
             </label>
             {detalhesAcervo.quantidadePoderes >= 2 && (
-              <Badge variant={detalhesAcervo.valido ? 'success' : 'danger'}>
+              <Badge variant={detalhesAcervo.valido ? 'success' : 'warning'}>
                 {detalhesAcervo.custoPdATotal} PdA
               </Badge>
             )}

@@ -10,6 +10,12 @@ export class InMemoryPowerArraysRepository extends PowerArraysRepository {
     return powerArray ?? null;
   }
 
+  async findByPowerId(powerId: string): Promise<PowerArray[]> {
+    return this.items.filter((item) =>
+      item.powers.getItems().some((power) => power.id.toString() === powerId),
+    );
+  }
+
   async findMany(params: PaginationParams): Promise<PowerArray[]> {
     const startIndex = (params.page - 1) * 20;
     const endIndex = startIndex + 20;

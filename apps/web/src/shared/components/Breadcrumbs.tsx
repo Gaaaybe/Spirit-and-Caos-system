@@ -9,7 +9,7 @@ const routeLabels: Record<string, string> = {
   '/': 'Início',
   '/personagens': 'Personagens',
   '/campanhas': 'Campanhas',
-  '/criador': 'Criador de Poderes',
+  '/criador': 'Criador',
   '/criador/biblioteca': 'Biblioteca',
   '/biblioteca': 'Biblioteca',
   '/gerenciador': 'Criaturas',

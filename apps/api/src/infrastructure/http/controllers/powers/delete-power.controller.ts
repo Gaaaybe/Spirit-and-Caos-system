@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -9,6 +10,7 @@ import {
 import { NotAllowedError } from '@/core/errors/not-allowed-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DeletePowerUseCase } from '@/domain/power-manager/application/use-cases/delete-power';
+import { DependencyConflictError } from '@/domain/power-manager/application/use-cases/errors/dependency-conflict-error';
 import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
 
@@ -28,6 +30,8 @@ export class DeletePowerController {
           throw new NotFoundException(error.message);
         case NotAllowedError:
           throw new ForbiddenException(error.message);
+        case DependencyConflictError:
+          throw new ConflictException(error.message);
         default:
           throw new NotFoundException(error.message);
       }

@@ -81,13 +81,22 @@ export function GerenciadorCustomizados() {
         ) : (
           <div className="grid gap-3">
             {peculiaridades.map((peculiar) => (
-              <Card key={peculiar.id} className="p-4">
+              <Card key={peculiar.id} className="p-3 min-h-[11rem]">
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                        {peculiar.icone && <DynamicIcon name={peculiar.icone} className="inline w-4 h-4 mr-1 -mt-0.5" />}{peculiar.nome}
-                      </h3>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start gap-3 mb-2">
+                      <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                        {peculiar.icone ? (
+                          <DynamicIcon name={peculiar.icone} className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                        ) : (
+                          <Sparkles className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                          {peculiar.nome}
+                        </h3>
+                      </div>
                       <Badge variant="success">Customizado</Badge>
                       {peculiar.espiritual && <Badge variant="info">Espiritual</Badge>}
                       {peculiar.isPublic && (

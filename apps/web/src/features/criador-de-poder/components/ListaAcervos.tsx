@@ -105,16 +105,24 @@ export function ListaAcervos() {
               {acervosFiltrados.map((acervo) => (
                 <Card 
                   key={acervo.id} 
-                  className="p-4 cursor-pointer hover:shadow-md transition-shadow"
+                  className="p-3 cursor-pointer hover:shadow-md transition-shadow min-h-[11rem]"
                   onClick={() => setAcervoVisualizando(acervoResponseToAcervo(acervo))}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Package className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
-                          {acervo.icone && <DynamicIcon name={acervo.icone} className="inline w-4 h-4 mr-1 -mt-0.5" />}{acervo.nome}
-                        </h3>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start gap-3 mb-2">
+                        <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                          {acervo.icone ? (
+                            <DynamicIcon name={acervo.icone} className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                          ) : (
+                            <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
+                            {acervo.nome}
+                          </h3>
+                        </div>
                         {acervo.isPublic && (
                           <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
                             <Globe className="w-3 h-3" /> Público

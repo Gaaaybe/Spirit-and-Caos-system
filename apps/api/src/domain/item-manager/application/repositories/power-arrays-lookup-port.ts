@@ -4,6 +4,7 @@ export interface PowerArrayInfo {
   id: string;
   nome: string;
   domainName: DomainName;
+  itemLevelContribution: number;
 }
 
 export abstract class PowerArraysLookupPort {

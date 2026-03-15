@@ -4,6 +4,7 @@ export interface PowerInfo {
   id: string;
   nome: string;
   domainName: DomainName;
+  itemLevelContribution: number;
 }
 
 export abstract class PowersLookupPort {
