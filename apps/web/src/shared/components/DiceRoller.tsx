@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Dices, X } from 'lucide-react';
-import { Button } from '../../../shared/ui';
+import { Button } from '../ui';
 import { rollD20, rollDamage, formatRollResult, type RollResult } from '../utils/diceRoller';
 
 interface DiceRollerProps {

@@ -3,9 +3,12 @@
  * Permite distribuir pontos de atributo com validação
  */
 
+import { useState } from 'react';
+import { Dices } from 'lucide-react';
 import { Card } from '../../../shared/ui/Card';
 import { Input } from '../../../shared/ui/Input';
 import { Badge } from '../../../shared/ui/Badge';
+import { DiceRoller } from '../../../shared/components/DiceRoller';
 import type { Attributes } from '../types';
 
 interface AtributosEditorProps {
@@ -30,6 +33,8 @@ export function AtributosEditor({
   pontosDisponiveis,
   onChangeAtributo,
 }: AtributosEditorProps) {
+  const [rollingAttribute, setRollingAttribute] = useState<{ name: string; modifier: number } | null>(null);
+
   const handleIncrement = (attr: keyof Attributes) => {
     if (pontosDisponiveis > 0) {
       onChangeAtributo(attr, attributes[attr] + 1);
@@ -98,16 +103,28 @@ export function AtributosEditor({
                     +
                   </button>
 
-                  {/* Modificador */}
-                  <div className="ml-auto text-right">
-                    <p className="text-xs text-gray-600 dark:text-gray-400">Modificador</p>
-                    <Badge
-                      variant={modificadores[attr] >= 0 ? 'success' : 'warning'}
-                      className="text-lg font-mono"
-                    >
-                      {modificadores[attr] >= 0 ? '+' : ''}
-                      {modificadores[attr]}
-                    </Badge>
+                  {/* Modificador (Clickable for Roll) */}
+                  <div 
+                    className="ml-auto text-right cursor-pointer group relative"
+                    onClick={() => setRollingAttribute({ name: attr, modifier: modificadores[attr] })}
+                    title="Rolar Teste de Atributo"
+                  >
+                    <p className="text-xs text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors flex items-center justify-end gap-1">
+                      <Dices className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      Modificador
+                    </p>
+                    <div className="relative inline-block">
+                      <Badge
+                        variant={modificadores[attr] >= 0 ? 'success' : 'warning'}
+                        className="text-lg font-mono group-hover:ring-2 group-hover:ring-blue-400 transition-all"
+                      >
+                        {modificadores[attr] >= 0 ? '+' : ''}
+                        {modificadores[attr]}
+                      </Badge>
+                      <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm scale-75 group-hover:scale-100 duration-200">
+                        <Dices className="w-2.5 h-2.5" />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -122,6 +139,15 @@ export function AtributosEditor({
           </div>
         )}
       </div>
+
+      {/* Dice Roller Modal */}
+      {rollingAttribute && (
+        <DiceRoller
+          label={`Teste de ${rollingAttribute.name}`}
+          modifier={rollingAttribute.modifier}
+          onClose={() => setRollingAttribute(null)}
+        />
+      )}
     </Card>
   );
 }

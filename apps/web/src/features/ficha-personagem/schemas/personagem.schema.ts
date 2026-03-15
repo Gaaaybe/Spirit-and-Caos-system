@@ -178,6 +178,26 @@ export const inventorySchema = z.object({
   backpack: z.array(itemSchema).default([]),
 });
 
+/**
+ * Schema para dano e ataque
+ */
+export const damageEntrySchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  formula: z.string(),
+  critRange: z.number().int().min(2).max(20),
+  critMultiplier: z.number().int().min(1),
+});
+
+export const attackEntrySchema = z.object({
+  id: z.string(),
+  name: z.string().min(1),
+  attribute: z.enum(['Força', 'Destreza', 'Constituição', 'Inteligência', 'Sabedoria', 'Carisma']).optional(),
+  useEfficiency: z.boolean().default(false),
+  miscBonus: z.number().int().default(0),
+  damages: z.array(damageEntrySchema).default([]),
+});
+
 // ========================================
 // SCHEMA PRINCIPAL
 // ========================================
@@ -197,6 +217,7 @@ export const personagemSchema = z.object({
   poderes: z.array(personagemPoderSchema),
   acervos: z.array(personagemAcervoSchema).default([]),
   inventory: inventorySchema,
+  attacks: z.array(attackEntrySchema).default([]),
   
   // Economia de poder
   pdaTotal: z.number().int().min(0),

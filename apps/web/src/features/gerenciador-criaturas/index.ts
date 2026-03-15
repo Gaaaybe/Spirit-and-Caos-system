@@ -25,7 +25,7 @@ export {
 } from './data/roleTemplates';
 
 // Dice Rolling System
-export { DiceRoller } from './components/DiceRoller';
+export { DiceRoller } from '../../shared/components/DiceRoller';
 export { DiceRollerDemo } from './components/DiceRollerDemo';
 export { 
   rollD20, 
@@ -33,4 +33,4 @@ export {
   rollDamage, 
   formatRollResult,
   type RollResult 
-} from './utils/diceRoller';
+} from '../../shared/utils/diceRoller';

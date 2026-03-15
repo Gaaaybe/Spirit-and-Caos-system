@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Dices } from 'lucide-react';
 import { Button } from '../../../shared/ui';
-import { DiceRoller } from './DiceRoller';
-import { rollD20, rollDamage } from '../utils/diceRoller';
+import { DiceRoller } from '../../../shared/components/DiceRoller';
+import { rollD20, rollDamage } from '../../../shared/utils/diceRoller';
 
 /**
  * DiceRollerDemo

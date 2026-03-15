@@ -109,6 +109,7 @@ function criarPersonagemInicial(): Personagem {
     skills,
     poderes: [],
     acervos: [],
+    attacks: [],
     inventory: {
       equipped: {
         mainHand: null,

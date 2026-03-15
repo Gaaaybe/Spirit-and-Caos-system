@@ -2,10 +2,13 @@
  * Lista de Perícias com toggle eficiente/ineficiente
  */
 
+import { useState } from 'react';
+import { Dices } from 'lucide-react';
 import { Card } from '../../../shared/ui/Card';
 import { Badge } from '../../../shared/ui/Badge';
 import { Input } from '../../../shared/ui/Input';
 import { Tooltip } from '../../../shared/ui/Tooltip';
+import { DiceRoller } from '../../../shared/components/DiceRoller';
 import type { SkillsState, Attributes } from '../types';
 import { SKILL_CATEGORIES, getSkillAttribute } from '../types/skillsMap';
 
@@ -36,6 +39,8 @@ export function PericiasList({
   onUpdateSkill,
   calcularBonusPericia,
 }: PericiasListProps) {
+  const [rollingSkill, setRollingSkill] = useState<{ name: string; modifier: number } | null>(null);
+
   return (
     <Card className="p-6">
       <div className="space-y-6">
@@ -166,14 +171,23 @@ export function PericiasList({
                       </Tooltip>
                     </div>
 
-                    {/* Bônus Total */}
-                    <Badge
-                      variant={bonusTotal >= 0 ? 'success' : 'warning'}
-                      className="text-lg font-mono w-16 text-center"
+                    {/* Bônus Total (Clickable for Roll) */}
+                    <div 
+                      className="cursor-pointer group relative"
+                      onClick={() => setRollingSkill({ name: skillId, modifier: bonusTotal })}
+                      title="Rolar Teste de Perícia"
                     >
-                      {bonusTotal >= 0 ? '+' : ''}
-                      {bonusTotal}
-                    </Badge>
+                      <Badge
+                        variant={bonusTotal >= 0 ? 'success' : 'warning'}
+                        className="text-lg font-mono w-16 text-center group-hover:ring-2 group-hover:ring-blue-400 transition-all active:scale-95"
+                      >
+                        {bonusTotal >= 0 ? '+' : ''}
+                        {bonusTotal}
+                      </Badge>
+                      <div className="absolute -top-1 -right-1 bg-blue-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm scale-75 group-hover:scale-100 duration-200">
+                        <Dices className="w-2.5 h-2.5" />
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -181,6 +195,15 @@ export function PericiasList({
           </div>
         ))}
       </div>
+
+      {/* Dice Roller Modal */}
+      {rollingSkill && (
+        <DiceRoller
+          label={`Teste de ${rollingSkill.name}`}
+          modifier={rollingSkill.modifier}
+          onClose={() => setRollingSkill(null)}
+        />
+      )}
     </Card>
   );
 }

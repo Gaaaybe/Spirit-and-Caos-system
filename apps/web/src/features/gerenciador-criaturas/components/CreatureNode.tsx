@@ -12,7 +12,7 @@ import type { Poder } from '../../criador-de-poder/types';
 import { getRoleColor } from '../data/roleTemplates';
 import { useCreatureBoardContext } from '../hooks/CreatureBoardContext';
 import { useUIActions } from '../hooks/UIActionsContext';
-import { DiceRoller } from './DiceRoller';
+import { DiceRoller } from '../../../shared/components/DiceRoller';
 
 // Tipo temporário para Poder até integração completa
 interface PoderTemp {

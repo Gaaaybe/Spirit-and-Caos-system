@@ -245,6 +245,27 @@ export interface Inventory {
 }
 
 // ========================================
+// ATAQUES E ROLAGENS (Provisório)
+// ========================================
+
+export interface DamageEntry {
+  id: string;
+  type: string;             // Ex: Corte, Fogo, Impacto
+  formula: string;          // Ex: 1d8, 2d6+2
+  critRange: number;        // Ex: 19 (significa 19-20)
+  critMultiplier: number;   // Ex: 2 (x2 no dano)
+}
+
+export interface AttackEntry {
+  id: string;
+  name: string;
+  attribute?: AttributeName; // Atributo base para o acerto (opcional)
+  useEfficiency: boolean;    // Se soma o bônus de eficiência no acerto
+  miscBonus: number;         // Bônus fixo manual no acerto
+  damages: DamageEntry[];    // Lista de danos do ataque
+}
+
+// ========================================
 // PERSONAGEM COMPLETO
 // ========================================
 
@@ -263,6 +284,7 @@ export interface Personagem {
   poderes: PersonagemPoder[];
   acervos: PersonagemAcervo[];
   inventory: Inventory;
+  attacks: AttackEntry[];        // Rolagens de ataques pré-configuradas
   
   // Recursos de Economia de Poder
   pdaTotal: number;              // Total de PdA disponíveis (calculado)

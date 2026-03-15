@@ -18,6 +18,7 @@ import { Badge } from '../../../shared/ui/Badge';
 import { AtributosEditor } from './AtributosEditor';
 import { VitaisPanel } from './VitaisPanel';
 import { PericiasList } from './PericiasList';
+import { AtaquesList } from './AtaquesList';
 import { OrcamentoPdA } from './OrcamentoPdA';
 import { ListaPoderes } from './ListaPoderes';
 import { ListaAcervos } from './ListaAcervos';
@@ -31,13 +32,14 @@ interface EditorPersonagemProps {
   onCancel?: () => void;
 }
 
-type TabId = 'info' | 'atributos' | 'pericias' | 'vitais' | 'poderes' | 'acervos';
+type TabId = 'info' | 'atributos' | 'pericias' | 'vitais' | 'ataques' | 'poderes' | 'acervos';
 
 const TABS: { id: TabId; label: string }[] = [
   { id: 'info', label: 'Informações' },
   { id: 'atributos', label: 'Atributos' },
   { id: 'pericias', label: 'Perícias' },
   { id: 'vitais', label: 'Vitais' },
+  { id: 'ataques', label: 'Ataques' },
   { id: 'poderes', label: 'Poderes' },
   { id: 'acervos', label: 'Acervos' },
 ];
@@ -380,6 +382,17 @@ export function EditorPersonagem({ personagemId: _personagemId, onSave: _onSave,
               })
             }
             onUpdateDeathCounters={(count) => updateVitals({ deathCounters: count })}
+          />
+        )}
+
+        {/* Tab: Ataques */}
+        {activeTab === 'ataques' && (
+          <AtaquesList
+            attacks={personagem.attacks || []}
+            attributes={personagem.attributes}
+            modificadores={calculado.modificadores}
+            bonusEficiencia={calculado.bonusEficiencia}
+            onUpdateAttacks={(attacks) => setPersonagem({ ...personagem, attacks })}
           />
         )}
 
