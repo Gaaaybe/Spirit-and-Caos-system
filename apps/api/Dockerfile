@@ -12,7 +12,7 @@ COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
 
 # Instala dependências do build e remove o store do pnpm para reduzir uso de disco em camadas
-RUN pnpm install --frozen-lockfile \
+RUN pnpm install --no-frozen-lockfile \
 	&& pnpm store prune \
 	&& rm -rf /root/.local/share/pnpm/store /root/.pnpm-store
 
@@ -37,7 +37,7 @@ COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
 
 # Instala apenas dependências de produção e remove o store para reduzir uso de disco
-RUN pnpm install --prod --frozen-lockfile \
+RUN pnpm install --prod --no-frozen-lockfile \
 	&& pnpm store prune \
 	&& rm -rf /root/.local/share/pnpm/store /root/.pnpm-store
 
