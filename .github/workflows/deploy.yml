@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - master  # Dispara o deploy ao fazer push no master
+      - refactor/api  # Dispara o deploy ao fazer push no refactor/api
 
   # Permite executar manualmente da aba Actions
   workflow_dispatch:
@@ -23,24 +23,35 @@ jobs:
   # Job de build
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
+          cache: 'pnpm'
+          cache-dependency-path: apps/web/pnpm-lock.yaml
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: npm test -- --run
+        run: pnpm test --run
 
       - name: Build
-        run: npm run build
+        run: pnpm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
@@ -48,7 +59,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist'
+          path: apps/web/dist
 
   # Job de deploy
   deploy:

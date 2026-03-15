@@ -12,7 +12,7 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/infrastructure/main",
+    "start:prod": "node dist/src/infrastructure/main",
     "seed": "tsx prisma/seed.ts",
     "lint": "biome lint --write .",
     "lint:check": "biome lint .",
