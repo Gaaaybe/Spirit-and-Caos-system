@@ -38,7 +38,7 @@ services:
         condition: service_healthy
     # Comando sobrescrito para rodar as migrations e seed em produção antes de iniciar a API
     command: >
-      sh -c "pnpm prisma migrate deploy && pnpm prisma db seed && pnpm run start:prod"
+      sh -c "pnpm prisma migrate deploy && pnpm seed && pnpm run start:prod"
 
 volumes:
   postgres_data:
