@@ -7,12 +7,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 # Define diretório de trabalho
 WORKDIR /app
 
-# Copia os arquivos de dependência
-COPY package.json pnpm-lock.yaml ./
+# Copia os arquivos de dependência e configuração
+COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
 
-# Instala todas as dependências (necessárias para o build) e gera o client do prisma
-RUN pnpm install --frozen-lockfile
+# Instala dependências do build e remove o store do pnpm para reduzir uso de disco em camadas
+RUN pnpm install --frozen-lockfile \
+	&& pnpm store prune \
+	&& rm -rf /root/.local/share/pnpm/store /root/.pnpm-store
 
 # Gera o client do Prisma antes do build para garantir tipos disponíveis no TypeScript
 RUN pnpm prisma generate
@@ -30,12 +32,14 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 
 WORKDIR /app
 
-# Copia pacotes para produção (apenas dependências de produção)
-COPY package.json pnpm-lock.yaml ./
+# Copia pacotes para produção e a configuração do Prisma 7
+COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
 
-# Instala apenas as dependências de produção
-RUN pnpm install --prod --frozen-lockfile
+# Instala apenas dependências de produção e remove o store para reduzir uso de disco
+RUN pnpm install --prod --frozen-lockfile \
+	&& pnpm store prune \
+	&& rm -rf /root/.local/share/pnpm/store /root/.pnpm-store
 
 # Copia os arquivos transpilados do estágio de build
 COPY --from=builder /app/dist ./dist
