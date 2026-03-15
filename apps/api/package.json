@@ -27,7 +27,8 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@swc/core"
+      "@swc/core",
+      "@prisma/client"
     ]
   },
   "dependencies": {
@@ -43,6 +44,7 @@
     "dotenv": "^17.2.4",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
+    "prisma": "^7.3.0",
     "pg": "^8.19.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -61,7 +63,6 @@
     "@types/pg": "^8.16.0",
     "@types/supertest": "^7.2.0",
     "globals": "^16.0.0",
-    "prisma": "^7.3.0",
     "source-map-support": "^0.5.21",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",

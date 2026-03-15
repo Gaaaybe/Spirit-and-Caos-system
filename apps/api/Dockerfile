@@ -14,6 +14,9 @@ COPY prisma ./prisma/
 # Instala todas as dependências (necessárias para o build) e gera o client do prisma
 RUN pnpm install --frozen-lockfile
 
+# Gera o client do Prisma antes do build para garantir tipos disponíveis no TypeScript
+RUN pnpm prisma generate
+
 # Copia o código-fonte
 COPY . .
 
