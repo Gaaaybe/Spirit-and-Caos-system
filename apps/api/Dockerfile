@@ -10,6 +10,7 @@ WORKDIR /app
 # Copia os arquivos de dependência e configuração
 COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
+COPY data ./data/
 
 # Instala dependências do build e remove o store do pnpm para reduzir uso de disco em camadas
 RUN pnpm install --no-frozen-lockfile \
@@ -35,6 +36,7 @@ WORKDIR /app
 # Copia pacotes para produção e a configuração do Prisma 7
 COPY package.json pnpm-lock.yaml prisma.config.ts ./
 COPY prisma ./prisma/
+COPY data ./data/
 
 # Instala apenas dependências de produção e remove o store para reduzir uso de disco
 RUN pnpm install --prod --no-frozen-lockfile \
