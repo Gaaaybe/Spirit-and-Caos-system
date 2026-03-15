@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState, DynamicIcon } from '../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState } from '../shared/ui';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { SwipeablePoderCard } from '../features/criador-de-poder/components/SwipeablePoderCard';
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
@@ -9,11 +9,12 @@ import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder
 import { useItems } from '../features/criador-de-item/hooks/useItems';
 import { ResumoItem } from '../features/criador-de-item/components/ResumoItem';
 import { ResumoVinculoModal } from '../features/criador-de-item/components/ResumoVinculoModal';
+import { SwipeableItemCard } from '../features/criador-de-item/components/SwipeableItemCard';
 import { poderResponseToPoderSalvo, poderResponseToPoder, legacyPoderToCreatePayload } from '../features/criador-de-poder/utils/poderApiConverter';
 import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useCatalog } from '../context/useCatalog';
 import { useNavigate } from 'react-router-dom';
-import { Library, Sparkles, Plus, Package, RefreshCw, AlertCircle, Download, Upload, Shield, Sword, FlaskConical, Gem, Trash2 } from 'lucide-react';
+import { Library, Sparkles, Plus, Package, RefreshCw, AlertCircle, Download, Upload } from 'lucide-react';
 import type { PoderResponse, CreatePoderPayload, ItemResponse } from '../services/types';
 
 export function BibliotecaPage() {
@@ -101,26 +102,6 @@ export function BibliotecaPage() {
       ),
     [items, buscaItens],
   );
-
-  const getTipoItemLabel = (tipo: ItemResponse['tipo']) => {
-    const labels: Record<ItemResponse['tipo'], string> = {
-      weapon: 'Arma',
-      'defensive-equipment': 'Equipamento Defensivo',
-      consumable: 'Consumível',
-      artifact: 'Artefato',
-      accessory: 'Acessório',
-    };
-
-    return labels[tipo] ?? tipo;
-  };
-
-  const getTipoItemIcon = (tipo: ItemResponse['tipo']) => {
-    if (tipo === 'weapon') return <Sword className="w-4 h-4" />;
-    if (tipo === 'defensive-equipment') return <Shield className="w-4 h-4" />;
-    if (tipo === 'consumable') return <FlaskConical className="w-4 h-4" />;
-    if (tipo === 'artifact') return <Gem className="w-4 h-4" />;
-    return <Package className="w-4 h-4" />;
-  };
 
   // ─── Ações ────────────────────────────────────────────────────────────────────
 
@@ -552,78 +533,18 @@ export function BibliotecaPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {itensFiltrados.map((item) => (
-                <Card
+                <SwipeableItemCard
                   key={item.id}
-                  hover
-                  className="cursor-pointer group"
-                  onClick={() => setItemVisualizando(item)}
-                >
-                  <CardContent className="p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                          {item.icone ? (
-                            <DynamicIcon name={item.icone} className="w-full h-full" />
-                          ) : (
-                            <Package className="w-5 h-5 text-gray-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-1">
-                            {getTipoItemIcon(item.tipo)}
-                            <span className="text-xs uppercase tracking-wide">{getTipoItemLabel(item.tipo)}</span>
-                          </div>
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 truncate group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">{item.nome}</h3>
-                          <p className="text-xs text-gray-500 line-clamp-2">{item.descricao}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-xs text-gray-500 space-y-1">
-                      <p>Nível {item.nivelItem} · Base {item.custoBase} · Venda {item.precoVenda}</p>
-                      <p>{item.powerIds.length} poderes · {item.powerArrayIds.length} acervos</p>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCarregarItem(item);
-                        }}
-                        loading={carregandoItemId === item.id}
-                        disabled={carregandoItemId !== null}
-                      >
-                        Carregar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleTogglePublicItem(item);
-                        }}
-                        loading={togglePublicItemId === item.id}
-                        disabled={togglePublicItemId !== null}
-                      >
-                        {item.isPublic ? 'Privar' : 'Publicar'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletarItem(item);
-                        }}
-                        loading={deletandoItemId === item.id}
-                        disabled={deletandoItemId !== null}
-                      >
-                        <Trash2 className="w-3.5 h-3.5 mr-1" /> Excluir
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                  item={item}
+                  onCarregar={() => handleCarregarItem(item)}
+                  onDeletar={() => handleDeletarItem(item)}
+                  onTogglePublic={() => handleTogglePublicItem(item)}
+                  onVerResumo={() => setItemVisualizando(item)}
+                  formatarData={formatarData}
+                  carregandoId={carregandoItemId}
+                  deletandoId={deletandoItemId}
+                  togglePublicId={togglePublicItemId}
+                />
               ))}
             </div>
           )}
@@ -654,7 +575,11 @@ export function BibliotecaPage() {
           nome={itemVisualizando.nome}
           icone={itemVisualizando.icone ?? undefined}
           descricao={itemVisualizando.descricao}
-          dominio={itemVisualizando.dominio}
+          dominio={{
+            name: itemVisualizando.dominio.name,
+            areaConhecimento: itemVisualizando.dominio.areaConhecimento ?? undefined,
+            peculiarId: itemVisualizando.dominio.peculiarId ?? undefined,
+          }}
           custoBase={itemVisualizando.custoBase}
           nivelCalculado={itemVisualizando.nivelItem}
           custoRealCalculado={itemVisualizando.valorBase}
@@ -663,6 +588,7 @@ export function BibliotecaPage() {
           selectedPowerArrays={itemAcervosSelecionados}
           onOpenPowerDetails={(powerId) => setItemPoderResumoId(powerId)}
           onOpenPowerArrayDetails={(powerArrayId) => setItemAcervoResumoId(powerArrayId)}
+          itemData={itemVisualizando}
         />
       )}
 

@@ -1,7 +1,7 @@
-import { Copy, FileText, Gem, Package, Shield, Sword, Eye, Sparkles, BookOpen } from 'lucide-react';
+import { BookOpen, Copy, Eye, FileText, FlaskConical, Gem, Package, Shield, Sparkles, Star, Sword, Zap } from 'lucide-react';
 import { Button, Card, CardContent, Modal, ModalFooter, toast, DynamicIcon } from '@/shared/ui';
 import { DOMINIOS } from '@/data';
-import type { AcervoResponse, DomainName, PoderResponse } from '@/services/types';
+import type { AcervoResponse, DomainName, ItemResponse, PoderResponse, SpoilageState, WeaponRange } from '@/services/types';
 
 interface ResumoItemProps {
   isOpen: boolean;
@@ -23,6 +23,7 @@ interface ResumoItemProps {
   selectedPowerArrays: AcervoResponse[];
   onOpenPowerDetails: (powerId: string) => void;
   onOpenPowerArrayDetails: (powerArrayId: string) => void;
+  itemData?: ItemResponse;
 }
 
 function tipoLabel(tipo: string): string {
@@ -37,6 +38,14 @@ function tipoLabel(tipo: string): string {
   return labels[tipo] ?? tipo;
 }
 
+function tipoIconFallback(tipo: string) {
+  if (tipo === 'weapon') return <Sword className="w-8 h-8 text-white/80" />;
+  if (tipo === 'defensive-equipment') return <Shield className="w-8 h-8 text-white/80" />;
+  if (tipo === 'consumable') return <FlaskConical className="w-8 h-8 text-white/80" />;
+  if (tipo === 'artifact') return <Gem className="w-8 h-8 text-white/80" />;
+  return <Package className="w-8 h-8 text-white/80" />;
+}
+
 function dominioLabel(dominio: ResumoItemProps['dominio']): string {
   const base = DOMINIOS.find((d) => d.id === dominio.name)?.nome ?? dominio.name;
 
@@ -45,6 +54,176 @@ function dominioLabel(dominio: ResumoItemProps['dominio']): string {
   }
 
   return base;
+}
+
+function alcanceLabel(alcance: WeaponRange): string {
+  const labels: Record<WeaponRange, string> = {
+    adjacente: 'Adjacente',
+    natural: 'Natural',
+    curto: 'Curto',
+    medio: 'Médio',
+    longo: 'Longo',
+  };
+  return labels[alcance];
+}
+
+function spoilageLabel(state: SpoilageState): string {
+  const labels: Record<SpoilageState, string> = {
+    PERFEITA: 'Perfeita',
+    BOA: 'Boa',
+    NORMAL: 'Normal',
+    RUIM: 'Ruim',
+    TERRIVEL: 'Terrível',
+  };
+  return labels[state];
+}
+
+function TypeSpecificStats({ itemData }: { itemData: ItemResponse }) {
+  switch (itemData.tipo) {
+    case 'weapon':
+      return (
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-4">
+              <Sword className="w-4 h-4" /> Estatísticas de Arma
+            </p>
+            {itemData.danos.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs text-gray-500 mb-2">Dano</p>
+                <div className="space-y-1">
+                  {itemData.danos.map((d, i) => (
+                    <div key={i} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
+                      <span className="font-mono font-bold text-sm text-gray-900 dark:text-gray-100">{d.dado}</span>
+                      <span className="text-xs text-gray-500 flex-1">base: {d.base}</span>
+                      {d.espiritual && (
+                        <span className="inline-flex items-center gap-1 text-[11px] bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full">
+                          <Zap className="w-3 h-3" /> Espiritual
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Alcance</p>
+                <p className="font-semibold text-sm">
+                  {alcanceLabel(itemData.alcance)}
+                  {itemData.alcanceExtraMetros > 0 && (
+                    <span className="text-xs text-gray-500 ml-1">+{itemData.alcanceExtraMetros}m</span>
+                  )}
+                </p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Crítico</p>
+                <p className="font-semibold text-sm">{itemData.critMargin}–20 / ×{itemData.critMultiplier}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Aprimoramento</p>
+                <p className="font-semibold text-sm">+{itemData.upgradeLevel} / +{itemData.upgradeLevelMax}</p>
+              </div>
+              {itemData.atributoEscalonamento && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Escalonamento</p>
+                  <p className="font-semibold text-sm">{itemData.atributoEscalonamento}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      );
+
+    case 'defensive-equipment':
+      return (
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-4">
+              <Shield className="w-4 h-4" /> Estatísticas de Equipamento
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Tipo</p>
+                <p className="font-semibold text-sm">{itemData.tipoEquipamento === 'traje' ? 'Traje' : 'Proteção'}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">RD Base</p>
+                <p className="font-semibold text-sm">{itemData.baseRD}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">RD Atual</p>
+                <p className="font-semibold text-sm">{itemData.rdAtual}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Aprimoramento</p>
+                <p className="font-semibold text-sm">+{itemData.upgradeLevel} / +{itemData.upgradeLevelMax}</p>
+              </div>
+              {itemData.atributoEscalonamento && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3 sm:col-span-2">
+                  <p className="text-xs text-gray-500 mb-1">Escalonamento</p>
+                  <p className="font-semibold text-sm">{itemData.atributoEscalonamento}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      );
+
+    case 'consumable':
+      return (
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-4">
+              <FlaskConical className="w-4 h-4" /> Estatísticas de Consumível
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Doses</p>
+                <p className="font-semibold text-sm">{itemData.qtdDoses}</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                <p className="text-xs text-gray-500 mb-1">Tipo</p>
+                <p className="font-semibold text-sm">{itemData.isRefeicao ? 'Refeição' : 'Consumível'}</p>
+              </div>
+              {itemData.spoilageState && (
+                <div className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-3">
+                  <p className="text-xs text-gray-500 mb-1">Qualidade</p>
+                  <p className="font-semibold text-sm">{spoilageLabel(itemData.spoilageState)}</p>
+                </div>
+              )}
+            </div>
+            {itemData.descritorEfeito && (
+              <div>
+                <p className="text-xs text-gray-500 mb-1">Efeito</p>
+                <p className="text-sm text-gray-800 dark:text-gray-200 bg-gray-50 dark:bg-gray-800/50 rounded-lg px-3 py-2">
+                  {itemData.descritorEfeito}
+                </p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      );
+
+    case 'artifact':
+      return (
+        <Card>
+          <CardContent className="pt-4">
+            <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-4">
+              <Gem className="w-4 h-4" /> Estatísticas de Artefato
+            </p>
+            <div className="flex items-center gap-2">
+              <Star className={`w-5 h-5 ${itemData.isAttuned ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400'}`} />
+              <span className={`font-semibold text-sm ${itemData.isAttuned ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-500'}`}>
+                {itemData.isAttuned ? 'Sintonizado' : 'Não Sintonizado'}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      );
+
+    default:
+      return null;
+  }
 }
 
 export function ResumoItem({
@@ -63,86 +242,112 @@ export function ResumoItem({
   selectedPowerArrays,
   onOpenPowerDetails,
   onOpenPowerArrayDetails,
+  itemData,
 }: ResumoItemProps) {
   const itemIcon = icone?.trim() ?? '';
-  const itemIconEhUrl = /^https?:\/\//i.test(itemIcon);
 
   const copiarResumo = () => {
-    const texto = [
+    const linhas = [
       `=== ${nome || 'Item sem nome'} ===`,
       `Tipo: ${tipoLabel(tipo)}`,
       `Domínio: ${dominioLabel(dominio)}`,
       `Descrição: ${descricao || 'Sem descrição'}`,
-      `Custo Base: ${custoBase}`,
-      `Nível: ${nivelCalculado}`,
-      `Custo Real: ${custoRealCalculado}`,
-      `Preço de Venda: ${precoVendaCalculado}`,
-      `Poderes vinculados (${selectedPowers.length}): ${selectedPowers.map((p) => p.nome).join(', ') || '-'}`,
-      `Acervos vinculados (${selectedPowerArrays.length}): ${selectedPowerArrays.map((a) => a.nome).join(', ') || '-'}`,
-    ].join('\n');
+      `Custo Base: ${custoBase} | Nível: ${nivelCalculado} | Custo Real: ${custoRealCalculado} | Preço Venda: ${precoVendaCalculado}`,
+    ];
 
-    navigator.clipboard.writeText(texto);
+    if (itemData && itemData.tipo === 'weapon') {
+      linhas.push(
+        `Danos: ${itemData.danos.map((d) => `${d.dado} (${d.base}${d.espiritual ? ', espiritual' : ''})`).join(', ')}`,
+        `Alcance: ${alcanceLabel(itemData.alcance)}${itemData.alcanceExtraMetros > 0 ? ` +${itemData.alcanceExtraMetros}m` : ''} | Crítico: ${itemData.critMargin}–20 / ×${itemData.critMultiplier}`,
+      );
+    } else if (itemData && itemData.tipo === 'defensive-equipment') {
+      linhas.push(
+        `Tipo: ${itemData.tipoEquipamento === 'traje' ? 'Traje' : 'Proteção'} | RD Base: ${itemData.baseRD} | RD Atual: ${itemData.rdAtual}`,
+      );
+    } else if (itemData && itemData.tipo === 'consumable') {
+      linhas.push(
+        `Doses: ${itemData.qtdDoses} | ${itemData.isRefeicao ? 'Refeição' : 'Consumível'}${itemData.spoilageState ? ` | Qualidade: ${spoilageLabel(itemData.spoilageState)}` : ''}`,
+      );
+      if (itemData.descritorEfeito) linhas.push(`Efeito: ${itemData.descritorEfeito}`);
+    }
+
+    linhas.push(
+      `Poderes (${selectedPowers.length}): ${selectedPowers.map((p) => p.nome).join(', ') || '-'}`,
+      `Acervos (${selectedPowerArrays.length}): ${selectedPowerArrays.map((a) => a.nome).join(', ') || '-'}`,
+    );
+
+    navigator.clipboard.writeText(linhas.join('\n'));
     toast.success('Resumo do item copiado para a área de transferência.');
   };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="xl">
       <div className="space-y-6">
+        {/* Header com gradiente */}
         <div className="relative -mt-6 -mx-6 p-8 bg-gradient-to-br from-espirito-600 to-espirito-800 dark:from-espirito-700 dark:to-espirito-900 text-white rounded-t-lg overflow-hidden">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
+          </div>
+
           <div className="relative z-10">
-            <p className="text-xs uppercase tracking-widest opacity-80 flex items-center gap-2">
+            <p className="text-xs uppercase tracking-widest opacity-80 flex items-center gap-2 mb-4">
               <FileText className="w-4 h-4" /> Resumo do Item
             </p>
-            <div className="mt-3 flex items-start gap-3">
-              <div className="w-14 h-14 rounded-xl border border-white/20 overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
-                {itemIcon ? (
-                  itemIconEhUrl ? (
-                    <img src={itemIcon} alt={nome || 'Icone do item'} className="w-full h-full object-cover" />
+
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-start gap-4 flex-1 min-w-0">
+                <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden backdrop-blur-sm border border-white/20 bg-white/10 flex items-center justify-center">
+                  {itemIcon ? (
+                    <DynamicIcon name={itemIcon} className="w-14 h-14 text-yellow-300" />
                   ) : (
-                    <DynamicIcon name={itemIcon} className="w-full h-full" />
-                  )
-                ) : (
-                  <Package className="w-6 h-6 text-white/80" />
-                )}
+                    tipoIconFallback(tipo)
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-3xl font-bold break-words">{nome || 'Item sem nome'}</h2>
+                  <p className="mt-1 text-sm opacity-90">{tipoLabel(tipo)} · {dominioLabel(dominio)}</p>
+                  {itemData && (
+                    <span
+                      className={`inline-flex items-center gap-1 mt-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${
+                        itemData.durabilidade === 'INTACTO'
+                          ? 'bg-green-400/20 text-green-200'
+                          : 'bg-red-400/20 text-red-200'
+                      }`}
+                    >
+                      {itemData.durabilidade === 'INTACTO' ? '● Intacto' : '⚠ Danificado'}
+                    </span>
+                  )}
+                </div>
               </div>
 
-              <div className="min-w-0">
-                <h2 className="text-3xl font-bold">{nome || 'Item sem nome'}</h2>
-                <p className="mt-2 text-sm opacity-90">{tipoLabel(tipo)} | {dominioLabel(dominio)}</p>
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[90px] flex-shrink-0">
+                <p className="text-espirito-200 text-xs mb-1">Nível</p>
+                <p className="text-4xl font-bold text-yellow-300">{nivelCalculado}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 mt-6">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                <p className="text-espirito-200 text-xs mb-1">Custo Base</p>
+                <p className="text-2xl font-bold">{custoBase}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                <p className="text-espirito-200 text-xs mb-1">Custo Real</p>
+                <p className="text-2xl font-bold">{custoRealCalculado}</p>
+              </div>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
+                <p className="text-espirito-200 text-xs mb-1">Preço de Venda</p>
+                <p className="text-2xl font-bold">{precoVendaCalculado}</p>
               </div>
             </div>
           </div>
-          <div className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
-          <div className="absolute -top-10 -left-10 w-32 h-32 rounded-full bg-white/10" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs text-gray-500">Custo Base</p>
-              <p className="text-xl font-bold">{custoBase}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs text-gray-500">Nível</p>
-              <p className="text-xl font-bold">{nivelCalculado}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs text-gray-500">Custo Real</p>
-              <p className="text-xl font-bold">{custoRealCalculado}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-4">
-              <p className="text-xs text-gray-500">Preço de Venda</p>
-              <p className="text-xl font-bold">{precoVendaCalculado}</p>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Estatísticas específicas do tipo */}
+        {itemData && <TypeSpecificStats itemData={itemData} />}
 
+        {/* Descrição */}
         <Card>
           <CardContent className="pt-4 space-y-2">
             <p className="text-xs uppercase tracking-wide text-gray-500">Descrição</p>
@@ -152,6 +357,7 @@ export function ResumoItem({
           </CardContent>
         </Card>
 
+        {/* Poderes e Acervos vinculados */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardContent className="pt-4">

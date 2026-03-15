@@ -929,6 +929,7 @@ export function ComunidadePage() {
           selectedPowerArrays={itemAcervosSelecionados}
           onOpenPowerDetails={(powerId) => setItemPoderResumoId(powerId)}
           onOpenPowerArrayDetails={(powerArrayId) => setItemAcervoResumoId(powerArrayId)}
+          itemData={itemVisualizando}
         />
       )}
 
