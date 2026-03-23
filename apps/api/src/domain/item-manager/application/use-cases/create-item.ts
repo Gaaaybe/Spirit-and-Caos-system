@@ -7,8 +7,10 @@ import { Accessory } from '../../enterprise/entities/accessory';
 import { Artifact } from '../../enterprise/entities/artifact';
 import { Consumable } from '../../enterprise/entities/consumable';
 import { DefensiveEquipment, EquipmentType } from '../../enterprise/entities/defensive-equipment';
+import { GeneralItem } from '../../enterprise/entities/general-item';
 import type { Item, ItemBaseProps } from '../../enterprise/entities/item';
 import { ItemType } from '../../enterprise/entities/item';
+import { UpgradeMaterial } from '../../enterprise/entities/upgrade-material';
 import { Weapon, WeaponRange } from '../../enterprise/entities/weapon';
 import type { DamageDescriptor } from '../../enterprise/entities/value-objects/damage-descriptor';
 import { ItemPowerArrayIdList } from '../../enterprise/entities/watched-lists/item-power-array-id-list';
@@ -30,6 +32,8 @@ interface CreateItemCommonProps {
   notas?: string;
   powerIds?: string[];
   powerArrayIds?: string[];
+  canStack?: boolean;
+  maxStack?: number;
 }
 
 type CreateItemRequest =
@@ -55,7 +59,13 @@ type CreateItemRequest =
       isRefeicao: boolean;
     })
   | (CreateItemCommonProps & { tipo: ItemType.ARTIFACT })
-  | (CreateItemCommonProps & { tipo: ItemType.ACCESSORY });
+  | (CreateItemCommonProps & { tipo: ItemType.ACCESSORY })
+  | (CreateItemCommonProps & { tipo: ItemType.GENERAL })
+  | (CreateItemCommonProps & {
+      tipo: ItemType.UPGRADE_MATERIAL;
+      tier: number;
+      maxUpgradeLimit: number;
+    });
 
 interface CreateItemUseCaseResponseData {
   item: Item<ItemBaseProps>;
@@ -136,6 +146,8 @@ export class CreateItemUseCase {
       notas: request.notas,
       powerIds: powerIdList,
       powerArrayIds: powerArrayIdList,
+      canStack: request.canStack,
+      maxStack: request.maxStack,
     };
 
     let item: Item<ItemBaseProps>;
@@ -177,6 +189,18 @@ export class CreateItemUseCase {
 
       case ItemType.ACCESSORY:
         item = Accessory.create({ ...common });
+        break;
+
+      case ItemType.GENERAL:
+        item = GeneralItem.create({ ...common });
+        break;
+
+      case ItemType.UPGRADE_MATERIAL:
+        item = UpgradeMaterial.create({
+          ...common,
+          tier: request.tier,
+          maxUpgradeLimit: request.maxUpgradeLimit,
+        });
         break;
     }
 

@@ -115,7 +115,7 @@ describe('UpdateItemUseCase', () => {
     const weapon = makeWeapon(userId);
     await itemsRepository.create(weapon);
 
-    powersLookupPort.powers.push({
+    powersLookupPort.items.push({
       id: 'power-1',
       nome: 'Fio Cortante',
       domainName: DomainName.ARMA_BRANCA,
