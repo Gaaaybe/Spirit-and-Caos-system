@@ -2,7 +2,13 @@ import type { UniqueEntityId } from '@/core/entities/unique-entity-ts';
 import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import type { Optional } from '@/core/types/optional';
 import type { Domain } from '@/domain/shared/enterprise/value-objects/domain';
-import { DurabilityStatus, Item, type ItemBaseProps, ItemType, validateItemBaseProps } from './item';
+import {
+  DurabilityStatus,
+  Item,
+  type ItemBaseProps,
+  ItemType,
+  validateItemBaseProps,
+} from './item';
 import type { DamageDescriptor } from './value-objects/damage-descriptor';
 import { UpgradeLevel } from './value-objects/upgrade-level';
 import { ItemPowerArrayIdList } from './watched-lists/item-power-array-id-list';
@@ -92,10 +98,13 @@ export class Weapon extends Item<WeaponProps> {
     powerArrayIds?: ItemPowerArrayIdList;
     icone?: string | null;
     notas?: string;
+    canStack?: boolean;
+    maxStack?: number;
   }): Weapon {
     return Weapon.create(
       {
         userId: this.props.userId,
+        characterId: this.props.characterId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         dominio: partial.dominio ?? this.props.dominio,
@@ -106,6 +115,8 @@ export class Weapon extends Item<WeaponProps> {
         powerArrayIds: partial.powerArrayIds ?? this.props.powerArrayIds,
         icone: partial.icone === undefined ? this.props.icone : (partial.icone ?? undefined),
         isPublic: this.props.isPublic,
+        canStack: partial.canStack ?? this.props.canStack,
+        maxStack: partial.maxStack ?? this.props.maxStack,
         notas: partial.notas ?? this.props.notas,
         createdAt: this.props.createdAt,
         updatedAt: new Date(),
@@ -125,6 +136,18 @@ export class Weapon extends Item<WeaponProps> {
     return Weapon.create({
       ...this.props,
       userId,
+      characterId: undefined,
+      isPublic: false,
+      createdAt: new Date(),
+      updatedAt: undefined,
+    });
+  }
+
+  copyForCharacter(characterId: string, userId: string): Weapon {
+    return Weapon.create({
+      ...this.props,
+      userId,
+      characterId,
       isPublic: false,
       createdAt: new Date(),
       updatedAt: undefined,
@@ -158,6 +181,8 @@ export class Weapon extends Item<WeaponProps> {
       | 'powerArrayIds'
       | 'icone'
       | 'alcanceExtraMetros'
+      | 'canStack'
+      | 'maxStack'
     >,
     id?: UniqueEntityId,
   ): Weapon {
@@ -165,6 +190,8 @@ export class Weapon extends Item<WeaponProps> {
       ...props,
       durabilidade: props.durabilidade ?? DurabilityStatus.INTACTO,
       isPublic: props.isPublic ?? false,
+      canStack: props.canStack ?? false,
+      maxStack: props.maxStack ?? 2,
       upgradeLevel: props.upgradeLevel ?? UpgradeLevel.create(0, WEAPON_MAX_UPGRADE),
       alcanceExtraMetros: props.alcanceExtraMetros ?? 0,
       powerIds: props.powerIds ?? new ItemPowerIdList(),
@@ -190,10 +217,7 @@ export class Weapon extends Item<WeaponProps> {
     }
 
     if (fullProps.alcanceExtraMetros < 0) {
-      throw new DomainValidationError(
-        'Alcance extra não pode ser negativo',
-        'alcanceExtraMetros',
-      );
+      throw new DomainValidationError('Alcance extra não pode ser negativo', 'alcanceExtraMetros');
     }
 
     if (!Number.isInteger(fullProps.alcanceExtraMetros * 2)) {

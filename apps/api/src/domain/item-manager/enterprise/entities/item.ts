@@ -15,10 +15,13 @@ export enum ItemType {
   CONSUMABLE = 'consumable',
   ARTIFACT = 'artifact',
   ACCESSORY = 'accessory',
+  GENERAL = 'general',
+  UPGRADE_MATERIAL = 'upgrade-material',
 }
 
 export interface ItemBaseProps {
   userId?: string;
+  characterId?: string;
   nome: string;
   descricao: string;
   dominio: Domain;
@@ -29,6 +32,8 @@ export interface ItemBaseProps {
   powerArrayIds: ItemPowerArrayIdList;
   icone?: string;
   isPublic: boolean;
+  canStack: boolean;
+  maxStack: number;
   notas?: string;
   createdAt: Date;
   updatedAt?: Date;
@@ -54,6 +59,10 @@ export function validateItemBaseProps(props: ItemBaseProps): void {
   if (props.nivelItem < 1) {
     throw new DomainValidationError('Nível do item deve ser pelo menos 1', 'nivelItem');
   }
+
+  if (props.canStack && props.maxStack < 2) {
+    throw new DomainValidationError('O limite de acúmulo (maxStack) deve ser pelo menos 2 se o item puder ser acumulado.', 'maxStack');
+  }
 }
 
 export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Props> {
@@ -61,6 +70,10 @@ export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Pr
 
   get userId(): string | undefined {
     return this.props.userId;
+  }
+
+  get characterId(): string | undefined {
+    return this.props.characterId;
   }
 
   get nome(): string {
@@ -109,6 +122,14 @@ export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Pr
 
   get isPublic(): boolean {
     return this.props.isPublic;
+  }
+
+  get canStack(): boolean {
+    return this.props.canStack;
+  }
+
+  get maxStack(): number {
+    return this.props.maxStack;
   }
 
   get notas(): string | undefined {
