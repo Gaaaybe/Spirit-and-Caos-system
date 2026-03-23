@@ -19,10 +19,7 @@ export class CopyPublicPowerArrayController {
 
   @Post()
   @HttpCode(201)
-  async handle(
-    @Param('powerArrayId') powerArrayId: string,
-    @CurrentUser() user: UserPayload,
-  ) {
+  async handle(@Param('powerArrayId') powerArrayId: string, @CurrentUser() user: UserPayload) {
     const result = await this.copyPublicPowerArray.execute({
       powerArrayId,
       userId: user.sub,

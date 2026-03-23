@@ -20,9 +20,7 @@ const updatePeculiarityBodySchema = z.object({
   descricao: z.string().min(10).max(500).optional(),
   espiritual: z.boolean().optional(),
   isPublic: z.boolean().optional(),
-  icone: z
-    .union([z.url('Ícone deve ser um link válido'), z.null()])
-    .optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
 });
 
 type UpdatePeculiarityBodySchema = z.infer<typeof updatePeculiarityBodySchema>;

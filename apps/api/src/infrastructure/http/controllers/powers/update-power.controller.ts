@@ -106,9 +106,7 @@ const updatePowerBodySchema = z.object({
     .optional(),
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
-  icone: z
-    .union([z.url('Ícone deve ser um link válido'), z.null()])
-    .optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
 });
 
 type UpdatePowerBodySchema = z.infer<typeof updatePowerBodySchema>;
