@@ -1,5 +1,11 @@
 import { Module } from '@nestjs/common';
 import { UsersRepository } from '@/domain/accounts/application/repositories/users-repository';
+import { BenefitsLookupPort as CharacterBenefitsLookupPort } from '@/domain/character-manager/application/repositories/benefits-lookup-port';
+import { CharactersRepository } from '@/domain/character-manager/application/repositories/characters-repository';
+import { DomainsLookupPort as CharacterDomainsLookupPort } from '@/domain/character-manager/application/repositories/domains-lookup-port';
+import { ItemsLookupPort as CharacterItemsLookupPort } from '@/domain/character-manager/application/repositories/items-lookup-port';
+import { PowerArraysLookupPort as CharacterPowerArraysLookupPort } from '@/domain/character-manager/application/repositories/power-arrays-lookup-port';
+import { PowersLookupPort as CharacterPowersLookupPort } from '@/domain/character-manager/application/repositories/powers-lookup-port';
 import { ItemsRepository } from '@/domain/item-manager/application/repositories/items-repository';
 import { PowersLookupPort } from '@/domain/item-manager/application/repositories/powers-lookup-port';
 import { PowerArraysLookupPort } from '@/domain/item-manager/application/repositories/power-arrays-lookup-port';
@@ -11,7 +17,13 @@ import { PowerArraysRepository } from '@/domain/power-manager/application/reposi
 import { PowersRepository } from '@/domain/power-manager/application/repositories/powers-repository';
 import { PrismaPowersLookupAdapter } from './prisma-powers-lookup-adapter';
 import { PrismaPowerArraysLookupAdapter } from './prisma-power-arrays-lookup-adapter';
+import { CatalogBenefitsLookupAdapter } from './catalog-benefits-lookup-adapter';
+import { CatalogDomainsLookupAdapter } from './catalog-domains-lookup-adapter';
+import { PrismaCharacterManagerItemsLookupAdapter } from './prisma-character-manager-items-lookup-adapter';
+import { PrismaCharacterManagerPowerArraysLookupAdapter } from './prisma-character-manager-power-arrays-lookup-adapter';
+import { PrismaCharacterManagerPowersLookupAdapter } from './prisma-character-manager-powers-lookup-adapter';
 import { PrismaService } from './prisma/prisma.service';
+import { PrismaCharactersRepository } from './prisma/repositories/prisma-characters-repository';
 import { PrismaEffectsRepository } from './prisma/repositories/prisma-effects-repository';
 import { PrismaItemsRepository } from './prisma/repositories/prisma-items-repository';
 import { PrismaModificationsRepository } from './prisma/repositories/prisma-modifications-repository';
@@ -25,6 +37,15 @@ import { PrismaUsersRepository } from './prisma/repositories/prisma-users-reposi
   providers: [
     PrismaService,
     { provide: UsersRepository, useClass: PrismaUsersRepository },
+    { provide: CharactersRepository, useClass: PrismaCharactersRepository },
+    { provide: CharacterPowersLookupPort, useClass: PrismaCharacterManagerPowersLookupAdapter },
+    {
+      provide: CharacterPowerArraysLookupPort,
+      useClass: PrismaCharacterManagerPowerArraysLookupAdapter,
+    },
+    { provide: CharacterItemsLookupPort, useClass: PrismaCharacterManagerItemsLookupAdapter },
+    { provide: CharacterBenefitsLookupPort, useClass: CatalogBenefitsLookupAdapter },
+    { provide: CharacterDomainsLookupPort, useClass: CatalogDomainsLookupAdapter },
     { provide: PowersRepository, useClass: PrismaPowersRepository },
     { provide: PowerArraysRepository, useClass: PrismaPowerArraysRepository },
     { provide: PowerDependenciesRepository, useClass: PrismaPowerDependenciesRepository },
@@ -38,6 +59,12 @@ import { PrismaUsersRepository } from './prisma/repositories/prisma-users-reposi
   exports: [
     PrismaService,
     UsersRepository,
+    CharactersRepository,
+    CharacterPowersLookupPort,
+    CharacterPowerArraysLookupPort,
+    CharacterItemsLookupPort,
+    CharacterBenefitsLookupPort,
+    CharacterDomainsLookupPort,
     PowersRepository,
     PowerArraysRepository,
     PowerDependenciesRepository,
