@@ -1,0 +1,61 @@
+import { BadRequestException, Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { z } from 'zod';
+import { CreateCharacterUseCase } from '@/domain/character-manager/application/use-cases/create-character';
+import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
+import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
+import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
+import { CharacterPresenter } from '../../presenters/character.presenter';
+
+const createCharacterBodySchema = z.object({
+  narrative: z
+    .object({
+      identity: z.string().min(1),
+      origin: z.string().min(1),
+      motivations: z.array(z.string().min(1)),
+      complications: z.array(z.string().min(1)),
+    })
+    .refine(
+      (value) => value.motivations.length + value.complications.length >= 2,
+      'O personagem deve ter pelo menos duas entradas entre motivações e complicações',
+    ),
+  attributes: z.object({
+    strength: z.number().int().min(0),
+    dexterity: z.number().int().min(0),
+    constitution: z.number().int().min(0),
+    intelligence: z.number().int().min(0),
+    wisdom: z.number().int().min(0),
+    charisma: z.number().int().min(0),
+    keyPhysical: z.enum(['strength', 'dexterity', 'constitution']),
+    keyMental: z.enum(['intelligence', 'wisdom', 'charisma']),
+  }),
+  spiritualPrinciple: z.object({
+    isUnlocked: z.boolean(),
+  }),
+});
+
+type CreateCharacterBodySchema = z.infer<typeof createCharacterBodySchema>;
+
+@Controller('/characters')
+export class CreateCharacterController {
+  constructor(private createCharacter: CreateCharacterUseCase) {}
+
+  @Post()
+  @HttpCode(201)
+  async handle(
+    @Body(new ZodValidationPipe(createCharacterBodySchema)) body: CreateCharacterBodySchema,
+    @CurrentUser() user: UserPayload,
+  ) {
+    const result = await this.createCharacter.execute({
+      userId: user.sub,
+      narrative: body.narrative,
+      attributes: body.attributes,
+      spiritualPrinciple: body.spiritualPrinciple,
+    });
+
+    if (result.isLeft()) {
+      throw new BadRequestException(result.value.message);
+    }
+
+    return CharacterPresenter.toHTTP(result.value.character);
+  }
+}
