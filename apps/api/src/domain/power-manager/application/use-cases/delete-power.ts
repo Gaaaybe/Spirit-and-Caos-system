@@ -50,7 +50,8 @@ export class DeletePowerUseCase {
       );
     }
 
-    const isLinkedToAnyItem = await this.powerDependenciesRepository.isPowerLinkedToAnyItem(powerId);
+    const isLinkedToAnyItem =
+      await this.powerDependenciesRepository.isPowerLinkedToAnyItem(powerId);
     if (isLinkedToAnyItem) {
       return left(
         new DependencyConflictError(

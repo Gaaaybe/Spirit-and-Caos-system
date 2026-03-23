@@ -41,6 +41,19 @@ export class PrismaPowersRepository extends PowersRepository {
     return raws.map(PrismaPowerMapper.toDomain);
   }
 
+  async findByCharacterId(characterId: string): Promise<Power[]> {
+    const characterPowers = await this.prisma.characterPower.findMany({
+      where: { characterId },
+      include: {
+        power: {
+          include: INCLUDE,
+        },
+      },
+    });
+
+    return characterPowers.map((cp) => PrismaPowerMapper.toDomain(cp.power));
+  }
+
   async findByDomain(domainName: string, { page }: PaginationParams): Promise<Power[]> {
     const raws = await this.prisma.power.findMany({
       where: { domainName: domainName as never },

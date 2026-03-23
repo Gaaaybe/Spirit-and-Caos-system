@@ -96,6 +96,7 @@ export function toDomain(raw: PrismaPowerFull): Power {
   return Power.create(
     {
       userId: raw.userId ?? undefined,
+      characterId: raw.characterId ?? undefined,
       nome: raw.nome,
       descricao: raw.descricao,
       dominio,
@@ -158,6 +159,7 @@ export function toPrisma(power: Power): Prisma.PowerUncheckedCreateInput {
   return {
     id,
     userId: power.userId,
+    characterId: power.characterId,
     nome: power.nome,
     descricao: power.descricao,
     isPublic: power.isPublic,

@@ -88,6 +88,7 @@ export function toDomain(raw: PrismaPowerArrayFull): PowerArray {
   return PowerArray.create(
     {
       userId: raw.userId ?? undefined,
+      characterId: raw.characterId ?? undefined,
       nome: raw.nome,
       descricao: raw.descricao,
       dominio,
@@ -111,6 +112,7 @@ export function toPrisma(powerArray: PowerArray): Prisma.PowerArrayUncheckedCrea
   return {
     id,
     userId: powerArray.userId,
+    characterId: powerArray.characterId,
     nome: powerArray.nome,
     descricao: powerArray.descricao,
     isPublic: powerArray.isPublic,

@@ -36,9 +36,7 @@ describe('CopyPublicPeculiarityUseCase', () => {
       expect(copy.id.equals(original.id)).toBe(false);
       expect(copy.userId).toBe('usuario-copiando');
       expect(copy.nome).toBe('Telepatia Avançada');
-      expect(copy.descricao).toBe(
-        'Capacidade de ler mentes e transmitir pensamentos à distância.',
-      );
+      expect(copy.descricao).toBe('Capacidade de ler mentes e transmitir pensamentos à distância.');
       expect(copy.espiritual).toBe(true);
       expect(copy.isPublic).toBe(false);
     }

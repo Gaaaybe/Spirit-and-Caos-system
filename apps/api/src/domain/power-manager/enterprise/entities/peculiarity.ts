@@ -5,6 +5,7 @@ import type { Optional } from '@/core/types/optional';
 
 interface PeculiarityProps {
   userId: string;
+  characterId?: string;
   nome: string;
   descricao: string;
   espiritual: boolean;
@@ -17,6 +18,10 @@ interface PeculiarityProps {
 export class Peculiarity extends OwnableEntity<PeculiarityProps> {
   get userId(): string {
     return this.props.userId;
+  }
+
+  get characterId(): string | undefined {
+    return this.props.characterId;
   }
 
   get nome(): string {
@@ -56,6 +61,7 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return Peculiarity.create(
       {
         userId: this.props.userId,
+        characterId: this.props.characterId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         espiritual: partial.espiritual ?? this.props.espiritual,
@@ -66,6 +72,17 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
       },
       this.id,
     );
+  }
+
+  copyForCharacter(characterId: string, userId: string): Peculiarity {
+    return Peculiarity.create({
+      ...this.props,
+      userId,
+      characterId,
+      isPublic: false,
+      createdAt: new Date(),
+      updatedAt: undefined,
+    });
   }
 
   makePublic(): Peculiarity {

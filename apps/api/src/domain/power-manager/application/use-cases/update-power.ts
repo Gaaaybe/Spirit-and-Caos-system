@@ -77,9 +77,8 @@ export class UpdatePowerUseCase {
     }
 
     if (dominio && !dominio.equals(existingPower.dominio)) {
-      const isLinkedToAnyItem = await this.powerDependenciesRepository.isPowerLinkedToAnyItem(
-        powerId,
-      );
+      const isLinkedToAnyItem =
+        await this.powerDependenciesRepository.isPowerLinkedToAnyItem(powerId);
 
       if (isLinkedToAnyItem) {
         return left(

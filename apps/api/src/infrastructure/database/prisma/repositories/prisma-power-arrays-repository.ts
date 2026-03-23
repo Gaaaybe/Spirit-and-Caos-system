@@ -60,6 +60,19 @@ export class PrismaPowerArraysRepository extends PowerArraysRepository {
     return raws.map(PrismaPowerArrayMapper.toDomain);
   }
 
+  async findByCharacterId(characterId: string): Promise<PowerArray[]> {
+    const characterPowerArrays = await this.prisma.characterPowerArray.findMany({
+      where: { characterId },
+      include: {
+        powerArray: {
+          include: INCLUDE,
+        },
+      },
+    });
+
+    return characterPowerArrays.map((cpa) => PrismaPowerArrayMapper.toDomain(cpa.powerArray));
+  }
+
   async findByDomain(domainName: string, { page }: PaginationParams): Promise<PowerArray[]> {
     const raws = await this.prisma.powerArray.findMany({
       where: { domainName: domainName as never },
