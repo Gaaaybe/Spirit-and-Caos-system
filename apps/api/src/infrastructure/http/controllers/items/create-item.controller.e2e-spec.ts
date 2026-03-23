@@ -75,7 +75,8 @@ describe('CreateItemController (e2e)', () => {
       .send({
         tipo: 'defensive-equipment',
         nome: 'Armadura de Couro',
-        descricao: 'Uma armadura de couro resistente que oferece proteção básica sem comprometer a mobilidade.',
+        descricao:
+          'Uma armadura de couro resistente que oferece proteção básica sem comprometer a mobilidade.',
         dominio: { name: 'natural' },
         custoBase: 8,
         nivelItem: 1,
@@ -130,7 +131,8 @@ describe('CreateItemController (e2e)', () => {
       .send({
         tipo: 'artifact',
         nome: 'Amuleto Antigo',
-        descricao: 'Um amuleto misterioso de origem desconhecida com inscrições de uma civilização perdida.',
+        descricao:
+          'Um amuleto misterioso de origem desconhecida com inscrições de uma civilização perdida.',
         dominio: { name: 'natural' },
         custoBase: 15,
         nivelItem: 1,
@@ -153,7 +155,8 @@ describe('CreateItemController (e2e)', () => {
       .send({
         tipo: 'accessory',
         nome: 'Anel de Proteção',
-        descricao: 'Um anel mágico que forma um escudo invisível ao redor do usuário durante combates.',
+        descricao:
+          'Um anel mágico que forma um escudo invisível ao redor do usuário durante combates.',
         dominio: { name: 'natural' },
         custoBase: 12,
         nivelItem: 1,

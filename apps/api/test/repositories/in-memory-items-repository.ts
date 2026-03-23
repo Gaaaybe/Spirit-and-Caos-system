@@ -14,12 +14,20 @@ export class InMemoryItemsRepository extends ItemsRepository {
     return this.items.slice(start, start + 20);
   }
 
-  async findByUserId(userId: string, params: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]> {
+  async findByUserId(
+    userId: string,
+    params: PaginationParams,
+    tipo?: ItemType,
+  ): Promise<Item<ItemBaseProps>[]> {
     const filtered = this.items.filter(
       (item) => item.userId === userId && (tipo === undefined || item.tipo === tipo),
     );
     const start = (params.page - 1) * 20;
     return filtered.slice(start, start + 20);
+  }
+
+  async findByCharacterId(characterId: string): Promise<Item<ItemBaseProps>[]> {
+    return this.items.filter((item) => item.characterId === characterId);
   }
 
   async findByType(type: ItemType, params: PaginationParams): Promise<Item<ItemBaseProps>[]> {
@@ -30,8 +38,7 @@ export class InMemoryItemsRepository extends ItemsRepository {
 
   async findPublic(params: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]> {
     const filtered = this.items.filter(
-      (item) =>
-        (item.isOfficial() || item.isPublic) && (tipo === undefined || item.tipo === tipo),
+      (item) => (item.isOfficial() || item.isPublic) && (tipo === undefined || item.tipo === tipo),
     );
     const start = (params.page - 1) * 20;
     return filtered.slice(start, start + 20);

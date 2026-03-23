@@ -18,6 +18,8 @@ const ITEM_TYPE_TO_PRISMA: Record<ItemType, string> = {
   [ItemType.CONSUMABLE]: 'CONSUMABLE',
   [ItemType.ARTIFACT]: 'ARTIFACT',
   [ItemType.ACCESSORY]: 'ACCESSORY',
+  [ItemType.GENERAL]: 'GENERAL',
+  [ItemType.UPGRADE_MATERIAL]: 'UPGRADE_MATERIAL',
 };
 
 @Injectable()
@@ -59,6 +61,15 @@ export class PrismaItemsRepository extends ItemsRepository {
     return raws.map(PrismaItemMapper.toDomain);
   }
 
+  async findByCharacterId(characterId: string): Promise<Item<ItemBaseProps>[]> {
+    const items = await this.prisma.item.findMany({
+      where: { characterId },
+      include: INCLUDE,
+    });
+
+    return items.map(PrismaItemMapper.toDomain);
+  }
+
   async findByType(type: ItemType, { page }: PaginationParams): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
       where: { tipo: ITEM_TYPE_TO_PRISMA[type] as never },
@@ -70,10 +81,7 @@ export class PrismaItemsRepository extends ItemsRepository {
     return raws.map(PrismaItemMapper.toDomain);
   }
 
-  async findPublic(
-    { page }: PaginationParams,
-    tipo?: ItemType,
-  ): Promise<Item<ItemBaseProps>[]> {
+  async findPublic({ page }: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
       where: {
         OR: [{ userId: null }, { isPublic: true }],
