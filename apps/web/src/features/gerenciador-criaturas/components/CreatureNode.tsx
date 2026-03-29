@@ -1146,10 +1146,14 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
       {/* DiceRoller para ataques */}
       {rollingAttack && (
         <DiceRoller
+          isOpen={!!rollingAttack}
           label={`${creature.name} - ${rollingAttack.name}`}
-          modifier={creature.stats.attackBonus}
+          modifier={creature.statsV2?.combat.attackBonus ?? creature.stats.attackBonus}
           damageFormula={rollingAttack.damage}
-          damageModifier={creature.stats.attackBonus}
+          damageModifier={creature.statsV2?.combat.attackBonus ?? creature.stats.attackBonus}
+          critMargin={rollingAttack.criticalRange}
+          critMultiplier={rollingAttack.criticalMultiplier}
+          efficiencyBonus={creature.statsV2?.efficiency ?? creature.stats.efficiency}
           modifierLabel="Bônus de Ataque"
           rollButtonLabel="Rolar Ataque"
           onClose={() => setRollingAttack(null)}
@@ -1159,8 +1163,10 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
       {/* DiceRoller para atributos */}
       {rollingAttribute && (
         <DiceRoller
+          isOpen={!!rollingAttribute}
           label={`${creature.name} - ${rollingAttribute.name}`}
           modifier={rollingAttribute.modifier}
+          efficiencyBonus={creature.statsV2?.efficiency ?? creature.stats.efficiency}
           modifierLabel="Modificador"
           rollButtonLabel="Rolar"
           onClose={() => setRollingAttribute(null)}
@@ -1170,8 +1176,10 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
       {/* DiceRoller para resistências */}
       {rollingSave && (
         <DiceRoller
+          isOpen={!!rollingSave}
           label={`${creature.name} - ${rollingSave.name}`}
           modifier={rollingSave.modifier}
+          efficiencyBonus={creature.statsV2?.efficiency ?? creature.stats.efficiency}
           modifierLabel="Bônus de Resistência"
           rollButtonLabel="Rolar Resistência"
           onClose={() => setRollingSave(null)}
@@ -1181,8 +1189,10 @@ function CreatureNodeComponent({ data }: NodeProps<Creature>) {
       {/* DiceRoller para perícias */}
       {rollingSkill && (
         <DiceRoller
+          isOpen={!!rollingSkill}
           label={`${creature.name} - ${rollingSkill.name}`}
           modifier={rollingSkill.modifier}
+          efficiencyBonus={creature.statsV2?.efficiency ?? creature.stats.efficiency}
           modifierLabel="Bônus de Perícia"
           rollButtonLabel="Rolar Perícia"
           onClose={() => setRollingSkill(null)}

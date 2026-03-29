@@ -83,6 +83,7 @@ export function DiceRollerDemo() {
       {/* Modal do DiceRoller */}
       {showRoller && (
         <DiceRoller
+          isOpen={showRoller}
           label="Espada Longa +1"
           modifier={7}
           damageFormula="1d8+5"
