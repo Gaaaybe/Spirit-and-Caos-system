@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma.service';
 
 const INCLUDE = {
   appliedEffects: { include: { appliedModifications: true } },
+  user: { select: { id: true, name: true } },
 } as const;
 
 @Injectable()

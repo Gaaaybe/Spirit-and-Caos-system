@@ -13,6 +13,7 @@ const INCLUDE = {
     },
     orderBy: { posicao: 'asc' as const },
   },
+  user: { select: { id: true, name: true } },
 } as const;
 
 @Injectable()
