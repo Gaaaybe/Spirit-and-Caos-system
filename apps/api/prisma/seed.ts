@@ -81,30 +81,33 @@ async function seedEffectBases() {
 
   console.log(`Inserindo ${efeitos.length} efeitos base...`)
 
-  await prisma.effectBase.deleteMany({ where: { custom: false } })
+  for (const e of efeitos) {
+    const data = {
+      nome: e.nome,
+      custoBase: e.custoBase,
+      descricao: e.descricao,
+      categorias: e.categorias,
+      exemplos: e.exemplos ?? null,
+      parametrosPadraoAcao: e.parametrosPadrao.acao,
+      parametrosPadraoAlcance: e.parametrosPadrao.alcance,
+      parametrosPadraoDuracao: e.parametrosPadrao.duracao,
+      requerInput: e.requerInput ?? false,
+      tipoInput: e.tipoInput ?? null,
+      labelInput: e.labelInput ?? null,
+      opcoesInput: e.opcoesInput ?? [],
+      placeholderInput: e.placeholderInput ?? null,
+      configuracoes: e.configuracoes ? (e.configuracoes as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+      custom: false,
+    }
 
-  const data = efeitos.map((e) => ({
-    id: e.id,
-    nome: e.nome,
-    custoBase: e.custoBase,
-    descricao: e.descricao,
-    categorias: e.categorias,
-    exemplos: e.exemplos ?? null,
-    parametrosPadraoAcao: e.parametrosPadrao.acao,
-    parametrosPadraoAlcance: e.parametrosPadrao.alcance,
-    parametrosPadraoDuracao: e.parametrosPadrao.duracao,
-    requerInput: e.requerInput ?? false,
-    tipoInput: e.tipoInput ?? null,
-    labelInput: e.labelInput ?? null,
-    opcoesInput: e.opcoesInput ?? [],
-    placeholderInput: e.placeholderInput ?? null,
-    configuracoes: e.configuracoes ? (e.configuracoes as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
-    custom: false,
-  }))
+    await prisma.effectBase.upsert({
+      where: { id: e.id },
+      update: data,
+      create: { id: e.id, ...data },
+    })
+  }
 
-  await prisma.effectBase.createMany({ data })
-
-  console.log(`✓ ${efeitos.length} efeitos inseridos`)
+  console.log(`✓ ${efeitos.length} efeitos processados`)
 }
 
 async function seedModificationBases() {
@@ -112,31 +115,34 @@ async function seedModificationBases() {
 
   console.log(`Inserindo ${modificacoes.length} modificações base...`)
 
-  await prisma.modificationBase.deleteMany({ where: { custom: false } })
+  for (const m of modificacoes) {
+    const data = {
+      nome: m.nome,
+      tipo: m.tipo.toUpperCase() as 'EXTRA' | 'FALHA',
+      custoFixo: m.custoFixo,
+      custoPorGrau: m.custoPorGrau,
+      descricao: m.descricao,
+      categoria: m.categoria,
+      observacoes: m.observacoes ?? null,
+      detalhesGrau: m.detalhesGrau ?? null,
+      requerParametros: m.requerParametros,
+      tipoParametro: m.tipoParametro ?? null,
+      opcoes: m.opcoes ?? [],
+      grauMinimo: m.grauMinimo ?? null,
+      grauMaximo: m.grauMaximo ?? null,
+      placeholder: m.placeholder ?? null,
+      configuracoes: m.configuracoes ? (m.configuracoes as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
+      custom: false,
+    }
 
-  const data = modificacoes.map((m) => ({
-    id: m.id,
-    nome: m.nome,
-    tipo: m.tipo.toUpperCase() as 'EXTRA' | 'FALHA',
-    custoFixo: m.custoFixo,
-    custoPorGrau: m.custoPorGrau,
-    descricao: m.descricao,
-    categoria: m.categoria,
-    observacoes: m.observacoes ?? null,
-    detalhesGrau: m.detalhesGrau ?? null,
-    requerParametros: m.requerParametros,
-    tipoParametro: m.tipoParametro ?? null,
-    opcoes: m.opcoes ?? [],
-    grauMinimo: m.grauMinimo ?? null,
-    grauMaximo: m.grauMaximo ?? null,
-    placeholder: m.placeholder ?? null,
-    configuracoes: m.configuracoes ? (m.configuracoes as unknown as Prisma.InputJsonValue) : Prisma.JsonNull,
-    custom: false,
-  }))
+    await prisma.modificationBase.upsert({
+      where: { id: m.id },
+      update: data,
+      create: { id: m.id, ...data },
+    })
+  }
 
-  await prisma.modificationBase.createMany({ data })
-
-  console.log(`✓ ${modificacoes.length} modificações inseridas`)
+  console.log(`✓ ${modificacoes.length} modificações processadas`)
 }
 
 async function main() {
