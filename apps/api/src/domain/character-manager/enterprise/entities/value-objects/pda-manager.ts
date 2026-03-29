@@ -50,6 +50,14 @@ export class PdAManager {
     });
   }
 
+  updateExtraPda(extraPda: number): PdAManager {
+    if (extraPda < 0) throw new DomainValidationError('PdA Extra não pode ser negativo.', 'extraPda');
+    return new PdAManager({
+      ...this.props,
+      extraPda,
+    });
+  }
+
   spend(amount: number): PdAManager {
     if (amount < 0)
       throw new DomainValidationError('A quantidade a gastar não pode ser negativa.', 'spentPda');

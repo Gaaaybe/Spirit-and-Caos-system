@@ -4,17 +4,14 @@ import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { NotAllowedError } from './errors/not-allowed-error';
 import { CharactersRepository } from '../repositories/characters-repository';
 import { Character } from '../../enterprise/entities/character';
-import { SkillName, ProficiencyState } from '../../enterprise/entities/value-objects/skills-manager';
 
-interface UpdateCharacterSkillsUseCaseRequest {
+interface DiscardDomainMasteryUseCaseRequest {
   characterId: string;
   userId: string;
-  skillName: SkillName;
-  proficiencyState: ProficiencyState;
-  trainingBonusIncrease?: number;
+  domainId: string;
 }
 
-type UpdateCharacterSkillsUseCaseResponse = Either<
+type DiscardDomainMasteryUseCaseResponse = Either<
   ResourceNotFoundError | NotAllowedError,
   {
     character: Character;
@@ -22,16 +19,14 @@ type UpdateCharacterSkillsUseCaseResponse = Either<
 >;
 
 @Injectable()
-export class UpdateCharacterSkillsUseCase {
+export class DiscardDomainMasteryUseCase {
   constructor(private charactersRepository: CharactersRepository) {}
 
   async execute({
     characterId,
     userId,
-    skillName,
-    proficiencyState,
-    trainingBonusIncrease = 0,
-  }: UpdateCharacterSkillsUseCaseRequest): Promise<UpdateCharacterSkillsUseCaseResponse> {
+    domainId,
+  }: DiscardDomainMasteryUseCaseRequest): Promise<DiscardDomainMasteryUseCaseResponse> {
     const character = await this.charactersRepository.findById(characterId);
 
     if (!character) {
@@ -42,7 +37,7 @@ export class UpdateCharacterSkillsUseCase {
       return left(new NotAllowedError());
     }
 
-    character.updateSkill(skillName, proficiencyState, trainingBonusIncrease, 0);
+    character.removeDomainMastery(domainId);
 
     await this.charactersRepository.save(character);
 

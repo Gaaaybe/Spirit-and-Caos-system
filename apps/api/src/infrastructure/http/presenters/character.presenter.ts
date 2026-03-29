@@ -1,7 +1,34 @@
 import { Character } from '@/domain/character-manager/enterprise/entities/character';
+import { Peculiarity } from '@/domain/power-manager/enterprise/entities/peculiarity';
+import { Item, ItemBaseProps } from '@/domain/item-manager/enterprise/entities/item';
+import { DefensiveEquipment, EquipmentType } from '@/domain/item-manager/enterprise/entities/defensive-equipment';
 
 export class CharacterPresenter {
-  static toHTTP(character: Character) {
+  static toHTTP(character: Character, peculiarities: Peculiarity[] = [], items: Item<ItemBaseProps>[] = []) {
+    // Cálculo de RD automatizado
+    let suitRD = 0;
+    let suitBlockRD = 0;
+    let handsBlockRD = 0;
+
+    // 1. Procurar Traje equipado
+    if (character.equipment.suitId) {
+      const suitItem = items.find(i => i.id.toString() === character.equipment.suitId);
+      if (suitItem instanceof DefensiveEquipment && suitItem.tipoEquipamento === EquipmentType.TRAJE) {
+        suitRD = suitItem.rdAtual;
+        // Se o sistema tiver RD de bloqueio específica para trajes no futuro, adicionamos aqui
+      }
+    }
+
+    // 2. Procurar Proteções nas mãos
+    character.equipment.hands.forEach(h => {
+      const handItem = items.find(i => i.id.toString() === h.itemId);
+      if (handItem instanceof DefensiveEquipment && handItem.tipoEquipamento === EquipmentType.PROTECAO) {
+        handsBlockRD += handItem.rdAtual;
+      }
+    });
+
+    const stats = character.getCombatStats(suitRD, suitBlockRD, handsBlockRD);
+
     return {
       id: character.id.toString(),
       userId: character.userId.toString(),
@@ -59,15 +86,21 @@ export class CharacterPresenter {
         name,
         proficiencyState: value.proficiencyState,
         trainingBonus: value.trainingBonus,
+        extraBonus: value.extraBonus,
       })),
       spiritualPrinciple: {
         isUnlocked: character.spiritualPrinciple.isUnlocked,
         stage: character.spiritualPrinciple.stage,
       },
-      domainMasteries: character.domainMasteries.map((domain) => ({
-        domainId: domain.domainId,
-        masteryLevel: domain.masteryLevel,
-      })),
+      domainMasteries: character.domainMasteries.map((domain) => {
+        const peculiarity = peculiarities.find(p => p.id.toString() === domain.domainId);
+        return {
+          domainId: domain.domainId,
+          masteryLevel: domain.masteryLevel,
+          nome: peculiarity?.nome ?? null,
+          icone: peculiarity?.icone ?? null,
+        };
+      }),
       pda: {
         total: character.pda.totalPda,
         spent: character.pda.spentPda,
@@ -128,6 +161,11 @@ export class CharacterPresenter {
       })),
       symbol: character.symbol ?? null,
       art: character.art ?? null,
+      combatStats: {
+        dodge: stats.dodge,
+        baseRD: stats.baseRD,
+        blockRD: stats.blockRD,
+      },
       createdAt: character.createdAt,
       updatedAt: character.updatedAt ?? null,
     };

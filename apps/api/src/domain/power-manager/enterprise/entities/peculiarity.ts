@@ -11,6 +11,7 @@ interface PeculiarityProps {
   espiritual: boolean;
   isPublic: boolean;
   icone?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -42,6 +43,10 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
 
   get icone(): string | undefined {
     return this.props.icone;
+  }
+
+  get userName(): string | undefined {
+    return this.props.userName;
   }
 
   get createdAt(): Date {
@@ -141,9 +146,9 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
       );
     }
 
-    if (props.descricao.length > 500) {
+    if (props.descricao.length > 10000) {
       throw new DomainValidationError(
-        'Descrição da peculiaridade deve ter no máximo 500 caracteres',
+        'Descrição da peculiaridade deve ter no máximo 10000 caracteres',
         'descricao',
       );
     }

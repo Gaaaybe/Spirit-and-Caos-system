@@ -11,6 +11,6 @@ export class FetchUserCharactersController {
   @Get()
   async handle(@CurrentUser() user: UserPayload) {
     const result = await this.fetchUserCharacters.execute({ userId: user.sub });
-    return (result.value?.characters ?? []).map(CharacterPresenter.toHTTP);
+    return (result.value?.characters ?? []).map((character) => CharacterPresenter.toHTTP(character));
   }
 }

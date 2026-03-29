@@ -44,6 +44,17 @@ export class AttributeSet {
     return this.props.charisma;
   }
 
+  get totalBasePoints(): number {
+    return (
+      this.props.strength.baseValue +
+      this.props.dexterity.baseValue +
+      this.props.constitution.baseValue +
+      this.props.intelligence.baseValue +
+      this.props.wisdom.baseValue +
+      this.props.charisma.baseValue
+    );
+  }
+
   get keyPhysical(): PhysicalAttribute {
     return this.props.keyPhysical;
   }

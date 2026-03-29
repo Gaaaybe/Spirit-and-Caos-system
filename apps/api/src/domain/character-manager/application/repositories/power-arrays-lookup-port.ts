@@ -3,6 +3,7 @@ export interface PowerArrayInfo {
   nome: string;
   domainId: string;
   pdaCost: number;
+  peCost: number;
   slotCost: number;
 }
 

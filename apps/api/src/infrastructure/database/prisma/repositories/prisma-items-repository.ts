@@ -10,6 +10,7 @@ const INCLUDE = {
   itemDamages: true,
   itemPowers: true,
   itemPowerArrays: true,
+  user: { select: { id: true, name: true } },
 } as const;
 
 const ITEM_TYPE_TO_PRISMA: Record<ItemType, string> = {
@@ -35,6 +36,7 @@ export class PrismaItemsRepository extends ItemsRepository {
 
   async findMany({ page }: PaginationParams): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
+      where: { characterId: null },
       include: INCLUDE,
       orderBy: { createdAt: 'desc' },
       take: 20,
@@ -51,6 +53,7 @@ export class PrismaItemsRepository extends ItemsRepository {
     const raws = await this.prisma.item.findMany({
       where: {
         userId,
+        characterId: null,
         ...(tipo ? { tipo: ITEM_TYPE_TO_PRISMA[tipo] as never } : {}),
       },
       include: INCLUDE,
@@ -84,6 +87,7 @@ export class PrismaItemsRepository extends ItemsRepository {
   async findPublic({ page }: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
       where: {
+        characterId: null,
         OR: [{ userId: null }, { isPublic: true }],
         ...(tipo ? { tipo: ITEM_TYPE_TO_PRISMA[tipo] as never } : {}),
       },

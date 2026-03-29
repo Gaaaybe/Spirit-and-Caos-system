@@ -26,6 +26,7 @@ interface PowerProps {
   isPublic: boolean;
   icone?: string;
   notas?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -81,6 +82,10 @@ export class Power extends OwnableEntity<PowerProps> {
 
   get notas(): string | undefined {
     return this.props.notas;
+  }
+
+  get userName(): string | undefined {
+    return this.props.userName;
   }
 
   get createdAt(): Date {

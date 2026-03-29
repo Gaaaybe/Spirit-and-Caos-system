@@ -85,12 +85,12 @@ describe('Sync Character', () => {
       characterId: 'character-1',
       userId: character.userId.toString(),
       attributes: {
-        strength: 15,
-        dexterity: 10,
-        constitution: 10,
-        intelligence: 10,
-        wisdom: 10,
-        charisma: 10,
+        strength: { baseValue: 15, extraBonus: 2 },
+        dexterity: { baseValue: 10 },
+        constitution: { baseValue: 10 },
+        intelligence: { baseValue: 10 },
+        wisdom: { baseValue: 10 },
+        charisma: { baseValue: 10 },
         keyPhysical: 'strength',
         keyMental: 'wisdom',
       },
@@ -99,7 +99,32 @@ describe('Sync Character', () => {
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.character.attributes.strength.baseValue).toBe(15);
+      expect(result.value.character.attributes.strength.extraBonus).toBe(2);
+      expect(result.value.character.attributes.strength.rollModifier).toBe(4); // floor((15-10)/2) + 2 = 2 + 2 = 4
     }
+  });
+
+  it('should not be able to sync attributes if they exceed the limit', async () => {
+    const character = makeCharacter({ level: 1 }, new UniqueEntityId('character-1'));
+    inMemoryCharactersRepository.items.push(character);
+
+    const result = await sut.execute({
+      characterId: 'character-1',
+      userId: character.userId.toString(),
+      attributes: {
+        strength: { baseValue: 20 },
+        dexterity: { baseValue: 10 },
+        constitution: { baseValue: 10 },
+        intelligence: { baseValue: 10 },
+        wisdom: { baseValue: 10 },
+        charisma: { baseValue: 10 },
+        keyPhysical: 'strength',
+        keyMental: 'wisdom',
+      },
+    });
+
+    // L1 Limit: 67. Spent: 20+50=70.
+    expect(result.isLeft()).toBe(true);
   });
 
   it('should be able to sync skills', async () => {
@@ -110,7 +135,7 @@ describe('Sync Character', () => {
       characterId: 'character-1',
       userId: character.userId.toString(),
       skills: [
-        { name: 'Acrobacia', state: 'EFFICIENT', trainingBonusIncrease: 2 },
+        { name: 'Acrobacia', state: 'EFFICIENT', trainingBonus: 2 },
       ],
     });
 

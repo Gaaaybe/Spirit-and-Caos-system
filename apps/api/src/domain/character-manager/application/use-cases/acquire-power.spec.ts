@@ -25,6 +25,7 @@ describe('Acquire Power', () => {
   it('should be able to acquire a power', async () => {
     const character = makeCharacter({}, new UniqueEntityId('character-1'));
     character.pda.refund(character.pda.spentPda);
+    character.setDomainMastery('fire-domain', 'INICIANTE');
     
     inMemoryCharactersRepository.items.push(character);
 

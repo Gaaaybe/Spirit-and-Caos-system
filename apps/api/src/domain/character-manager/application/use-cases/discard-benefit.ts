@@ -1,37 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { Either, left, right } from '@/core/either';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { NotAllowedError } from './errors/not-allowed-error';
 import { CharactersRepository } from '../repositories/characters-repository';
 import { Character } from '../../enterprise/entities/character';
-import { SkillName, ProficiencyState } from '../../enterprise/entities/value-objects/skills-manager';
 
-interface UpdateCharacterSkillsUseCaseRequest {
+interface DiscardBenefitUseCaseRequest {
   characterId: string;
   userId: string;
-  skillName: SkillName;
-  proficiencyState: ProficiencyState;
-  trainingBonusIncrease?: number;
+  benefitId: string;
 }
 
-type UpdateCharacterSkillsUseCaseResponse = Either<
-  ResourceNotFoundError | NotAllowedError,
+type DiscardBenefitUseCaseResponse = Either<
+  ResourceNotFoundError | NotAllowedError | DomainValidationError,
   {
     character: Character;
   }
 >;
 
 @Injectable()
-export class UpdateCharacterSkillsUseCase {
+export class DiscardBenefitUseCase {
   constructor(private charactersRepository: CharactersRepository) {}
 
   async execute({
     characterId,
     userId,
-    skillName,
-    proficiencyState,
-    trainingBonusIncrease = 0,
-  }: UpdateCharacterSkillsUseCaseRequest): Promise<UpdateCharacterSkillsUseCaseResponse> {
+    benefitId,
+  }: DiscardBenefitUseCaseRequest): Promise<DiscardBenefitUseCaseResponse> {
     const character = await this.charactersRepository.findById(characterId);
 
     if (!character) {
@@ -42,7 +38,15 @@ export class UpdateCharacterSkillsUseCase {
       return left(new NotAllowedError());
     }
 
-    character.updateSkill(skillName, proficiencyState, trainingBonusIncrease, 0);
+    try {
+      character.removeBenefit(benefitId);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        return left(error);
+      }
+
+      throw error;
+    }
 
     await this.charactersRepository.save(character);
 

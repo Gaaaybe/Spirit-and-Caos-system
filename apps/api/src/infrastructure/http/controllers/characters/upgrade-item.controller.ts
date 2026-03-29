@@ -16,9 +16,14 @@ const upgradeItemBodySchema = z.object({
 
 type UpgradeItemBodySchema = z.infer<typeof upgradeItemBodySchema>;
 
+import { ItemsRepository } from '@/domain/item-manager/application/repositories/items-repository';
+
 @Controller('/characters/:characterId/items/:itemId/upgrade')
 export class UpgradeItemController {
-  constructor(private upgradeItem: UpgradeItemUseCase) {}
+  constructor(
+    private upgradeItem: UpgradeItemUseCase,
+    private itemsRepository: ItemsRepository,
+  ) {}
 
   @Post()
   @HttpCode(200)
@@ -54,6 +59,8 @@ export class UpgradeItemController {
       throw new BadRequestException('Failed to upgrade item');
     }
 
-    return CharacterPresenter.toHTTP(result.value.character);
+    const items = await this.itemsRepository.findByCharacterId(characterId);
+
+    return CharacterPresenter.toHTTP(result.value.character, [], items);
   }
 }

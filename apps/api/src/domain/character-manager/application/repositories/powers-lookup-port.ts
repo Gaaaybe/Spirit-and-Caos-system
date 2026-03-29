@@ -3,6 +3,7 @@ export interface PowerInfo {
   nome: string;
   domainId: string;
   pdaCost: number;
+  peCost: number;
   slotCost: number;
 }
 

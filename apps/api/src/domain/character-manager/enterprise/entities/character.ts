@@ -161,41 +161,51 @@ export class Character extends AggregateRoot<CharacterProps> {
     return this.props.benefits;
   }
 
-  getCombatStats(equippedSuitRd = 0): CombatStats {
+  getCombatStats(equippedSuitRd = 0, equippedSuitBlockRd = 0, weaponShieldBlockRd = 0): CombatStats {
     const reflexosBonus = this.getSkillRollBonus('Reflexos', this.attributes.dexterity.rollModifier);
+    // Bloqueio não é rolagem, portanto usa o baseModifier da Constituição, ignorando bônus extras da perícia e do atributo
+    const fortitudeBonus = this.getSkillRollBonus('Fortitude', this.attributes.constitution.baseModifier, false);
+
     let dodge = reflexosBonus;
 
     if (this.conditions.failsReflexAndFortitude) {
       dodge = 0;
     } else if (this.conditions.halvesDefenses) {
-      dodge = Math.floor(dodge / 2);
+      dodge = Math.floor(reflexosBonus / 2);
     }
 
-    let baseDamageReduction = this.attributes.constitution.rollModifier;
-    
+    // RD Base: Apenas do traje ou de habilidades passivas
+    // (Por enquanto usando apenas o suit RD passado)
+    const baseDamageReduction = Math.max(0, equippedSuitRd);
+
+    // RD para bloqueio: Bonus de fortitude + trajes + arma/escudo
+    let blockDamageReduction = fortitudeBonus + equippedSuitBlockRd + weaponShieldBlockRd;
+
     if (this.conditions.failsReflexAndFortitude) {
-       baseDamageReduction = 0;
+      blockDamageReduction = 0;
     } else if (this.conditions.halvesDefenses) {
-       baseDamageReduction = Math.floor(baseDamageReduction / 2);
+      blockDamageReduction = Math.floor(blockDamageReduction / 2);
     }
-
-    const suitDamageReduction = Math.max(0, equippedSuitRd);
 
     return CombatStats.create({
-      baseDodge: dodge,
-      baseDamageReduction: Math.max(0, baseDamageReduction),
-      suitDamageReduction,
+      dodge,
+      baseDamageReduction,
+      blockDamageReduction: Math.max(0, blockDamageReduction),
     });
   }
 
   get calamityRank(): string {
-    const calc = Math.ceil(this.level / 20);
-    if (calc <= 1) return 'Lobo';
-    if (calc === 2) return 'Tigre';
-    if (calc === 3) return 'Urso';
-    if (calc === 4) return 'Demonio';
-    if (calc === 5) return 'Dragao';
-    return 'Deus';
+    const lvl = this.level;
+    if (lvl <= 7) return 'Raposa';
+    if (lvl <= 12) return 'Lobo';
+    if (lvl <= 22) return 'Tigre';
+    if (lvl <= 42) return 'Demônio';
+    if (lvl <= 72) return 'Dragão';
+    if (lvl <= 102) return 'Celestial';
+    if (lvl <= 162) return 'Ser Cósmico';
+    if (lvl <= 192) return 'Semi Deuses';
+    if (lvl <= 242) return 'Deuses Menores';
+    return 'Deuses';
   }
 
   get efficiencyBonus(): number {
@@ -205,11 +215,13 @@ export class Character extends AggregateRoot<CharacterProps> {
   getSkillRollBonus(
     skillName: import('./value-objects/skills-manager').SkillName,
     baseAttributeModifier: number,
+    includeExtraBonus = true,
   ): number {
     const rawBonus = this.skills.calculateRollBonus(
       skillName,
       baseAttributeModifier,
       this.efficiencyBonus,
+      includeExtraBonus,
     );
 
     return rawBonus - this.conditions.generalDisadvantageCount;
@@ -223,20 +235,20 @@ updateAttributes(newAttributes: AttributeSet): void {
 
   this.props.health = HealthManager.create({
     level: this.level,
-    constitutionModifier: this.attributes.constitution.rollModifier,
+    constitutionModifier: this.attributes.constitution.baseModifier,
     currentPV: this.health.currentPV,
     temporaryPV: this.health.temporaryPV,
   });
 
   this.props.energy = EnergyManager.create({
-    keyPhysicalModifier: this.attributes[this.attributes.keyPhysical].rollModifier,
-    keyMentalModifier: this.attributes[this.attributes.keyMental].rollModifier,
+    keyPhysicalModifier: this.attributes[this.attributes.keyPhysical].baseModifier,
+    keyMentalModifier: this.attributes[this.attributes.keyMental].baseModifier,
     currentPE: this.energy.currentPE,
     temporaryPE: this.energy.temporaryPE,
   });
 
   this.props.slots = SlotManager.create({
-    intelligenceModifier: this.attributes.intelligence.rollModifier,
+    intelligenceModifier: this.attributes.intelligence.baseModifier,
     usedSlots: this.slots.usedSlots,
   });
 
@@ -275,7 +287,21 @@ levelUp(): void {
   this.addDomainEvent(new CharacterLeveledUpEvent(this, this.props.level));
 }
 
-setDomainMastery(domainId: string, masteryLevel: MasteryLevel): void {  const existingIndex = this.props.domainMasteries.findIndex((m) => m.domainId === domainId);
+changeLevel(newLevel: number): void {
+  if (newLevel < 1 || newLevel > 250) {
+    throw new DomainValidationError('O nível deve estar entre 1 e 250.', 'level');
+  }
+
+  this.props.level = newLevel;
+
+  this.props.pda = this.pda.updateLevel(this.props.level);
+  this.props.health = this.health.updateLevel(this.props.level);
+
+  this.touch();
+}
+
+setDomainMastery(domainId: string, masteryLevel: MasteryLevel): void {
+  const existingIndex = this.props.domainMasteries.findIndex((m) => m.domainId === domainId);
 
   if (existingIndex >= 0) {
     this.props.domainMasteries[existingIndex] = DomainMastery.create({ domainId, masteryLevel });
@@ -285,6 +311,12 @@ setDomainMastery(domainId: string, masteryLevel: MasteryLevel): void {  const ex
 
   this.touch();
 }
+
+removeDomainMastery(domainId: string): void {
+  this.props.domainMasteries = this.props.domainMasteries.filter((m) => m.domainId !== domainId);
+  this.touch();
+}
+
 
 unlockSpiritualPrinciple(stage: SpiritualStage = 'NORMAL'): void {
   if (this.props.spiritualPrinciple.isUnlocked) {
@@ -323,6 +355,11 @@ evolveSpiritualPrinciple(): void {
 }
 
 spendPda(amount: number): void {  this.props.pda = this.pda.spend(amount);
+  this.touch();
+}
+
+updateExtraPda(amount: number): void {
+  this.props.pda = this.pda.updateExtraPda(amount);
   this.touch();
 }
 
@@ -368,16 +405,23 @@ takeDamage(amount: number): void {
     this.touch();
   }
 
-  updateSkills(
+  addTemporaryPV(amount: number): void {
+    this.props.health = this.health.addTemporaryPV(amount);
+    this.touch();
+  }
+
+  addTemporaryPE(amount: number): void {
+    this.props.energy = this.energy.addTemporaryPE(amount);
+    this.touch();
+  }
+
+  updateSkill(
     skillName: import('./value-objects/skills-manager').SkillName,
     state: import('./value-objects/skills-manager').ProficiencyState,
-    trainingBonusIncrease: number = 0,
+    trainingBonus: number = 0,
+    extraBonus: number = 0,
   ): void {
-    let newSkills = this.skills.setProficiency(skillName, state);
-    if (trainingBonusIncrease > 0) {
-      newSkills = newSkills.trainSkill(skillName, trainingBonusIncrease);
-    }
-    this.props.skills = newSkills;
+    this.props.skills = this.skills.setSkill(skillName, state, trainingBonus, extraBonus);
     this.touch();
   }
 
@@ -417,6 +461,18 @@ takeDamage(amount: number): void {
     const itemAfter = this.inventory.bag.find(i => i.itemId === itemId);
 
     if (itemBefore && !itemAfter) {
+      this.addDomainEvent(new CharacterItemDiscardedEvent(this, itemId));
+    }
+
+    this.touch();
+  }
+
+  setItemQuantityInInventory(itemId: string, quantity: number): void {
+    const itemBefore = this.inventory.bag.find(i => i.itemId === itemId);
+    this.props.inventory = this.inventory.setItemQuantity(itemId, quantity);
+    const itemAfter = this.inventory.bag.find(i => i.itemId === itemId);
+
+    if (itemBefore && quantity === 0) {
       this.addDomainEvent(new CharacterItemDiscardedEvent(this, itemId));
     }
 
@@ -502,6 +558,7 @@ takeDamage(amount: number): void {
       this.unequipPower(powerId);
     }
 
+    this.props.pda = this.pda.refund(power.finalPdaCost);
     this.props.powers.remove(power);
     this.addDomainEvent(new CharacterPowerDiscardedEvent(this, powerId));
     this.touch();
@@ -518,8 +575,21 @@ takeDamage(amount: number): void {
       this.unequipPowerArray(arrayId);
     }
 
+    this.props.pda = this.pda.refund(array.finalPdaCost);
     this.props.powerArrays.remove(array);
     this.addDomainEvent(new CharacterPowerArrayDiscardedEvent(this, arrayId));
+    this.touch();
+  }
+
+  removeBenefit(benefitId: string): void {
+    const benefit = this.props.benefits.getItems().find((b) => b.id.toString() === benefitId);
+
+    if (!benefit) {
+      throw new DomainValidationError('Benefício não encontrado na ficha.', 'benefitId');
+    }
+
+    this.props.pda = this.pda.refund(benefit.pdaCost);
+    this.props.benefits.remove(benefit);
     this.touch();
   }
 

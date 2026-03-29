@@ -30,7 +30,9 @@ export class PrismaCharacterManagerPowersLookupAdapter extends PowersLookupPort 
         id: true,
         nome: true,
         domainName: true,
+        domainPeculiarId: true,
         custoTotalPda: true,
+        custoTotalPe: true,
         custoTotalEspacos: true,
       },
     });
@@ -42,8 +44,9 @@ export class PrismaCharacterManagerPowersLookupAdapter extends PowersLookupPort 
     return {
       id: raw.id,
       nome: raw.nome,
-      domainId: DOMAIN_NAME_TO_ID[raw.domainName],
+      domainId: raw.domainName === 'PECULIAR' && raw.domainPeculiarId ? raw.domainPeculiarId : DOMAIN_NAME_TO_ID[raw.domainName],
       pdaCost: raw.custoTotalPda,
+      peCost: raw.custoTotalPe,
       slotCost: raw.custoTotalEspacos,
     };
   }

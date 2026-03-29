@@ -35,6 +35,7 @@ export interface ItemBaseProps {
   canStack: boolean;
   maxStack: number;
   notas?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -134,6 +135,10 @@ export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Pr
 
   get notas(): string | undefined {
     return this.props.notas;
+  }
+
+  get userName(): string | undefined {
+    return this.props.userName;
   }
 
   get createdAt(): Date {

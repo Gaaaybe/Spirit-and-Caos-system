@@ -100,19 +100,19 @@ describe('SyncCharacterController (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         attributes: {
-          strength: 15,
-          dexterity: 12,
-          constitution: 13,
-          intelligence: 11,
-          wisdom: 12,
-          charisma: 11,
+          strength: { baseValue: 12 },
+          dexterity: { baseValue: 11 },
+          constitution: { baseValue: 11 },
+          intelligence: { baseValue: 11 },
+          wisdom: { baseValue: 11 },
+          charisma: { baseValue: 11 },
           keyPhysical: 'constitution',
           keyMental: 'intelligence',
         },
       });
 
     expect(response.statusCode).toBe(200);
-    expect(response.body.attributes.strength.baseValue).toBe(15);
+    expect(response.body.attributes.strength.baseValue).toBe(12);
     expect(response.body.attributes.keyPhysical).toBe('constitution');
   });
 
@@ -122,7 +122,7 @@ describe('SyncCharacterController (e2e)', () => {
       .set('Authorization', `Bearer ${accessToken}`)
       .send({
         skills: [
-          { name: 'Acrobacia', state: 'EFFICIENT', trainingBonusIncrease: 2 },
+          { name: 'Acrobacia', state: 'EFFICIENT', trainingBonus: 2 },
           { name: 'Atletismo', state: 'INEFFICIENT' },
         ],
       });

@@ -12,6 +12,7 @@ export class PeculiarityPresenter {
       icone: peculiarity.icone ?? null,
       createdAt: peculiarity.createdAt,
       updatedAt: peculiarity.updatedAt ?? null,
+      userName: peculiarity.userName ?? null,
     };
   }
 }

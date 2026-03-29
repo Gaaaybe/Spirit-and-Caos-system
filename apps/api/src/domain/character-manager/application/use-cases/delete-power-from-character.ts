@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Either, left, right } from '@/core/either';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { NotAllowedError } from './errors/not-allowed-error';
 import { CharactersRepository } from '../repositories/characters-repository';
@@ -12,7 +13,7 @@ interface DeletePowerFromCharacterUseCaseRequest {
 }
 
 type DeletePowerFromCharacterUseCaseResponse = Either<
-  ResourceNotFoundError | NotAllowedError,
+  ResourceNotFoundError | NotAllowedError | DomainValidationError,
   {
     character: Character;
   }
@@ -37,7 +38,15 @@ export class DeletePowerFromCharacterUseCase {
       return left(new NotAllowedError());
     }
 
-    character.removePower(powerId);
+    try {
+      character.removePower(powerId);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        return left(error);
+      }
+
+      throw error;
+    }
 
     await this.charactersRepository.save(character);
 

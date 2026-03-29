@@ -29,7 +29,12 @@ import { Domain, DomainName } from '@/domain/shared/enterprise/value-objects/dom
 // ─── Type helpers ────────────────────────────────────────────────────────────
 
 export type PrismaItemFull = Prisma.ItemGetPayload<{
-  include: { itemDamages: true; itemPowers: true; itemPowerArrays: true };
+  include: { 
+    itemDamages: true; 
+    itemPowers: true; 
+    itemPowerArrays: true;
+    user: { select: { id: true, name: true } }
+  };
 }>;
 
 // ─── Lookup tables ───────────────────────────────────────────────────────────
@@ -169,6 +174,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
     canStack: raw.canStack,
     maxStack: raw.maxStack,
     notas: raw.notas ?? undefined,
+    userName: raw.user?.name,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt ?? undefined,
   };

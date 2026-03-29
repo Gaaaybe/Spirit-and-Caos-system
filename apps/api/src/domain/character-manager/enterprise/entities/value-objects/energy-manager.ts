@@ -85,4 +85,14 @@ export class EnergyManager {
       currentPE: Math.min(this.maxPE, this.currentPE + amount),
     });
   }
+
+  addTemporaryPE(amount: number): EnergyManager {
+    if (amount < 0)
+      throw new DomainValidationError('PE temporário não pode ser negativo.', 'temporaryPE');
+
+    return new EnergyManager({
+      ...this.props,
+      temporaryPE: Math.max(this.temporaryPE, amount),
+    });
+  }
 }

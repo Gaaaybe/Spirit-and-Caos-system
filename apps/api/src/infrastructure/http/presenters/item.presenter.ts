@@ -33,12 +33,13 @@ export class ItemPresenter {
       powerArrayIds: item.powerArrayIds.getItems().map((uid) => uid.toString()),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt ?? null,
+      userName: item.userName ?? null,
     };
 
     if (item instanceof Weapon) {
       return {
         ...base,
-        danos: item.danos.map((d) => ({
+        danos: item.danosAtuais.map((d) => ({
           dado: d.dado,
           base: d.base,
           espiritual: d.espiritual,

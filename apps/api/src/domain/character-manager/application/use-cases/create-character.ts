@@ -58,6 +58,18 @@ export class CreateCharacterUseCase {
   async execute(request: CreateCharacterUseCaseRequest): Promise<CreateCharacterUseCaseResponse> {
     const narrativeProfile = NarrativeProfile.create(request.narrative);
 
+    const totalAttributes = 
+      request.attributes.strength +
+      request.attributes.dexterity +
+      request.attributes.constitution +
+      request.attributes.intelligence +
+      request.attributes.wisdom +
+      request.attributes.charisma;
+
+    if (totalAttributes > 67) {
+      throw new DomainValidationError(`A soma dos atributos iniciais (${totalAttributes}) não pode exceder 67.`, 'attributes');
+    }
+
     const attributes = AttributeSet.create({
         strength: Attribute.create({ baseValue: request.attributes.strength }),
         dexterity: Attribute.create({ baseValue: request.attributes.dexterity }),
@@ -80,20 +92,19 @@ export class CreateCharacterUseCase {
 
       const pda = PdAManager.create({ level: 1, extraPda });
       
-      const health = HealthManager.create({ 
-        level: 1, 
-        constitutionModifier: attributes.constitution.rollModifier 
+      const health = HealthManager.create({
+        level: 1,
+        constitutionModifier: attributes.constitution.baseModifier
       });
 
       const energy = EnergyManager.create({
-        keyPhysicalModifier: attributes[request.attributes.keyPhysical].rollModifier,
-        keyMentalModifier: attributes[request.attributes.keyMental].rollModifier,
+        keyPhysicalModifier: attributes[request.attributes.keyPhysical].baseModifier,
+        keyMentalModifier: attributes[request.attributes.keyMental].baseModifier,
       });
 
       const slots = SlotManager.create({
-        intelligenceModifier: attributes.intelligence.rollModifier,
+        intelligenceModifier: attributes.intelligence.baseModifier,
       });
-
       const conditions = ConditionManager.create([]);
       const deathManager = DeathManager.create();
       

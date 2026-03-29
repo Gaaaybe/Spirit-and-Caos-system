@@ -96,7 +96,7 @@ describe('CreatePowerArrayUseCase', () => {
     if (result.isRight()) {
       expect(result.value.powerArray.nome).toBe('Acervo de Rajadas');
       expect(result.value.powerArray.powers.getItems()).toHaveLength(2);
-      expect(result.value.powerArray.custoTotal.pda).toBe(25);
+      expect(result.value.powerArray.custoTotal.pda).toBe(16);
       expect(result.value.powerArray.custoTotal.espacos).toBe(25);
       expect(powerArraysRepository.items).toHaveLength(1);
     }

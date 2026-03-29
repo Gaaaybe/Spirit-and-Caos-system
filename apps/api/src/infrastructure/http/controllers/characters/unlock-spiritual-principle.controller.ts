@@ -19,7 +19,7 @@ import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
 import { CharacterPresenter } from '../../presenters/character.presenter';
 
 const unlockSpiritualPrincipleBodySchema = z.object({
-  stage: z.enum(['DIVINE']),
+  stage: z.enum(['NORMAL', 'DIVINE']).optional().default('NORMAL'),
 });
 
 type UnlockSpiritualPrincipleBodySchema = z.infer<typeof unlockSpiritualPrincipleBodySchema>;

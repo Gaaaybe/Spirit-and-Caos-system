@@ -38,7 +38,7 @@ export class EquipmentSlots {
       );
     }
 
-    const maxQuickAccess = 2 + numberOfHands;
+    const maxQuickAccess = 2;
     if (quickAccess.length > maxQuickAccess) {
       throw new DomainValidationError(
         `O limite de acesso rápido é ${maxQuickAccess}.`,
@@ -76,7 +76,7 @@ export class EquipmentSlots {
   }
 
   get maxQuickAccessSlots(): number {
-    return 2 + this.props.numberOfHands;
+    return 2;
   }
 
   equipSuit(itemId: string): EquipmentSlots {

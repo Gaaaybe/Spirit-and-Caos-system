@@ -5,6 +5,7 @@ import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
 import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
 import { CharacterPresenter } from '../../presenters/character.presenter';
+import { PeculiaritiesRepository } from '@/domain/power-manager/application/repositories/peculiarities-repository';
 
 const acquireDomainMasteryBodySchema = z.object({
   domainId: z.string().min(1),
@@ -15,7 +16,10 @@ type AcquireDomainMasteryBodySchema = z.infer<typeof acquireDomainMasteryBodySch
 
 @Controller('/characters/:characterId/domains')
 export class AcquireDomainMasteryController {
-  constructor(private acquireDomainMastery: AcquireDomainMasteryUseCase) {}
+  constructor(
+    private acquireDomainMastery: AcquireDomainMasteryUseCase,
+    private peculiaritiesRepository: PeculiaritiesRepository,
+  ) {}
 
   @Post()
   @HttpCode(201)
@@ -35,6 +39,9 @@ export class AcquireDomainMasteryController {
       throw new BadRequestException(result.value.message);
     }
 
-    return CharacterPresenter.toHTTP(result.value.character);
+    const character = result.value.character;
+    const peculiarities = await this.peculiaritiesRepository.findByUserId(character.userId.toString(), { page: 1 });
+
+    return CharacterPresenter.toHTTP(character, peculiarities);
   }
 }

@@ -3,132 +3,357 @@
     "nome": "Agarrar aprimorado",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você pode agarrar com apenas um braço, deixando o outro livre para realizar outras ações, e não fica vulnerável enquanto agarrando [1]."
+    "descricao": "Você pode agarrar com apenas um braço, deixando o outro livre para realizar outras ações, e não fica vulnerável enquanto agarrando.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Agarrar preciso",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você pode usar seu bônus de Destreza, ao invés do seu bônus de Força, para agarrar seus oponentes [1]."
+    "descricao": "Você pode usar seu bônus de Destreza, ao invés do seu bônus de Força, para agarrar seus oponentes.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Agarrar rápido",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Quando acerta um ataque desarmado, você pode fazer um teste de agarrar imediatamente contra o alvo como uma ação livre [1]."
+    "descricao": "Quando acerta um ataque desarmado, você pode fazer um teste de agarrar imediatamente contra o alvo como uma ação livre.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ambiente favorito",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você é especialmente adaptado a lutar em determinado ambiente, ganhando metade do seu bônus de eficiência em testes de ataque ou defesas ativas [2]."
+    "descricao": "Você é especialmente adaptado a lutar em determinado ambiente, ganhando metade do seu bônus de eficiência em testes de ataque ou defesas ativas.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Sorte de principiante",
     "tipo": "sorte",
     "graus": 1,
-    "descricao": "Gastando um de inspiração, você pode somar seu bônus de eficiência como extra em todas as suas perícias até o final da cena [3]."
+    "descricao": "Gastando um de inspiração, você pode somar seu bônus de eficiência como extra em todas as suas perícias até o final da cena.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Tolerância maior",
     "tipo": "geral",
     "graus": 1,
-    "descricao": "Você tem +2 vantagens em testes para evitar ficar fatigado, prender a respiração, evitar danos de fome/sede/temperatura e resistir à sufocação [3]."
+    "descricao": "Você tem +2 vantagens em testes para evitar ficar fatigado, prender a respiração, evitar danos de fome/sede/temperatura e resistir à sufocação.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Tomar a iniciativa",
     "tipo": "sorte",
     "graus": 1,
-    "descricao": "Você pode gastar 1 de inspiração para agir primeiro na ordem de iniciativa [3]."
+    "descricao": "Você pode gastar 1 de inspiração para agir primeiro na ordem de iniciativa.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Tontear",
     "tipo": "perícia",
     "graus": 2,
-    "descricao": "Você pode fazer um teste de Enganação ou Intimidação como ação padrão para ofuscar ou abalar o oponente até o fim da próxima rodada [4]."
+    "descricao": "Você pode fazer um teste de Enganação ou Intimidação como ação padrão para ofuscar ou abalar o oponente até o fim da próxima rodada.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Trabalho em equipe",
     "tipo": "geral",
     "graus": 1,
-    "descricao": "Quando você ajuda em um teste de ajuda, você ganha +1 vantagem no seu teste [5]."
+    "descricao": "Quando você ajuda em um teste de ajuda, você ganha +1 vantagem no seu teste.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Zombar",
     "tipo": "perícia",
     "graus": 1,
-    "descricao": "Você pode desmoralizar um oponente com Enganação em vez de Intimidação [5]."
+    "descricao": "Você pode desmoralizar um oponente com Enganação em vez de Intimidação.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Assustar",
     "tipo": "perícia",
     "graus": 1,
-    "descricao": "Você pode usar Intimidação no lugar de Enganação para fintar em combate [6]."
+    "descricao": "Você pode usar Intimidação no lugar de Enganação para fintar em combate.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ataque cirúrgico",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) no dano para somar essa mesma quantia como extra no acerto [6]."
+    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) no dano para somar essa mesma quantia como extra no acerto.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ataque à distância aprimorado",
     "tipo": "combate",
     "graus": "Vários",
-    "descricao": "Você tem um bônus de +1 vantagem em testes de ataque à distância por grau neste Benefício (o custo em PdA dobra a cada grau) [7]."
+    "descricao": "Você tem um bônus de +1 vantagem em testes de ataque à distância por grau neste Benefício (o custo em PdA dobra a cada grau).",
+    "regra_custo": "dobro_por_grau"
   },
   {
     "nome": "Ataque corpo-a-corpo aprimorado",
     "tipo": "combate",
     "graus": "Vários",
-    "descricao": "Você tem um bônus de +1 vantagem em testes de ataque corpo-a-corpo por grau neste Benefício (o custo dobra a cada grau) [7]."
+    "descricao": "Você tem um bônus de +1 vantagem em testes de ataque corpo-a-corpo por grau neste Benefício (o custo dobra a cada grau).",
+    "regra_custo": "dobro_por_grau"
   },
   {
     "nome": "Ataque dominó",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Se incapacitar um inimigo com um ataque comum, você pode fazer um ataque extra imediato contra outro inimigo ao alcance [7]."
+    "descricao": "Se incapacitar um inimigo com um ataque comum, você pode fazer um ataque extra imediato contra outro inimigo ao alcance.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ataque imprudente",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) nas defesas ativas e soma a mesma quantidade no seu ataque [8]."
+    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) nas defesas ativas e soma a mesma quantidade no seu ataque.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ataque poderoso",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) no teste de ataque e soma o mesmo número no dano do ataque [9]."
+    "descricao": "Você aceita uma penalidade (até 2x seu bônus de eficiência) no teste de ataque e soma o mesmo número no dano do ataque.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ataque perceptivo",
     "tipo": "combate",
     "graus": 4,
-    "descricao": "Permite ignorar as penalidades no teste de ataque devido a cobertura ou camuflagem; cada grau permite escolher uma opção adicional [9]."
+    "descricao": "Permite ignorar as penalidades no teste de ataque devido a cobertura ou camuflagem; cada grau permite escolher uma opção adicional.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Saque Veloz",
     "tipo": "combate",
     "graus": 1,
-    "descricao": "No primeiro turno de um combate, você pode realizar um Ataque Simples (com uma arma equipada) como uma Reação [10]."
+    "descricao": "No primeiro turno de um combate, você pode realizar um Ataque Simples (com uma arma equipada) como uma Reação.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Ação traiçoeira",
     "tipo": "combate",
     "graus": "Vários",
-    "descricao": "Transforma uma ação padrão ou de movimento específica de combate em uma ação livre, uma vez por rodada [10]."
+    "descricao": "Transforma uma ação padrão ou de movimento específica de combate em uma ação livre, uma vez por rodada.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Atraente",
     "tipo": "perícia",
     "graus": 2,
-    "descricao": "Garante +1 vantagem (ou +3 com 2 graus) em testes de Enganação e Persuasão baseados em aparência e sedução [11]."
+    "descricao": "Garante +1 vantagem (ou +3 com 2 graus) em testes de Enganação e Persuasão baseados em aparência e sedução.",
+    "regra_custo": "linear"
   },
   {
     "nome": "Avaliação",
     "tipo": "geral",
     "graus": 1,
-    "descricao": "Você pode avaliar as habilidades de combate de um oponente com um teste de Intuição oposto a Enganação, para saber se ele é pior, melhor ou igual a você [11]."
+    "descricao": "Você pode avaliar as habilidades de combate de um oponente com um teste de Intuição oposto a Enganação, para saber se ele é pior, melhor ou igual a você.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Bem-informado",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Permite fazer um teste de Investigação ou Persuasão ao encontrar alguém pela primeira vez para ver se você já ouviu sobre o alvo.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Bem relacionado",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Você tem pessoas para pedir favores com um teste de Persuasão, ou usar 1 de inspiração para garantir o favor automaticamente.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Criar benefício",
+    "tipo": "geral",
+    "graus": "Vários",
+    "descricao": "Permite criar benefícios interpretativos (como status de nobreza ou autorização de segurança), aprovados pelo mestre.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Contatos",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Você pode fazer um teste de Investigação para obter informações com seus contatos em apenas um minuto.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Crítico aprimorado para",
+    "tipo": "combate",
+    "graus": 3,
+    "descricao": "Reduz a margem de ameaça de crítico de um domínio específico em -1 por grau, até um máximo de -3.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "De pé",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Você passa de caído para de pé usando apenas uma ação livre.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Duro de matar",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Quando sua condição se torna 'morrendo', você fica de pé e consciente automaticamente na rodada seguinte (embora ainda possua a condição).",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Esconder-se à plena vista",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Você pode se esconder sem a necessidade de um teste de furtividade ou qualquer distração (mas ainda precisa de cobertura próxima).",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Esforço Extra",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Você recebe uma ação padrão a mais no turno, porém sofre fadiga ao fim do turno.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Estrangular",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Se agarrar e imobilizar um oponente com sucesso, você pode começar a sufocá-lo.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Evadir e resistir",
+    "tipo": "combate",
+    "graus": 2,
+    "descricao": "Concede +1 vantagem (+2 com 2 graus) em testes de salvamento para evitar efeitos de Área.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Fascinar",
+    "tipo": "perícia",
+    "graus": "Vários",
+    "descricao": "Usando uma perícia de interação e ação padrão contra Intuição/Vontade, você pode fascinar o alvo e prender sua atenção.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Finta ágil",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Você pode usar seu bônus de Acrobacia no lugar de Enganação para fintar e realizar truques no combate.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Idiomas",
+    "tipo": "perícia",
+    "graus": "Vários",
+    "descricao": "Você sabe falar idiomas adicionais, tornando-se fluente e alfabetizado em um idioma a mais por grau.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Imobilizar aprimorado",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Oponentes que você agarrou sofrem penalidade de +2 desvantagens em testes para tentar escapar.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Iniciativa aprimorada",
+    "tipo": "combate",
+    "graus": 5,
+    "descricao": "Você ganha +1 vantagem em iniciativa por grau neste benefício, até o limite de 5.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Inimigo favorito",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Ao escolher um tipo especial de oponente, você recebe +1 vantagem em Enganação, Intimidação, Intuição e Percepção contra eles.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Inspirar",
+    "tipo": "sorte",
+    "graus": "Vários",
+    "descricao": "Gastando inspiração, você concede vantagens em rolagens para aliados na mesma proporção do grau do benefício, uma vez por cena.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Interpor-se",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Como reação, você pode se colocar na frente de um aliado e se tornar o alvo de um ataque que seria direcionado a ele.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Liderança",
+    "tipo": "sorte",
+    "graus": 1,
+    "descricao": "Gastando inspiração com uma ação padrão, você pode remover uma condição como alquebrado, frustrado, fatigado ou atordoado de um aliado.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Luta no chão",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Você não sofre penalidades em ataques por estar caído e oponentes não ganham vantagem extra por isso.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Memória eidética",
+    "tipo": "geral",
+    "graus": 1,
+    "descricao": "Você lembra de tudo o que viu ou ouviu, ganhando +3 vantagens para recordar fatos.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Mira aprimorada",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Quando você ajusta um ataque mirando, o bônus concedido é dobrado.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Prender arma",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Quando se esquiva ou apara com sucesso no corpo-a-corpo, você pode fazer uma tentativa livre de desarme.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Quebrar arma",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Quando se esquiva ou apara com sucesso no corpo-a-corpo, você pode fazer uma tentativa livre para quebrar a arma do oponente.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Rastrear",
+    "tipo": "perícia",
+    "graus": 1,
+    "descricao": "Você pode usar Percepção com vantagem para conseguir seguir rastros.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Redirecionar",
+    "tipo": "combate",
+    "graus": 1,
+    "descricao": "Se um ataque falhar contra você, você pode usar uma ação livre de Enganação para redirecioná-lo para outro alvo ao alcance.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Rolamento defensivo",
+    "tipo": "combate",
+    "graus": 3,
+    "descricao": "Garante +1 vantagem por grau em testes de reflexos e esquiva, até o máximo de 3 graus.",
+    "regra_custo": "linear"
+  },
+  {
+    "nome": "Segunda chance",
+    "tipo": "geral",
+    "graus": 3,
+    "descricao": "Permite rerolar e ficar com o maior resultado ao falhar em uma ameaça específica; cada grau adiciona mais usos por sessão.",
+    "regra_custo": "linear"
   }
 ]

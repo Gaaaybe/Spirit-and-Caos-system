@@ -19,7 +19,18 @@ export class OnCharacterItemDiscarded implements OnModuleInit {
   }
 
   private async handleCharacterItemDiscarded(event: CharacterItemDiscardedEvent) {
-    const { discardedItemId } = event;
+    const { character, discardedItemId } = event;
+
+    const isEquipped = 
+      character.equipment.suitId === discardedItemId ||
+      character.equipment.accessoryId === discardedItemId ||
+      character.equipment.hands.some(h => h.itemId === discardedItemId) ||
+      character.equipment.quickAccess.some(q => q.itemId === discardedItemId);
+
+    if (isEquipped) {
+      return;
+    }
+
     const item = await this.itemsRepository.findById(discardedItemId);
 
     if (item && !item.isPublic) {

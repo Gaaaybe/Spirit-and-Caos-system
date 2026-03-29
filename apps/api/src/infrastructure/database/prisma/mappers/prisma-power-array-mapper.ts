@@ -23,6 +23,7 @@ export type PrismaPowerArrayFull = Prisma.PowerArrayGetPayload<{
         power: { include: { appliedEffects: { include: { appliedModifications: true } } } };
       };
     };
+    user: { select: { id: true, name: true } };
   };
 }>;
 
@@ -98,6 +99,7 @@ export function toDomain(raw: PrismaPowerArrayFull): PowerArray {
       isPublic: raw.isPublic,
       icone: raw.icone ?? undefined,
       notas: raw.notas ?? undefined,
+      userName: (raw as any).user?.name,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
     },

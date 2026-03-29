@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   ForbiddenException,
@@ -14,6 +15,8 @@ import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
 import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
 import { CharacterPresenter } from '../../presenters/character.presenter';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
+import { PeculiaritiesRepository } from '@/domain/power-manager/application/repositories/peculiarities-repository';
 
 const syncCharacterBodySchema = z.object({
   narrative: z
@@ -27,16 +30,20 @@ const syncCharacterBodySchema = z.object({
   symbol: z.string().trim().min(1).nullable().optional(),
   art: z.string().trim().min(1).nullable().optional(),
   inspiration: z.number().int().min(0).max(3).optional(),
+  level: z.number().int().min(1).max(250).optional(),
+  extraPda: z.number().int().min(0).optional(),
   pvChange: z.number().int().optional(),
   peChange: z.number().int().optional(),
+  tempPvChange: z.number().int().min(0).optional(),
+  tempPeChange: z.number().int().min(0).optional(),
   attributes: z
     .object({
-      strength: z.number().int().min(0),
-      dexterity: z.number().int().min(0),
-      constitution: z.number().int().min(0),
-      intelligence: z.number().int().min(0),
-      wisdom: z.number().int().min(0),
-      charisma: z.number().int().min(0),
+      strength: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
+      dexterity: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
+      constitution: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
+      intelligence: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
+      wisdom: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
+      charisma: z.object({ baseValue: z.number().int().min(0), extraBonus: z.number().int().min(0).optional() }),
       keyPhysical: z.enum(['strength', 'dexterity', 'constitution']),
       keyMental: z.enum(['intelligence', 'wisdom', 'charisma']),
     })
@@ -46,7 +53,8 @@ const syncCharacterBodySchema = z.object({
       z.object({
         name: z.string().min(1),
         state: z.enum(['EFFICIENT', 'NEUTRAL', 'INEFFICIENT']),
-        trainingBonusIncrease: z.number().int().min(0).optional(),
+        trainingBonus: z.number().int().min(0).optional(),
+        extraBonus: z.number().int().optional(),
       }),
     )
     .optional(),
@@ -57,7 +65,10 @@ type SyncCharacterBodySchema = z.infer<typeof syncCharacterBodySchema>;
 
 @Controller('/characters/:characterId/sync')
 export class SyncCharacterController {
-  constructor(private syncCharacter: SyncCharacterUseCase) {}
+  constructor(
+    private syncCharacter: SyncCharacterUseCase,
+    private peculiaritiesRepository: PeculiaritiesRepository,
+  ) {}
 
   @Patch()
   async handle(
@@ -72,8 +83,12 @@ export class SyncCharacterController {
       symbol: body.symbol,
       art: body.art,
       inspiration: body.inspiration,
+      level: body.level,
+      extraPda: body.extraPda,
       pvChange: body.pvChange,
       peChange: body.peChange,
+      tempPvChange: body.tempPvChange,
+      tempPeChange: body.tempPeChange,
       attributes: body.attributes as any,
       skills: body.skills as any,
       conditions: body.conditions as any,
@@ -90,9 +105,16 @@ export class SyncCharacterController {
         throw new ForbiddenException(error.message);
       }
 
-      throw new NotFoundException('Character not found');
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
+      }
+
+      throw new BadRequestException('Sync failed');
     }
 
-    return CharacterPresenter.toHTTP(result.value.character);
+    const character = result.value.character;
+    const peculiarities = await this.peculiaritiesRepository.findByUserId(character.userId.toString(), { page: 1 });
+
+    return CharacterPresenter.toHTTP(character, peculiarities);
   }
 }

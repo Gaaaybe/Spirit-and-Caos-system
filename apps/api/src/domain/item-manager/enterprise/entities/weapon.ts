@@ -43,6 +43,11 @@ export class Weapon extends Item<WeaponProps> {
     return this.props.danos;
   }
 
+  get danosAtuais(): DamageDescriptor[] {
+    const multiplier = this.upgradeLevel.getMultiplier();
+    return this.props.danos.map((d) => d.scaleDie(multiplier));
+  }
+
   get danoPrimario(): DamageDescriptor {
     return this.props.danos[0];
   }

@@ -11,7 +11,7 @@ export type SkillName =
   | 'Espiritismo'
   | 'Exploração'
   | 'Investigação'
-  | 'Ofício'
+  | 'Pilotar'
   | 'Religião'
   | 'Adestrar Animais'
   | 'Atuação'
@@ -29,6 +29,7 @@ export type SkillName =
 export interface SkillEntry {
   proficiencyState: ProficiencyState;
   trainingBonus: number;
+  extraBonus: number;
 }
 
 export interface SkillsManagerProps {
@@ -55,7 +56,7 @@ export class SkillsManager {
       'Espiritismo',
       'Exploração',
       'Investigação',
-      'Ofício',
+      'Pilotar',
       'Religião',
       'Adestrar Animais',
       'Atuação',
@@ -75,6 +76,7 @@ export class SkillsManager {
       entries.set(skillName, {
         proficiencyState: 'NEUTRAL',
         trainingBonus: 0,
+        extraBonus: 0,
       });
     }
 
@@ -97,6 +99,16 @@ export class SkillsManager {
     return { ...skill };
   }
 
+  setSkill(name: SkillName, state: ProficiencyState, trainingBonus: number, extraBonus: number): SkillsManager {
+    const newEntries = new Map(this.props.entries);
+    newEntries.set(name, {
+      proficiencyState: state,
+      trainingBonus: Math.max(0, trainingBonus),
+      extraBonus,
+    });
+    return new SkillsManager({ entries: newEntries });
+  }
+
   trainSkill(name: SkillName, bonus: number): SkillsManager {
     if (bonus <= 0) return this;
 
@@ -115,9 +127,13 @@ export class SkillsManager {
     return new SkillsManager({ entries: newEntries });
   }
 
-  calculateRollBonus(name: SkillName, attributeModifier: number, efficiencyBonus: number): number {
+  calculateRollBonus(name: SkillName, attributeModifier: number, efficiencyBonus: number, includeExtraBonus = true): number {
     const skill = this.getSkill(name);
-    let finalBonus = attributeModifier + skill.trainingBonus;
+    let finalBonus = attributeModifier + (skill.trainingBonus || 0);
+
+    if (includeExtraBonus) {
+      finalBonus += (skill.extraBonus || 0);
+    }
 
     if (skill.proficiencyState === 'EFFICIENT') {
       finalBonus += efficiencyBonus;

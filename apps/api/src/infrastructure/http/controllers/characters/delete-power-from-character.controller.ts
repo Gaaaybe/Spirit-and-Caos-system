@@ -7,6 +7,7 @@ import {
   Param,
   Post,
 } from '@nestjs/common';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DeletePowerFromCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-power-from-character';
 import { NotAllowedError } from '@/domain/character-manager/application/use-cases/errors/not-allowed-error';
@@ -40,6 +41,10 @@ export class DeletePowerFromCharacterController {
 
       if (error instanceof NotAllowedError) {
         throw new ForbiddenException(error.message);
+      }
+
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
       }
 
       throw new BadRequestException('Failed to remove power');

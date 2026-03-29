@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { Either, left, right } from '@/core/either';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
-import { NotAllowedError } from './errors/not-allowed-error';
 import { CharactersRepository } from '../repositories/characters-repository';
 import { Character } from '../../enterprise/entities/character';
-import { SkillName, ProficiencyState } from '../../enterprise/entities/value-objects/skills-manager';
+import { NotAllowedError } from './errors/not-allowed-error';
 
-interface UpdateCharacterSkillsUseCaseRequest {
+interface ChangeInventoryItemQuantityUseCaseRequest {
   characterId: string;
   userId: string;
-  skillName: SkillName;
-  proficiencyState: ProficiencyState;
-  trainingBonusIncrease?: number;
+  itemId: string;
+  quantity: number;
 }
 
-type UpdateCharacterSkillsUseCaseResponse = Either<
+type ChangeInventoryItemQuantityUseCaseResponse = Either<
   ResourceNotFoundError | NotAllowedError,
   {
     character: Character;
@@ -22,27 +20,31 @@ type UpdateCharacterSkillsUseCaseResponse = Either<
 >;
 
 @Injectable()
-export class UpdateCharacterSkillsUseCase {
+export class ChangeInventoryItemQuantityUseCase {
   constructor(private charactersRepository: CharactersRepository) {}
 
   async execute({
     characterId,
     userId,
-    skillName,
-    proficiencyState,
-    trainingBonusIncrease = 0,
-  }: UpdateCharacterSkillsUseCaseRequest): Promise<UpdateCharacterSkillsUseCaseResponse> {
+    itemId,
+    quantity,
+  }: ChangeInventoryItemQuantityUseCaseRequest): Promise<ChangeInventoryItemQuantityUseCaseResponse> {
     const character = await this.charactersRepository.findById(characterId);
 
     if (!character) {
       return left(new ResourceNotFoundError());
     }
 
-    if (userId !== character.userId.toString()) {
+    if (character.userId.toString() !== userId) {
       return left(new NotAllowedError());
     }
 
-    character.updateSkill(skillName, proficiencyState, trainingBonusIncrease, 0);
+    const itemExistsInBag = character.inventory.bag.some((i) => i.itemId === itemId);
+    if (!itemExistsInBag) {
+      return left(new ResourceNotFoundError());
+    }
+
+    character.setItemQuantityInInventory(itemId, quantity);
 
     await this.charactersRepository.save(character);
 

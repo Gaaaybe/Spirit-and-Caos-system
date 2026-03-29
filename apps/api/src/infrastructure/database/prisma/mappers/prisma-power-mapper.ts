@@ -23,7 +23,10 @@ import * as AppliedEffectMapper from './prisma-applied-effect-mapper';
 import * as AppliedModificationMapper from './prisma-applied-modification-mapper';
 
 export type PrismaPowerFull = Prisma.PowerGetPayload<{
-  include: { appliedEffects: { include: { appliedModifications: true } } };
+  include: { 
+    appliedEffects: { include: { appliedModifications: true } },
+    user: { select: { id: true, name: true } }
+  };
 }>;
 
 const DOMAIN_NAME_TO_DOMAIN: Record<PrismaDomainName, DomainName> = {
@@ -108,6 +111,7 @@ export function toDomain(raw: PrismaPowerFull): Power {
       isPublic: raw.isPublic,
       icone: raw.icone ?? undefined,
       notas: raw.notas ?? undefined,
+      userName: raw.user?.name,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
     },

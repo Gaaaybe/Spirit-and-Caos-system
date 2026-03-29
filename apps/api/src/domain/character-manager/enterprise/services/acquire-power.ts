@@ -32,6 +32,11 @@ export class AcquirePowerService {
     }
 
     const mastery = character.domainMasteries.find((m) => m.domainId === domainId);
+    
+    if (!mastery) {
+      return left(new DomainValidationError('O personagem não possui a maestria no domínio necessário para este poder.', 'domainId'));
+    }
+
     const globalModificationIdToInject = mastery ? mastery.modificationIdToInject : null;
 
     try {

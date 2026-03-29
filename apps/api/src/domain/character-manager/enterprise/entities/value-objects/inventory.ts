@@ -90,4 +90,23 @@ export class Inventory {
 
     return new Inventory({ ...this.props, bag: newBag });
   }
+
+  setItemQuantity(itemId: string, quantity: number): Inventory {
+    if (quantity < 0) throw new DomainValidationError('Quantidade não pode ser negativa', 'quantity');
+
+    const newBag = [...this.props.bag];
+    const existingIndex = newBag.findIndex((item) => item.itemId === itemId);
+
+    if (existingIndex === -1 && quantity > 0) {
+      newBag.push({ itemId, quantity });
+    } else if (existingIndex >= 0) {
+      if (quantity === 0) {
+        newBag.splice(existingIndex, 1);
+      } else {
+        newBag[existingIndex] = { ...newBag[existingIndex], quantity };
+      }
+    }
+
+    return new Inventory({ ...this.props, bag: newBag });
+  }
 }

@@ -154,9 +154,22 @@ export function toDomain(raw: PrismaCharacterFull): Character {
     keyMental: attributesRaw.keyMental,
   });
 
+  const initialSkills = SkillsManager.createInitial();
   const skillsEntries = new Map<SkillName, SkillEntry>();
+  
+  // Garantir que todas as perícias padrão existam (incluindo as novas como Pilotar)
+  for (const [name, entry] of initialSkills.entries) {
+    skillsEntries.set(name, entry);
+  }
+
+  // Sobrescrever com os dados do banco, ignorando perícias removidas (como Ofício)
   for (const [skillName, entry] of Object.entries(skillsRaw)) {
-    skillsEntries.set(skillName as SkillName, entry);
+    if (skillsEntries.has(skillName as SkillName)) {
+      skillsEntries.set(skillName as SkillName, {
+        ...entry,
+        extraBonus: entry.extraBonus ?? 0,
+      });
+    }
   }
 
   const powersList = new CharacterPowerList();
@@ -231,18 +244,18 @@ export function toDomain(raw: PrismaCharacterFull): Character {
       }),
       health: HealthManager.create({
         level: raw.level,
-        constitutionModifier: attributes.constitution.rollModifier,
+        constitutionModifier: attributes.constitution.baseModifier,
         currentPV: healthRaw.currentPV,
         temporaryPV: healthRaw.temporaryPV,
       }),
       energy: EnergyManager.create({
-        keyPhysicalModifier: attributes[attributes.keyPhysical].rollModifier,
-        keyMentalModifier: attributes[attributes.keyMental].rollModifier,
+        keyPhysicalModifier: attributes[attributes.keyPhysical].baseModifier,
+        keyMentalModifier: attributes[attributes.keyMental].baseModifier,
         currentPE: energyRaw.currentPE,
         temporaryPE: energyRaw.temporaryPE,
       }),
       slots: SlotManager.create({
-        intelligenceModifier: attributes.intelligence.rollModifier,
+        intelligenceModifier: attributes.intelligence.baseModifier,
         usedSlots:
           sortedPowers.filter((power) => power.isEquipped).reduce((sum, power) => sum + power.slotCost, 0) +
           sortedPowerArrays

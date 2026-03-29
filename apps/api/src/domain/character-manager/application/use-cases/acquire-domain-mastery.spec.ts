@@ -4,6 +4,8 @@ import { makeCharacter } from '../../../../../test/factories/make-character';
 import { UniqueEntityId } from '@/core/entities/unique-entity-ts';
 import { DomainsLookupPort } from '../repositories/domains-lookup-port';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
+import { SpiritualPrinciple } from '../../enterprise/entities/value-objects/spiritual-principle';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
 
 class InMemoryDomainsLookupPort implements DomainsLookupPort {
   public items: any[] = [];
@@ -67,5 +69,33 @@ describe('Acquire Domain Mastery', () => {
 
     expect(result.isLeft()).toBe(true);
     expect(result.value).toBeInstanceOf(ResourceNotFoundError);
+  });
+
+  it('should not be able to acquire mastery for a spiritual domain without spiritual awakening', async () => {
+    const character = makeCharacter(
+      {
+        spiritualPrinciple: SpiritualPrinciple.create({
+          isUnlocked: false,
+        }),
+      },
+      new UniqueEntityId('character-1'),
+    );
+    inMemoryCharactersRepository.items.push(character);
+
+    inMemoryDomainsLookupPort.items.push({
+      id: new UniqueEntityId('spiritual-domain'),
+      nome: 'Domínio Espiritual',
+      espiritual: true,
+    });
+
+    const result = await sut.execute({
+      characterId: 'character-1',
+      userId: character.userId.toString(),
+      domainId: 'spiritual-domain',
+      masteryLevel: 'INICIANTE',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    expect(result.value).toBeInstanceOf(DomainValidationError);
   });
 });

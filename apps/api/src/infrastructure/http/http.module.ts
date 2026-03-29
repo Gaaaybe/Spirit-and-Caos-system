@@ -3,9 +3,11 @@ import { AuthenticateUserUseCase } from '@/domain/accounts/application/useCases/
 import { RegisterUserUseCase } from '@/domain/accounts/application/useCases/register-user';
 import { AcquireBenefitUseCase } from '@/domain/character-manager/application/use-cases/acquire-benefit';
 import { AcquireDomainMasteryUseCase } from '@/domain/character-manager/application/use-cases/acquire-domain-mastery';
+import { DiscardDomainMasteryUseCase } from '@/domain/character-manager/application/use-cases/discard-domain-mastery';
 import { AcquirePowerUseCase } from '@/domain/character-manager/application/use-cases/acquire-power';
 import { AcquirePowerArrayUseCase } from '@/domain/character-manager/application/use-cases/acquire-power-array';
 import { AddItemToInventoryUseCase } from '@/domain/character-manager/application/use-cases/add-item-to-inventory';
+import { ChangeInventoryItemQuantityUseCase } from '@/domain/character-manager/application/use-cases/change-inventory-item-quantity';
 import { AddRunicsUseCase } from '@/domain/character-manager/application/use-cases/add-runics';
 import { ApplyConditionUseCase } from '@/domain/character-manager/application/use-cases/apply-condition';
 import { ConsumeEnergyUseCase } from '@/domain/character-manager/application/use-cases/consume-energy';
@@ -13,8 +15,10 @@ import { CreateCharacterUseCase } from '@/domain/character-manager/application/u
 import { DeleteCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-character';
 import { DeletePowerArrayFromCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-power-array-from-character';
 import { DeletePowerFromCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-power-from-character';
+import { DiscardBenefitUseCase } from '@/domain/character-manager/application/use-cases/discard-benefit';
 import { DeletePowerArrayFromCharacterController } from './controllers/characters/delete-power-array-from-character.controller';
 import { DeletePowerFromCharacterController } from './controllers/characters/delete-power-from-character.controller';
+import { DiscardBenefitController } from './controllers/characters/discard-benefit.controller';
 import { EquipItemUseCase } from '@/domain/character-manager/application/use-cases/equip-item';
 import { EquipPowerUseCase } from '@/domain/character-manager/application/use-cases/equip-power';
 import { EquipPowerArrayUseCase } from '@/domain/character-manager/application/use-cases/equip-power-array';
@@ -89,9 +93,11 @@ import { CatalogService } from '../services/catalog.service';
 import { AuthenticateController } from './controllers/authenticate-user.controller';
 import { AcquireBenefitController } from './controllers/characters/acquire-benefit.controller';
 import { AcquireDomainMasteryController } from './controllers/characters/acquire-domain-mastery.controller';
+import { DiscardDomainMasteryController } from './controllers/characters/discard-domain-mastery.controller';
 import { AcquirePowerController } from './controllers/characters/acquire-power.controller';
 import { AcquirePowerArrayController } from './controllers/characters/acquire-power-array.controller';
 import { AddItemToInventoryController } from './controllers/characters/add-item-to-inventory.controller';
+import { ChangeInventoryItemQuantityController } from './controllers/characters/change-inventory-item-quantity.controller';
 import { AddRunicsController } from './controllers/characters/add-runics.controller';
 import { CreateCharacterController } from './controllers/characters/create-character.controller';
 import { DeleteCharacterController } from './controllers/characters/delete-character.controller';
@@ -160,6 +166,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     DeleteCharacterController,
     DeletePowerFromCharacterController,
     DeletePowerArrayFromCharacterController,
+    DiscardBenefitController,
     SyncCharacterController,
     AcquirePowerController,
     EquipPowerController,
@@ -168,6 +175,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     UnequipItemController,
     RemoveFromInventoryController,
     AddItemToInventoryController,
+    ChangeInventoryItemQuantityController,
     AddRunicsController,
     SpendRunicsController,
     AcquirePowerArrayController,
@@ -175,6 +183,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     UnequipPowerArrayController,
     AcquireBenefitController,
     AcquireDomainMasteryController,
+    DiscardDomainMasteryController,
     UpgradeItemController,
     LevelUpCharacterController,
     UnlockSpiritualPrincipleController,
@@ -227,6 +236,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     UnequipItemUseCase,
     RemoveFromInventoryUseCase,
     AddItemToInventoryUseCase,
+    ChangeInventoryItemQuantityUseCase,
     AddRunicsUseCase,
     SpendRunicsUseCase,
     ApplyConditionUseCase,
@@ -245,6 +255,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     UnequipPowerArrayUseCase,
     AcquireBenefitUseCase,
     AcquireDomainMasteryUseCase,
+    DiscardDomainMasteryUseCase,
     UpgradeItemUseCase,
     RegisterUserUseCase,
     CatalogService,
@@ -255,6 +266,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     DeleteCharacterUseCase,
     DeletePowerFromCharacterUseCase,
     DeletePowerArrayFromCharacterUseCase,
+    DiscardBenefitUseCase,
     SyncCharacterUseCase,
     FetchCharacterItemsUseCase,
     FetchCharacterPowersUseCase,

@@ -69,6 +69,7 @@ export class PowerPresenter {
       globalModifications: power.globalModifications.getItems().map(serializeAppliedModification),
       createdAt: power.createdAt,
       updatedAt: power.updatedAt ?? null,
+      userName: power.userName ?? null,
     };
   }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { Prisma } from '@prisma/client';
 import {
   PowerArraysLookupPort,
   type PowerArrayInfo,
@@ -32,7 +33,9 @@ export class PrismaCharacterManagerPowerArraysLookupAdapter extends PowerArraysL
         id: true,
         nome: true,
         domainName: true,
+        domainPeculiarId: true,
         custoTotalPda: true,
+        custoTotalPe: true,
         custoTotalEspacos: true,
       },
     });
@@ -44,8 +47,9 @@ export class PrismaCharacterManagerPowerArraysLookupAdapter extends PowerArraysL
     return {
       id: raw.id,
       nome: raw.nome,
-      domainId: DOMAIN_NAME_TO_ID[raw.domainName],
+      domainId: raw.domainName === 'PECULIAR' && raw.domainPeculiarId ? raw.domainPeculiarId : DOMAIN_NAME_TO_ID[raw.domainName],
       pdaCost: raw.custoTotalPda,
+      peCost: raw.custoTotalPe,
       slotCost: raw.custoTotalEspacos,
     };
   }
@@ -60,6 +64,17 @@ export class PrismaCharacterManagerPowerArraysLookupAdapter extends PowerArraysL
       include: {
         powerArrayPowers: {
           orderBy: { posicao: 'asc' },
+          include: {
+            power: {
+              include: {
+                appliedEffects: {
+                  include: {
+                    appliedModifications: true,
+                  },
+                },
+              },
+            },
+          },
         },
       },
     });
@@ -68,31 +83,94 @@ export class PrismaCharacterManagerPowerArraysLookupAdapter extends PowerArraysL
       return null;
     }
 
-    const copy = await this.prisma.powerArray.create({
-      data: {
-        userId,
-        characterId,
-        nome: original.nome,
-        descricao: original.descricao,
-        isPublic: false,
-        icone: original.icone,
-        notas: original.notas,
-        domainName: original.domainName,
-        domainAreaConhecimento: original.domainAreaConhecimento,
-        domainPeculiarId: original.domainPeculiarId,
-        parametrosBaseAcao: original.parametrosBaseAcao,
-        parametrosBaseAlcance: original.parametrosBaseAlcance,
-        parametrosBaseDuracao: original.parametrosBaseDuracao,
-        custoTotalPda: original.custoTotalPda,
-        custoTotalPe: original.custoTotalPe,
-        custoTotalEspacos: original.custoTotalEspacos,
-        powerArrayPowers: {
-          create: original.powerArrayPowers.map((entry) => ({
-            powerId: entry.powerId,
-            posicao: entry.posicao,
-          })),
+    const copy = await this.prisma.$transaction(async (tx) => {
+      const clonedPowerIdsByPosition = [] as Array<{ posicao: number; powerId: string }>;
+
+      for (const entry of original.powerArrayPowers) {
+        const clonedPower = await tx.power.create({
+          data: {
+            userId,
+            characterId,
+            nome: entry.power.nome,
+            descricao: entry.power.descricao,
+            isPublic: false,
+            icone: entry.power.icone,
+            notas: entry.power.notas,
+            domainName: entry.power.domainName,
+            domainAreaConhecimento: entry.power.domainAreaConhecimento,
+            domainPeculiarId: entry.power.domainPeculiarId,
+            parametrosAcao: entry.power.parametrosAcao,
+            parametrosAlcance: entry.power.parametrosAlcance,
+            parametrosDuracao: entry.power.parametrosDuracao,
+            custoTotalPda: entry.power.custoTotalPda,
+            custoTotalPe: entry.power.custoTotalPe,
+            custoTotalEspacos: entry.power.custoTotalEspacos,
+            custoAlternativoTipo: entry.power.custoAlternativoTipo,
+            custoAlternativoQuantidade: entry.power.custoAlternativoQuantidade,
+            custoAlternativoDescricao: entry.power.custoAlternativoDescricao,
+            custoAlternativoAtributo: entry.power.custoAlternativoAtributo,
+            custoAlternativoItemId: entry.power.custoAlternativoItemId,
+            appliedEffects: {
+              create: entry.power.appliedEffects.map(
+                (effect) =>
+                  ({
+                    effectBaseId: effect.effectBaseId,
+                    grau: effect.grau,
+                    configuracaoId: effect.configuracaoId,
+                    inputValue: effect.inputValue,
+                    nota: effect.nota,
+                    posicao: effect.posicao,
+                    custoPda: effect.custoPda,
+                    custoPe: effect.custoPe,
+                    custoEspacos: effect.custoEspacos,
+                    appliedModifications: {
+                      create: effect.appliedModifications.map((modification) => ({
+                        modificationBaseId: modification.modificationBaseId,
+                        scope: modification.scope,
+                        grau: modification.grau,
+                        parametros: modification.parametros,
+                        nota: modification.nota,
+                        posicao: modification.posicao,
+                      })),
+                    },
+                  }) as Prisma.AppliedEffectUncheckedCreateWithoutPowerInput,
+              ),
+            },
+          },
+        });
+
+        clonedPowerIdsByPosition.push({
+          posicao: entry.posicao,
+          powerId: clonedPower.id,
+        });
+      }
+
+      return tx.powerArray.create({
+        data: {
+          userId,
+          characterId,
+          nome: original.nome,
+          descricao: original.descricao,
+          isPublic: false,
+          icone: original.icone,
+          notas: original.notas,
+          domainName: original.domainName,
+          domainAreaConhecimento: original.domainAreaConhecimento,
+          domainPeculiarId: original.domainPeculiarId,
+          parametrosBaseAcao: original.parametrosBaseAcao,
+          parametrosBaseAlcance: original.parametrosBaseAlcance,
+          parametrosBaseDuracao: original.parametrosBaseDuracao,
+          custoTotalPda: original.custoTotalPda,
+          custoTotalPe: original.custoTotalPe,
+          custoTotalEspacos: original.custoTotalEspacos,
+          powerArrayPowers: {
+            create: clonedPowerIdsByPosition.map((entry) => ({
+              powerId: entry.powerId,
+              posicao: entry.posicao,
+            })),
+          },
         },
-      },
+      });
     });
 
     return copy.id;

@@ -108,9 +108,10 @@ export class UpdatePowerUseCase {
 
     let newCustoTotal: PowerCost | undefined;
 
-    if (effects !== undefined || globalModifications !== undefined) {
+    if (effects !== undefined || globalModifications !== undefined || parametros !== undefined) {
       const costResult = await this.powerCostCalculator.calculate({
         effects: effects ?? existingPower.effects.getItems(),
+        parametros: parametros ?? existingPower.parametros,
         globalModifications: globalModifications ?? existingPower.globalModifications.getItems(),
       });
 

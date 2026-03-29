@@ -1,7 +1,7 @@
 export interface CombatStatsProps {
-  baseDodge: number;
+  dodge: number;
   baseDamageReduction: number;
-  suitDamageReduction: number;
+  blockDamageReduction: number;
 }
 
 export class CombatStats {
@@ -16,10 +16,14 @@ export class CombatStats {
   }
 
   get dodge(): number {
-    return this.props.baseDodge;
+    return this.props.dodge;
   }
 
-  get damageReduction(): number {
-    return this.props.baseDamageReduction + this.props.suitDamageReduction;
+  get baseRD(): number {
+    return this.props.baseDamageReduction;
+  }
+
+  get blockRD(): number {
+    return this.props.blockDamageReduction;
   }
 }

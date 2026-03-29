@@ -20,6 +20,7 @@ interface PowerArrayProps {
   isPublic: boolean;
   icone?: string;
   notas?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -67,6 +68,10 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
 
   get notas(): string | undefined {
     return this.props.notas;
+  }
+
+  get userName(): string | undefined {
+    return this.props.userName;
   }
 
   get createdAt(): Date {

@@ -25,9 +25,14 @@ const equipItemBodySchema = z.object({
 
 type EquipItemBodySchema = z.infer<typeof equipItemBodySchema>;
 
+import { ItemsRepository } from '@/domain/item-manager/application/repositories/items-repository';
+
 @Controller('/characters/:characterId/items/:itemId/equip')
 export class EquipItemController {
-  constructor(private equipItem: EquipItemUseCase) {}
+  constructor(
+    private equipItem: EquipItemUseCase,
+    private itemsRepository: ItemsRepository,
+  ) {}
 
   @Post()
   @HttpCode(200)
@@ -60,6 +65,8 @@ export class EquipItemController {
       }
     }
 
-    return CharacterPresenter.toHTTP(result.value.character);
+    const items = await this.itemsRepository.findByCharacterId(characterId);
+
+    return CharacterPresenter.toHTTP(result.value.character, [], items);
   }
 }

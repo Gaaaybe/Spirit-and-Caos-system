@@ -33,6 +33,7 @@ export class PowerArrayPresenter {
       powers: powerArray.powers.getItems().map(PowerPresenter.toHTTP),
       createdAt: powerArray.createdAt,
       updatedAt: powerArray.updatedAt ?? null,
+      userName: powerArray.userName ?? null,
     };
   }
 }

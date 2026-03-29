@@ -238,7 +238,7 @@ describe('UpdatePowerArrayUseCase', () => {
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.powerArray.powers.getItems()).toHaveLength(2);
-      expect(result.value.powerArray.custoTotal.pda).toBe(30);
+      expect(result.value.powerArray.custoTotal.pda).toBe(21);
       expect(result.value.powerArray.custoTotal.espacos).toBe(30);
     }
   });

@@ -5,6 +5,10 @@ import type { Peculiarity } from '@/domain/power-manager/enterprise/entities/pec
 import * as PeculiarityMapper from '../mappers/prisma-peculiarity-mapper';
 import { PrismaService } from '../prisma.service';
 
+const INCLUDE = {
+  user: { select: { id: true, name: true } },
+} as const;
+
 @Injectable()
 export class PrismaPeculiaritiesRepository extends PeculiaritiesRepository {
   constructor(private prisma: PrismaService) {
@@ -12,13 +16,14 @@ export class PrismaPeculiaritiesRepository extends PeculiaritiesRepository {
   }
 
   async findById(id: string): Promise<Peculiarity | null> {
-    const raw = await this.prisma.peculiarity.findUnique({ where: { id } });
+    const raw = await this.prisma.peculiarity.findUnique({ where: { id }, include: INCLUDE });
     return raw ? PeculiarityMapper.toDomain(raw) : null;
   }
 
   async findByUserId(userId: string, { page }: PaginationParams): Promise<Peculiarity[]> {
     const raws = await this.prisma.peculiarity.findMany({
       where: { userId },
+      include: INCLUDE,
       orderBy: { createdAt: 'desc' },
       take: 20,
       skip: (page - 1) * 20,
@@ -29,6 +34,7 @@ export class PrismaPeculiaritiesRepository extends PeculiaritiesRepository {
   async findPublic({ page }: PaginationParams): Promise<Peculiarity[]> {
     const raws = await this.prisma.peculiarity.findMany({
       where: { isPublic: true },
+      include: INCLUDE,
       orderBy: { createdAt: 'desc' },
       take: 20,
       skip: (page - 1) * 20,
