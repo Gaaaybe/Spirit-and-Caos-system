@@ -31,6 +31,7 @@ export function useAcervoCalculator(
         custoPdAPrincipal: 0,
         custoPdAOutros: 0,
         custoPdATotal: 0,
+        peTotal: 0,
         espacosTotal: 0,
         temPoderPermanente: false,
         temPoderMaisCaro: false,
@@ -57,7 +58,6 @@ export function useAcervoCalculator(
     });
     
     const poderPrincipal = acervo.poderes[poderPrincipalIndex] || null;
-    const detalhesPrincipal = poderesComDetalhes[poderPrincipalIndex]?.detalhes;
     
     // Verificar poderes com duração permanente
     let temPoderPermanente = false;
@@ -83,6 +83,12 @@ export function useAcervoCalculator(
     const custoPdAOutros = (acervo.poderes.length - 1) * 1; // 1 PdA por cada poder adicional
     const custoPdATotal = custoPdAPrincipal + custoPdAOutros;
     
+    // Calcular PE (soma de todos)
+    const peTotal = poderesComDetalhes.reduce(
+      (sum, { detalhes }) => sum + (detalhes.peTotal || 0),
+      0
+    );
+    
     // Calcular espaços (soma de todos)
     const espacosTotal = poderesComDetalhes.reduce(
       (sum, { detalhes }) => sum + detalhes.espacosTotal,
@@ -98,6 +104,7 @@ export function useAcervoCalculator(
       custoPdAPrincipal,
       custoPdAOutros,
       custoPdATotal,
+      peTotal,
       espacosTotal,
       temPoderPermanente,
       temPoderMaisCaro,

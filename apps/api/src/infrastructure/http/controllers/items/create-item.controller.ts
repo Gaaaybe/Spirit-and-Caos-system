@@ -14,10 +14,7 @@ import { EquipmentType } from '@/domain/item-manager/enterprise/entities/defensi
 import { ItemType } from '@/domain/item-manager/enterprise/entities/item';
 import { DamageDescriptor } from '@/domain/item-manager/enterprise/entities/value-objects/damage-descriptor';
 import { WeaponRange } from '@/domain/item-manager/enterprise/entities/weapon';
-import {
-  Domain,
-  DomainName,
-} from '@/domain/shared/enterprise/value-objects/domain';
+import { Domain, DomainName } from '@/domain/shared/enterprise/value-objects/domain';
 import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
 import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
@@ -67,33 +64,37 @@ const commonFields = {
   powerIds: z.array(z.string().min(1)).default([]),
   icone: z.url('Ícone deve ser um link válido').optional(),
   powerArrayIds: z.array(z.string().min(1)).default([]),
+  canStack: z.boolean().optional(),
+  maxStack: z.number().int().min(2).optional(),
 };
 
 const createItemBodySchema = z.discriminatedUnion('tipo', [
-  z.object({
-    ...commonFields,
-    tipo: z.literal(ItemType.WEAPON),
-    danos: z.array(damageDescriptorSchema).min(1),
-    critMargin: z.number().int().min(2).max(20),
-    critMultiplier: z.number().int().min(1).max(7),
-    alcance: z.enum([
-      WeaponRange.ADJACENTE,
-      WeaponRange.NATURAL,
-      WeaponRange.CURTO,
-      WeaponRange.MEDIO,
-      WeaponRange.LONGO,
-    ]),
-    alcanceExtraMetros: z.number().min(0).multipleOf(0.5).default(0),
-    atributoEscalonamento: z.string().min(1).optional(),
-  }).superRefine((data, ctx) => {
-    if (data.alcance !== WeaponRange.NATURAL && data.alcanceExtraMetros > 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['alcanceExtraMetros'],
-        message: 'Apenas armas de alcance natural podem ter alcance extra',
-      });
-    }
-  }),
+  z
+    .object({
+      ...commonFields,
+      tipo: z.literal(ItemType.WEAPON),
+      danos: z.array(damageDescriptorSchema).min(1),
+      critMargin: z.number().int().min(2).max(20),
+      critMultiplier: z.number().int().min(1).max(7),
+      alcance: z.enum([
+        WeaponRange.ADJACENTE,
+        WeaponRange.NATURAL,
+        WeaponRange.CURTO,
+        WeaponRange.MEDIO,
+        WeaponRange.LONGO,
+      ]),
+      alcanceExtraMetros: z.number().min(0).multipleOf(0.5).default(0),
+      atributoEscalonamento: z.string().min(1).optional(),
+    })
+    .superRefine((data, ctx) => {
+      if (data.alcance !== WeaponRange.NATURAL && data.alcanceExtraMetros > 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['alcanceExtraMetros'],
+          message: 'Apenas armas de alcance natural podem ter alcance extra',
+        });
+      }
+    }),
   z.object({
     ...commonFields,
     tipo: z.literal(ItemType.DEFENSIVE_EQUIPMENT),
@@ -115,6 +116,16 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
   z.object({
     ...commonFields,
     tipo: z.literal(ItemType.ACCESSORY),
+  }),
+  z.object({
+    ...commonFields,
+    tipo: z.literal(ItemType.GENERAL),
+  }),
+  z.object({
+    ...commonFields,
+    tipo: z.literal(ItemType.UPGRADE_MATERIAL),
+    tier: z.number().int().min(1).max(4),
+    maxUpgradeLimit: z.number().int().min(1),
   }),
 ]);
 
@@ -148,6 +159,8 @@ export class CreateItemController {
       powerIds: body.powerIds,
       icone: body.icone,
       powerArrayIds: body.powerArrayIds,
+      canStack: body.canStack,
+      maxStack: body.maxStack,
     };
 
     let result: Awaited<ReturnType<CreateItemUseCase['execute']>>;
@@ -181,6 +194,15 @@ export class CreateItemController {
       });
     } else if (body.tipo === ItemType.ARTIFACT) {
       result = await this.createItem.execute({ ...common, tipo: ItemType.ARTIFACT });
+    } else if (body.tipo === ItemType.GENERAL) {
+      result = await this.createItem.execute({ ...common, tipo: ItemType.GENERAL });
+    } else if (body.tipo === ItemType.UPGRADE_MATERIAL) {
+      result = await this.createItem.execute({
+        ...common,
+        tipo: ItemType.UPGRADE_MATERIAL,
+        tier: body.tier,
+        maxUpgradeLimit: body.maxUpgradeLimit,
+      });
     } else {
       result = await this.createItem.execute({ ...common, tipo: ItemType.ACCESSORY });
     }

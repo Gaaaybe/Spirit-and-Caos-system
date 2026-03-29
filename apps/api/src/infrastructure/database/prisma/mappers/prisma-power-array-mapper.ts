@@ -23,6 +23,7 @@ export type PrismaPowerArrayFull = Prisma.PowerArrayGetPayload<{
         power: { include: { appliedEffects: { include: { appliedModifications: true } } } };
       };
     };
+    user: { select: { id: true, name: true } };
   };
 }>;
 
@@ -88,6 +89,7 @@ export function toDomain(raw: PrismaPowerArrayFull): PowerArray {
   return PowerArray.create(
     {
       userId: raw.userId ?? undefined,
+      characterId: raw.characterId ?? undefined,
       nome: raw.nome,
       descricao: raw.descricao,
       dominio,
@@ -97,6 +99,7 @@ export function toDomain(raw: PrismaPowerArrayFull): PowerArray {
       isPublic: raw.isPublic,
       icone: raw.icone ?? undefined,
       notas: raw.notas ?? undefined,
+      userName: (raw as any).user?.name,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
     },
@@ -111,6 +114,7 @@ export function toPrisma(powerArray: PowerArray): Prisma.PowerArrayUncheckedCrea
   return {
     id,
     userId: powerArray.userId,
+    characterId: powerArray.characterId,
     nome: powerArray.nome,
     descricao: powerArray.descricao,
     isPublic: powerArray.isPublic,

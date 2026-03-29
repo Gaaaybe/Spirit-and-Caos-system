@@ -10,6 +10,7 @@ export abstract class ItemsRepository {
     params: PaginationParams,
     tipo?: ItemType,
   ): Promise<Item<ItemBaseProps>[]>;
+  abstract findByCharacterId(characterId: string): Promise<Item<ItemBaseProps>[]>;
   abstract findByType(type: ItemType, params: PaginationParams): Promise<Item<ItemBaseProps>[]>;
   abstract findPublic(params: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]>;
   abstract create(item: Item<ItemBaseProps>): Promise<void>;

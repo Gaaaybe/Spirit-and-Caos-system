@@ -10,6 +10,7 @@ import type { PowerArrayPowerList } from './watched-lists/power-array-power-list
 
 interface PowerArrayProps {
   userId?: string;
+  characterId?: string;
   nome: string;
   descricao: string;
   dominio: Domain;
@@ -19,6 +20,7 @@ interface PowerArrayProps {
   isPublic: boolean;
   icone?: string;
   notas?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -26,6 +28,10 @@ interface PowerArrayProps {
 export class PowerArray extends OwnableEntity<PowerArrayProps> {
   get userId(): string | undefined {
     return this.props.userId;
+  }
+
+  get characterId(): string | undefined {
+    return this.props.characterId;
   }
 
   get nome(): string {
@@ -64,6 +70,10 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
     return this.props.notas;
   }
 
+  get userName(): string | undefined {
+    return this.props.userName;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -85,6 +95,7 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
     return PowerArray.create(
       {
         userId: this.props.userId,
+        characterId: this.props.characterId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         dominio: partial.dominio ?? this.props.dominio,
@@ -99,6 +110,17 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
       },
       this.id,
     );
+  }
+
+  copyForCharacter(characterId: string, userId: string): PowerArray {
+    return PowerArray.create({
+      ...this.props,
+      userId,
+      characterId,
+      isPublic: false,
+      createdAt: new Date(),
+      updatedAt: undefined,
+    });
   }
 
   makePublic(): PowerArray {

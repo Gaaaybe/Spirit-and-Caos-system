@@ -1,6 +1,51 @@
 import { Module } from '@nestjs/common';
 import { AuthenticateUserUseCase } from '@/domain/accounts/application/useCases/authenticate-user';
 import { RegisterUserUseCase } from '@/domain/accounts/application/useCases/register-user';
+import { AcquireBenefitUseCase } from '@/domain/character-manager/application/use-cases/acquire-benefit';
+import { AcquireDomainMasteryUseCase } from '@/domain/character-manager/application/use-cases/acquire-domain-mastery';
+import { DiscardDomainMasteryUseCase } from '@/domain/character-manager/application/use-cases/discard-domain-mastery';
+import { AcquirePowerUseCase } from '@/domain/character-manager/application/use-cases/acquire-power';
+import { AcquirePowerArrayUseCase } from '@/domain/character-manager/application/use-cases/acquire-power-array';
+import { AddItemToInventoryUseCase } from '@/domain/character-manager/application/use-cases/add-item-to-inventory';
+import { ChangeInventoryItemQuantityUseCase } from '@/domain/character-manager/application/use-cases/change-inventory-item-quantity';
+import { AddRunicsUseCase } from '@/domain/character-manager/application/use-cases/add-runics';
+import { ApplyConditionUseCase } from '@/domain/character-manager/application/use-cases/apply-condition';
+import { ConsumeEnergyUseCase } from '@/domain/character-manager/application/use-cases/consume-energy';
+import { CreateCharacterUseCase } from '@/domain/character-manager/application/use-cases/create-character';
+import { DeleteCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-character';
+import { DeletePowerArrayFromCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-power-array-from-character';
+import { DeletePowerFromCharacterUseCase } from '@/domain/character-manager/application/use-cases/delete-power-from-character';
+import { DiscardBenefitUseCase } from '@/domain/character-manager/application/use-cases/discard-benefit';
+import { DeletePowerArrayFromCharacterController } from './controllers/characters/delete-power-array-from-character.controller';
+import { DeletePowerFromCharacterController } from './controllers/characters/delete-power-from-character.controller';
+import { DiscardBenefitController } from './controllers/characters/discard-benefit.controller';
+import { EquipItemUseCase } from '@/domain/character-manager/application/use-cases/equip-item';
+import { EquipPowerUseCase } from '@/domain/character-manager/application/use-cases/equip-power';
+import { EquipPowerArrayUseCase } from '@/domain/character-manager/application/use-cases/equip-power-array';
+import { EvolveSpiritualPrincipleUseCase } from '@/domain/character-manager/application/use-cases/evolve-spiritual-principle';
+import { FetchCharacterPowerArraysUseCase } from '@/domain/power-manager/application/use-cases/fetch-character-power-arrays';
+import { FetchCharacterPowersUseCase } from '@/domain/power-manager/application/use-cases/fetch-character-powers';
+import { FetchCharacterItemsUseCase } from '@/domain/item-manager/application/use-cases/fetch-character-items';
+import { FetchCharacterItemsController } from './controllers/characters/fetch-character-items.controller';
+import { FetchCharacterPowerArraysController } from './controllers/characters/fetch-character-power-arrays.controller';
+import { FetchCharacterPowersController } from './controllers/characters/fetch-character-powers.controller';
+import { FetchUserCharactersUseCase } from '@/domain/character-manager/application/use-cases/fetch-user-characters';
+import { GetCharacterByIdUseCase } from '@/domain/character-manager/application/use-cases/get-character-by-id';
+import { HealCharacterUseCase } from '@/domain/character-manager/application/use-cases/heal-character';
+import { LevelUpCharacterUseCase } from '@/domain/character-manager/application/use-cases/level-up-character';
+import { RecoverEnergyUseCase } from '@/domain/character-manager/application/use-cases/recover-energy';
+import { RemoveConditionUseCase } from '@/domain/character-manager/application/use-cases/remove-condition';
+import { RemoveFromInventoryUseCase } from '@/domain/character-manager/application/use-cases/remove-from-inventory';
+import { RestUseCase } from '@/domain/character-manager/application/use-cases/rest';
+import { SpendRunicsUseCase } from '@/domain/character-manager/application/use-cases/spend-runics';
+import { SyncCharacterUseCase } from '@/domain/character-manager/application/use-cases/sync-character';
+import { TakeDamageUseCase } from '@/domain/character-manager/application/use-cases/take-damage';
+import { TickDeathCounterUseCase } from '@/domain/character-manager/application/use-cases/tick-death-counter';
+import { UnequipItemUseCase } from '@/domain/character-manager/application/use-cases/unequip-item';
+import { UnequipPowerUseCase } from '@/domain/character-manager/application/use-cases/unequip-power';
+import { UnequipPowerArrayUseCase } from '@/domain/character-manager/application/use-cases/unequip-power-array';
+import { UnlockSpiritualPrincipleUseCase } from '@/domain/character-manager/application/use-cases/unlock-spiritual-principle';
+import { UpgradeItemUseCase } from '@/domain/character-manager/application/use-cases/upgrade-item';
 import { CopyPublicItemUseCase } from '@/domain/item-manager/application/use-cases/copy-public-item';
 import { CreateItemUseCase } from '@/domain/item-manager/application/use-cases/create-item';
 import { DeleteItemUseCase } from '@/domain/item-manager/application/use-cases/delete-item';
@@ -31,13 +76,48 @@ import { GetPowerByIdUseCase } from '@/domain/power-manager/application/use-case
 import { UpdatePeculiarityUseCase } from '@/domain/power-manager/application/use-cases/update-peculiarity';
 import { UpdatePowerUseCase } from '@/domain/power-manager/application/use-cases/update-power';
 import { UpdatePowerArrayUseCase } from '@/domain/power-manager/application/use-cases/update-power-array';
+import { OnCharacterItemDiscarded } from '@/domain/item-manager/application/subscribers/on-character-item-discarded';
+import { OnCharacterPowerArrayDiscarded } from '@/domain/power-manager/application/subscribers/on-character-power-array-discarded';
+import { OnCharacterPowerDiscarded } from '@/domain/power-manager/application/subscribers/on-character-power-discarded';
 import { OnPowerArrayMadePublic } from '@/domain/power-manager/application/subscribers/on-power-array-made-public';
 import { OnPowerMadePublic } from '@/domain/power-manager/application/subscribers/on-power-made-public';
 import { PowerCostCalculator } from '@/domain/power-manager/enterprise/services/power-cost-calculator';
+import { AcquirePowerService } from '@/domain/character-manager/enterprise/services/acquire-power';
+import { AcquirePowerArrayService } from '@/domain/character-manager/enterprise/services/acquire-power-array';
+import { AcquireBenefitService } from '@/domain/character-manager/enterprise/services/acquire-benefit';
+import { CalculateBenefitCostService } from '@/domain/character-manager/enterprise/services/calculate-benefit-cost';
+import { RestService } from '@/domain/character-manager/enterprise/services/rest-service';
 import { CryptographyModule } from '../cryptography/cryptography.module';
 import { DatabaseModule } from '../database/database.module';
 import { CatalogService } from '../services/catalog.service';
 import { AuthenticateController } from './controllers/authenticate-user.controller';
+import { AcquireBenefitController } from './controllers/characters/acquire-benefit.controller';
+import { AcquireDomainMasteryController } from './controllers/characters/acquire-domain-mastery.controller';
+import { DiscardDomainMasteryController } from './controllers/characters/discard-domain-mastery.controller';
+import { AcquirePowerController } from './controllers/characters/acquire-power.controller';
+import { AcquirePowerArrayController } from './controllers/characters/acquire-power-array.controller';
+import { AddItemToInventoryController } from './controllers/characters/add-item-to-inventory.controller';
+import { ChangeInventoryItemQuantityController } from './controllers/characters/change-inventory-item-quantity.controller';
+import { AddRunicsController } from './controllers/characters/add-runics.controller';
+import { CreateCharacterController } from './controllers/characters/create-character.controller';
+import { DeleteCharacterController } from './controllers/characters/delete-character.controller';
+import { EquipItemController } from './controllers/characters/equip-item.controller';
+import { EquipPowerController } from './controllers/characters/equip-power.controller';
+import { EquipPowerArrayController } from './controllers/characters/equip-power-array.controller';
+import { EvolveSpiritualPrincipleController } from './controllers/characters/evolve-spiritual-principle.controller';
+import { FetchUserCharactersController } from './controllers/characters/fetch-user-characters.controller';
+import { GetCharacterByIdController } from './controllers/characters/get-character-by-id.controller';
+import { LevelUpCharacterController } from './controllers/characters/level-up-character.controller';
+import { RemoveFromInventoryController } from './controllers/characters/remove-from-inventory.controller';
+import { RestCharacterController } from './controllers/characters/rest-character.controller';
+import { SpendRunicsController } from './controllers/characters/spend-runics.controller';
+import { SyncCharacterController } from './controllers/characters/sync-character.controller';
+import { TickDeathCounterController } from './controllers/characters/tick-death-counter.controller';
+import { UnequipItemController } from './controllers/characters/unequip-item.controller';
+import { UnequipPowerController } from './controllers/characters/unequip-power.controller';
+import { UnequipPowerArrayController } from './controllers/characters/unequip-power-array.controller';
+import { UnlockSpiritualPrincipleController } from './controllers/characters/unlock-spiritual-principle.controller';
+import { UpgradeItemController } from './controllers/characters/upgrade-item.controller';
 import { CatalogController } from './controllers/catalog/catalog.controller';
 import { FetchEffectsController } from './controllers/catalog/fetch-effects.controller';
 import { FetchModificationsController } from './controllers/catalog/fetch-modifications.controller';
@@ -77,6 +157,39 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     RegisterUserController,
     CatalogController,
     AuthenticateController,
+    CreateCharacterController,
+    FetchUserCharactersController,
+    FetchCharacterItemsController,
+    FetchCharacterPowersController,
+    FetchCharacterPowerArraysController,
+    GetCharacterByIdController,
+    DeleteCharacterController,
+    DeletePowerFromCharacterController,
+    DeletePowerArrayFromCharacterController,
+    DiscardBenefitController,
+    SyncCharacterController,
+    AcquirePowerController,
+    EquipPowerController,
+    UnequipPowerController,
+    EquipItemController,
+    UnequipItemController,
+    RemoveFromInventoryController,
+    AddItemToInventoryController,
+    ChangeInventoryItemQuantityController,
+    AddRunicsController,
+    SpendRunicsController,
+    AcquirePowerArrayController,
+    EquipPowerArrayController,
+    UnequipPowerArrayController,
+    AcquireBenefitController,
+    AcquireDomainMasteryController,
+    DiscardDomainMasteryController,
+    UpgradeItemController,
+    LevelUpCharacterController,
+    UnlockSpiritualPrincipleController,
+    EvolveSpiritualPrincipleController,
+    RestCharacterController,
+    TickDeathCounterController,
     FetchEffectsController,
     FetchModificationsController,
     CreatePeculiarityController,
@@ -109,9 +222,55 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     CopyPublicItemController,
   ],
   providers: [
+    // Services
+    AcquirePowerService,
+    AcquirePowerArrayService,
+    AcquireBenefitService,
+    CalculateBenefitCostService,
+    RestService,
+    // Use Cases
+    AcquirePowerUseCase,
+    EquipPowerUseCase,
+    UnequipPowerUseCase,
+    EquipItemUseCase,
+    UnequipItemUseCase,
+    RemoveFromInventoryUseCase,
+    AddItemToInventoryUseCase,
+    ChangeInventoryItemQuantityUseCase,
+    AddRunicsUseCase,
+    SpendRunicsUseCase,
+    ApplyConditionUseCase,
+    RemoveConditionUseCase,
+    LevelUpCharacterUseCase,
+    UnlockSpiritualPrincipleUseCase,
+    EvolveSpiritualPrincipleUseCase,
+    TakeDamageUseCase,
+    HealCharacterUseCase,
+    ConsumeEnergyUseCase,
+    RecoverEnergyUseCase,
+    RestUseCase,
+    TickDeathCounterUseCase,
+    AcquirePowerArrayUseCase,
+    EquipPowerArrayUseCase,
+    UnequipPowerArrayUseCase,
+    AcquireBenefitUseCase,
+    AcquireDomainMasteryUseCase,
+    DiscardDomainMasteryUseCase,
+    UpgradeItemUseCase,
     RegisterUserUseCase,
     CatalogService,
     AuthenticateUserUseCase,
+    CreateCharacterUseCase,
+    GetCharacterByIdUseCase,
+    FetchUserCharactersUseCase,
+    DeleteCharacterUseCase,
+    DeletePowerFromCharacterUseCase,
+    DeletePowerArrayFromCharacterUseCase,
+    DiscardBenefitUseCase,
+    SyncCharacterUseCase,
+    FetchCharacterItemsUseCase,
+    FetchCharacterPowersUseCase,
+    FetchCharacterPowerArraysUseCase,
     FetchEffectsUseCase,
     FetchModificationsUseCase,
     CreatePeculiarityUseCase,
@@ -131,6 +290,9 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     PowerCostCalculator,
     OnPowerMadePublic,
     OnPowerArrayMadePublic,
+    OnCharacterItemDiscarded,
+    OnCharacterPowerDiscarded,
+    OnCharacterPowerArrayDiscarded,
     CreatePowerArrayUseCase,
     CopyPublicPowerArrayUseCase,
     UpdatePowerArrayUseCase,
@@ -148,3 +310,4 @@ import { UpdateItemController } from './controllers/items/update-item.controller
   ],
 })
 export class HttpModule {}
+

@@ -3,7 +3,7 @@ import { GitBranch, Sparkles } from 'lucide-react';
 
 export function CampanhasPage() {
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

@@ -10,6 +10,7 @@ const INCLUDE = {
   itemDamages: true,
   itemPowers: true,
   itemPowerArrays: true,
+  user: { select: { id: true, name: true } },
 } as const;
 
 const ITEM_TYPE_TO_PRISMA: Record<ItemType, string> = {
@@ -18,6 +19,8 @@ const ITEM_TYPE_TO_PRISMA: Record<ItemType, string> = {
   [ItemType.CONSUMABLE]: 'CONSUMABLE',
   [ItemType.ARTIFACT]: 'ARTIFACT',
   [ItemType.ACCESSORY]: 'ACCESSORY',
+  [ItemType.GENERAL]: 'GENERAL',
+  [ItemType.UPGRADE_MATERIAL]: 'UPGRADE_MATERIAL',
 };
 
 @Injectable()
@@ -33,6 +36,7 @@ export class PrismaItemsRepository extends ItemsRepository {
 
   async findMany({ page }: PaginationParams): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
+      where: { characterId: null },
       include: INCLUDE,
       orderBy: { createdAt: 'desc' },
       take: 20,
@@ -49,6 +53,7 @@ export class PrismaItemsRepository extends ItemsRepository {
     const raws = await this.prisma.item.findMany({
       where: {
         userId,
+        characterId: null,
         ...(tipo ? { tipo: ITEM_TYPE_TO_PRISMA[tipo] as never } : {}),
       },
       include: INCLUDE,
@@ -57,6 +62,15 @@ export class PrismaItemsRepository extends ItemsRepository {
       skip: (page - 1) * 20,
     });
     return raws.map(PrismaItemMapper.toDomain);
+  }
+
+  async findByCharacterId(characterId: string): Promise<Item<ItemBaseProps>[]> {
+    const items = await this.prisma.item.findMany({
+      where: { characterId },
+      include: INCLUDE,
+    });
+
+    return items.map(PrismaItemMapper.toDomain);
   }
 
   async findByType(type: ItemType, { page }: PaginationParams): Promise<Item<ItemBaseProps>[]> {
@@ -70,12 +84,10 @@ export class PrismaItemsRepository extends ItemsRepository {
     return raws.map(PrismaItemMapper.toDomain);
   }
 
-  async findPublic(
-    { page }: PaginationParams,
-    tipo?: ItemType,
-  ): Promise<Item<ItemBaseProps>[]> {
+  async findPublic({ page }: PaginationParams, tipo?: ItemType): Promise<Item<ItemBaseProps>[]> {
     const raws = await this.prisma.item.findMany({
       where: {
+        characterId: null,
         OR: [{ userId: null }, { isPublic: true }],
         ...(tipo ? { tipo: ITEM_TYPE_TO_PRISMA[tipo] as never } : {}),
       },

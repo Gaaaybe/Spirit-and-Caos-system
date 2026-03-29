@@ -19,7 +19,8 @@
     "pvMax": 8,
     "resMinor": -2,
     "resMedium": 1,
-    "resMajor": 2
+    "resMajor": 2,
+    "scaleName": "Raposa"
   },
   {
     "tier": "Grau 1",
@@ -110,7 +111,6 @@
     "resMajor": 8
   },
   {
-    "scaleName": "Lobo",
     "tier": "Grau 3",
     "level": 6,
     "pvString": "12 / 30 / 54",
@@ -174,7 +174,8 @@
     "pvMax": 118,
     "resMinor": 5,
     "resMedium": 10,
-    "resMajor": 17
+    "resMajor": 17,
+    "scaleName": "Lobo"
   },
   {
     "tier": "Grau 4",
@@ -221,7 +222,6 @@
     "resMajor": 25
   },
   {
-    "scaleName": "Tigre",
     "tier": "Grau 4",
     "level": 11,
     "pvString": "50 / 138 / 259",
@@ -285,7 +285,8 @@
     "pvMax": 422,
     "resMinor": 13,
     "resMedium": 24,
-    "resMajor": 40
+    "resMajor": 40,
+    "scaleName": "Tigre"
   },
   {
     "tier": "Grau 5",
@@ -442,7 +443,6 @@
     "resMajor": 89
   },
   {
-    "scaleName": "Demonio",
     "tier": "Grau 8",
     "level": 21,
     "pvString": "279 / 804 / 1602",
@@ -506,7 +506,8 @@
     "pvMax": 2076,
     "resMinor": 40,
     "resMedium": 70,
-    "resMajor": 115
+    "resMajor": 115,
+    "scaleName": "Demônio"
   },
   {
     "tier": "Grau 9",
@@ -883,7 +884,6 @@
     "resMajor": 336
   },
   {
-    "scaleName": "Dragão",
     "tier": "Grau 11",
     "level": 41,
     "pvString": "1851 / 5582 / 11117",
@@ -947,7 +947,8 @@
     "pvMax": 12777,
     "resMinor": 139,
     "resMedium": 238,
-    "resMajor": 386
+    "resMajor": 386,
+    "scaleName": "Dragão"
   },
   {
     "tier": "Grau 11",
@@ -1544,7 +1545,6 @@
     "resMajor": 1002
   },
   {
-    "scaleName": "Celestial",
     "tier": "Grau 12",
     "level": 71,
     "pvString": "9307 / 27980 / 55954",
@@ -1608,7 +1608,8 @@
     "pvMax": 60815,
     "resMinor": 395,
     "resMedium": 672,
-    "resMajor": 1089
+    "resMajor": 1089,
+    "scaleName": "Celestial"
   },
   {
     "tier": "Grau 12",
@@ -2205,7 +2206,6 @@
     "resMajor": 2026
   },
   {
-    "scaleName": "Ser Cosmico",
     "tier": "Grau 13",
     "level": 101,
     "pvString": "26569 / 79594 / 159182",
@@ -2269,7 +2269,8 @@
     "pvMax": 168720,
     "resMinor": 782,
     "resMedium": 1328,
-    "resMajor": 2147
+    "resMajor": 2147,
+    "scaleName": "Ser Cósmico"
   },
   {
     "tier": "Grau 13",
@@ -3526,7 +3527,6 @@
     "resMajor": 5142
   },
   {
-    "scaleName": "Semi Deuses",
     "tier": "Grau 13",
     "level": 161,
     "pvString": "106266 / 318947 / 637727",
@@ -3590,7 +3590,8 @@
     "pvMax": 661623,
     "resMinor": 1952,
     "resMedium": 3305,
-    "resMajor": 5334
+    "resMajor": 5334,
+    "scaleName": "Semi Deuses"
   },
   {
     "tier": "Grau 13",
@@ -4187,7 +4188,6 @@
     "resMajor": 7234
   },
   {
-    "scaleName": "Deuses Menores",
     "tier": "Grau 13",
     "level": 191,
     "pvString": "176872 / 530795 / 1061584",
@@ -4251,7 +4251,8 @@
     "pvMax": 1095281,
     "resMinor": 2734,
     "resMedium": 4625,
-    "resMajor": 7463
+    "resMajor": 7463,
+    "scaleName": "Deuses Menores"
   },
   {
     "tier": "Grau 13",
@@ -5288,7 +5289,6 @@
     "resMajor": 11514
   },
   {
-    "scaleName": "Deuses",
     "tier": "Grau 13",
     "level": 241,
     "pvString": "354276 / 1063057 / 2125867",
@@ -5352,7 +5352,8 @@
     "pvMax": 2178987,
     "resMinor": 4329,
     "resMedium": 7318,
-    "resMajor": 11801
+    "resMajor": 11801,
+    "scaleName": "Deuses"
   },
   {
     "tier": "Grau 13",

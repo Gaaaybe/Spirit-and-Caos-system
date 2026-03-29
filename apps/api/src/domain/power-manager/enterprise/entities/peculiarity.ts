@@ -5,11 +5,13 @@ import type { Optional } from '@/core/types/optional';
 
 interface PeculiarityProps {
   userId: string;
+  characterId?: string;
   nome: string;
   descricao: string;
   espiritual: boolean;
   isPublic: boolean;
   icone?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -17,6 +19,10 @@ interface PeculiarityProps {
 export class Peculiarity extends OwnableEntity<PeculiarityProps> {
   get userId(): string {
     return this.props.userId;
+  }
+
+  get characterId(): string | undefined {
+    return this.props.characterId;
   }
 
   get nome(): string {
@@ -39,6 +45,10 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return this.props.icone;
   }
 
+  get userName(): string | undefined {
+    return this.props.userName;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
@@ -56,6 +66,7 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
     return Peculiarity.create(
       {
         userId: this.props.userId,
+        characterId: this.props.characterId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         espiritual: partial.espiritual ?? this.props.espiritual,
@@ -66,6 +77,17 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
       },
       this.id,
     );
+  }
+
+  copyForCharacter(characterId: string, userId: string): Peculiarity {
+    return Peculiarity.create({
+      ...this.props,
+      userId,
+      characterId,
+      isPublic: false,
+      createdAt: new Date(),
+      updatedAt: undefined,
+    });
   }
 
   makePublic(): Peculiarity {
@@ -124,9 +146,9 @@ export class Peculiarity extends OwnableEntity<PeculiarityProps> {
       );
     }
 
-    if (props.descricao.length > 500) {
+    if (props.descricao.length > 10000) {
       throw new DomainValidationError(
-        'Descrição da peculiaridade deve ter no máximo 500 caracteres',
+        'Descrição da peculiaridade deve ter no máximo 10000 caracteres',
         'descricao',
       );
     }

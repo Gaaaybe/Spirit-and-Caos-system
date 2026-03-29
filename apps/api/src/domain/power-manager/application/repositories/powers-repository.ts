@@ -5,6 +5,7 @@ export abstract class PowersRepository {
   abstract findById(id: string): Promise<Power | null>;
   abstract findMany(params: PaginationParams): Promise<Power[]>;
   abstract findByUserId(userId: string, params: PaginationParams): Promise<Power[]>;
+  abstract findByCharacterId(characterId: string): Promise<Power[]>;
   abstract findByDomain(domainName: string, params: PaginationParams): Promise<Power[]>;
   abstract findUserCreatedPowers(params: PaginationParams): Promise<Power[]>;
   abstract findPublic(params: PaginationParams): Promise<Power[]>;

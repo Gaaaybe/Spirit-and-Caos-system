@@ -3,10 +3,12 @@ import type { ResourceNotFoundError } from '@/core/errors/resource-not-found-err
 import type { AppliedEffect } from '../../enterprise/entities/applied-effect';
 import type { AppliedModification } from '../../enterprise/entities/value-objects/applied-modification';
 import type { PowerCost } from '../../enterprise/entities/value-objects/power-cost';
+import type { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import type { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
 
 interface CalculatePowerCostUseCaseRequest {
   effects: AppliedEffect[];
+  parametros: PowerParameters;
   globalModifications?: AppliedModification[];
 }
 
@@ -25,10 +27,12 @@ export class CalculatePowerCostUseCase {
 
   async execute({
     effects,
+    parametros,
     globalModifications = [],
   }: CalculatePowerCostUseCaseRequest): Promise<CalculatePowerCostUseCaseResponse> {
     return this.powerCostCalculator.calculate({
       effects,
+      parametros,
       globalModifications,
     });
   }

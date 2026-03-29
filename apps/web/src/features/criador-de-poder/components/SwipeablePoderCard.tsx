@@ -1,6 +1,7 @@
 import { Card, CardContent, Badge, Button, DynamicIcon } from '../../../shared/ui';
 import { useSwipeToDismiss, useIsTouchDevice } from '../../../shared/hooks';
 import { Trash2, FolderOpen, Copy, Download, Globe, Lock } from 'lucide-react';
+import { MarkdownText } from '../../../shared/components';
 import type { PoderSalvo } from '../types';
 
 interface SwipeablePoderCardProps {
@@ -19,6 +20,64 @@ interface SwipeablePoderCardProps {
   exportandoId: string | null;
   togglePublicId: string | null;
 }
+
+export const DOMINIO_VISUAL: Record<string, { color: string; gradient: string; borderColor: string }> = {
+  natural: { 
+    color: 'text-emerald-600 dark:text-emerald-400', 
+    gradient: 'from-emerald-500/5 to-transparent',
+    borderColor: 'border-emerald-500'
+  },
+  sagrado: { 
+    color: 'text-amber-500 dark:text-amber-400', 
+    gradient: 'from-amber-500/5 to-transparent',
+    borderColor: 'border-amber-500'
+  },
+  sacrilegio: { 
+    color: 'text-rose-600 dark:text-rose-400', 
+    gradient: 'from-rose-500/5 to-transparent',
+    borderColor: 'border-rose-500'
+  },
+  psiquico: { 
+    color: 'text-indigo-600 dark:text-indigo-400', 
+    gradient: 'from-indigo-500/5 to-transparent',
+    borderColor: 'border-indigo-500'
+  },
+  cientifico: { 
+    color: 'text-sky-600 dark:text-sky-400', 
+    gradient: 'from-sky-500/5 to-transparent',
+    borderColor: 'border-sky-500'
+  },
+  peculiar: { 
+    color: 'text-purple-600 dark:text-purple-400', 
+    gradient: 'from-purple-500/5 to-transparent',
+    borderColor: 'border-purple-500'
+  },
+  'arma-branca': { 
+    color: 'text-slate-600 dark:text-slate-400', 
+    gradient: 'from-slate-500/5 to-transparent',
+    borderColor: 'border-slate-500'
+  },
+  'arma-fogo': { 
+    color: 'text-orange-600 dark:text-orange-400', 
+    gradient: 'from-orange-500/5 to-transparent',
+    borderColor: 'border-orange-500'
+  },
+  'arma-tensao': { 
+    color: 'text-lime-600 dark:text-lime-400', 
+    gradient: 'from-lime-500/5 to-transparent',
+    borderColor: 'border-lime-500'
+  },
+  'arma-explosiva': { 
+    color: 'text-red-700 dark:text-red-500', 
+    gradient: 'from-red-600/5 to-transparent',
+    borderColor: 'border-red-600'
+  },
+  'arma-tecnologica': { 
+    color: 'text-cyan-600 dark:text-cyan-400', 
+    gradient: 'from-cyan-500/5 to-transparent',
+    borderColor: 'border-cyan-500'
+  },
+};
 
 export function SwipeablePoderCard({
   poder,
@@ -39,6 +98,8 @@ export function SwipeablePoderCard({
   const isTouchDevice = useIsTouchDevice();
   const swipeHandlers = useSwipeToDismiss(onDeletar, 80);
 
+  const visual = DOMINIO_VISUAL[poder.dominioId || 'natural'] || DOMINIO_VISUAL.natural;
+
   return (
     <div className="relative overflow-hidden h-full">
       {/* Botão de deletar revelado ao swipe (apenas touch) */}
@@ -53,8 +114,9 @@ export function SwipeablePoderCard({
         {...(isTouchDevice ? swipeHandlers : {})}
         className="bg-white dark:bg-gray-800 h-full"
       >
-        <Card hover className="h-full min-h-[18rem]">
-          <CardContent className="p-3 h-full">
+        <Card hover className={`h-full min-h-[18rem] border-t-4 ${visual.borderColor} shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden`}>
+          <div className={`absolute inset-0 bg-gradient-to-b ${visual.gradient} pointer-events-none opacity-50`}></div>
+          <CardContent className="p-4 h-full relative z-10">
             <div className="flex flex-col gap-3 h-full">
               {/* Cabeçalho com nome e badge — clicável para abrir resumo */}
               <div
@@ -63,12 +125,12 @@ export function SwipeablePoderCard({
               >
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   {poder.icone && (
-                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center">
-                      <DynamicIcon name={poder.icone} className="w-14 h-14 text-purple-600 dark:text-purple-400" />
+                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50/30 dark:bg-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 group-hover:scale-105 transition-transform shadow-sm">
+                      <DynamicIcon name={poder.icone} className={`w-14 h-14 ${visual.color}`} />
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-lg break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors leading-tight">
                     {poder.nome}
                   </h3>
                   {isPublic && (
@@ -84,14 +146,14 @@ export function SwipeablePoderCard({
               </div>
 
               <div className="flex-1 flex flex-col justify-between gap-3">
-                {/* Descrição — clicável */}
+                {/* Descrição — Markdown e clicável */}
                 {poder.descricao ? (
-                  <p
-                    className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words cursor-pointer min-h-[3rem]"
+                  <div
+                    className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words cursor-pointer min-h-[3rem] prose-sm dark:prose-invert prose-p:my-0 prose-headings:text-xs prose-ul:my-1 prose-li:my-0"
                     onClick={onVerResumo}
                   >
-                    {poder.descricao}
-                  </p>
+                    <MarkdownText>{poder.descricao}</MarkdownText>
+                  </div>
                 ) : (
                   <div className="min-h-[3rem]" />
                 )}

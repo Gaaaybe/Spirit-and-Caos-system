@@ -64,7 +64,7 @@ export function FormPeculiaridadeCustomizada({
       isOpen={isOpen}
       onClose={handleClose}
       title={title}
-      size="lg"
+      size="xl"
     >
       <div className="space-y-4">
         <div className="flex items-center gap-2 text-purple-600 dark:text-purple-400 mb-2">
@@ -121,8 +121,8 @@ export function FormPeculiaridadeCustomizada({
           <Textarea
             value={descricao}
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescricao(e.target.value)}
-            placeholder="Descreva o que é, como funciona, regras internas e requerimentos..."
-            rows={6}
+            placeholder="Descreva o que é, como funciona, regras internas e requerimentos... Você pode incluir tabelas Markdown aqui!"
+            rows={14}
           />
         </div>
       </div>

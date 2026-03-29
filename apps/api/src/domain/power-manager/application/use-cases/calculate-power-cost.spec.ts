@@ -9,6 +9,7 @@ import {
   ModificationScope,
 } from '../../enterprise/entities/value-objects/applied-modification';
 import { PowerCost } from '../../enterprise/entities/value-objects/power-cost';
+import { PowerParameters } from '../../enterprise/entities/value-objects/power-parameters';
 import { PowerCostCalculator } from '../../enterprise/services/power-cost-calculator';
 import { CalculatePowerCostUseCase } from './calculate-power-cost';
 
@@ -44,12 +45,13 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.custoTotal.pda).toBe(10);
-      expect(result.value.custoTotal.espacos).toBe(10);
+      expect(result.value.custoTotal.espacos).toBe(6);
     }
   });
 
@@ -91,6 +93,7 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isRight()).toBe(true);
@@ -137,6 +140,7 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isRight()).toBe(true);
@@ -181,12 +185,13 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [danoEffect, protecaoEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.custoTotal.pda).toBe(13);
-      expect(result.value.custoTotal.espacos).toBe(13);
+      expect(result.value.custoTotal.espacos).toBe(8);
       expect(result.value.custoPorEfeito.size).toBe(2);
     }
   });
@@ -200,6 +205,7 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isLeft()).toBe(true);
@@ -231,6 +237,7 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
     });
 
     expect(result.isLeft()).toBe(true);
@@ -268,6 +275,7 @@ describe('CalculatePowerCostUseCase', () => {
 
     const result = await sut.execute({
       effects: [appliedEffect],
+      parametros: PowerParameters.createDefault(),
       globalModifications: [globalModification],
     });
 

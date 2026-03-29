@@ -11,6 +11,7 @@ interface ModalProps {
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl' | 'full';
   showCloseButton?: boolean;
+  closeOnOverlayClick?: boolean;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export function Modal({
   children,
   size = 'md',
   showCloseButton = true,
+  closeOnOverlayClick = false,
   className = '',
 }: ModalProps) {
   const isMobile = useIsMobile();
@@ -58,6 +60,7 @@ export function Modal({
         onClose={onClose}
         title={title}
         showCloseButton={showCloseButton}
+        closeOnOverlayClick={closeOnOverlayClick}
       >
         {children}
       </BottomSheet>,
@@ -76,10 +79,10 @@ export function Modal({
   return createPortal(
     <div 
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50 backdrop-blur-sm"
-      onClick={onClose}
+      onClick={() => closeOnOverlayClick && onClose()}
     >
       <div 
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full ${sizes[size]} max-h-[90vh] flex flex-col ${className}`}
+        className={`bg-white dark:bg-gray-800 rounded-md shadow-xl w-full ${sizes[size]} max-h-[90vh] flex flex-col ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

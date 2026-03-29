@@ -1,6 +1,7 @@
-import { FlaskConical, FolderOpen, Gem, Globe, Lock, Package, Shield, Sword, Trash2 } from 'lucide-react';
+import { Coins, FlaskConical, FolderOpen, Gem, Globe, HandCoins, Layers, Lock, Package, Shield, Sword, Trash2, Zap } from 'lucide-react';
 import { Badge, Button, Card, CardContent, DynamicIcon } from '@/shared/ui';
 import { useIsTouchDevice, useSwipeToDismiss } from '@/shared/hooks';
+import { MarkdownText } from '@/shared/components';
 import type { ItemResponse } from '@/services/types';
 
 interface SwipeableItemCardProps {
@@ -15,6 +16,16 @@ interface SwipeableItemCardProps {
   togglePublicId: string | null;
 }
 
+export const TIPO_ITEM_VISUAL: Record<string, { color: string; gradient: string; border: string }> = {
+  weapon: { color: 'text-rose-600', gradient: 'from-rose-500/5', border: 'border-rose-500' },
+  'defensive-equipment': { color: 'text-blue-600', gradient: 'from-blue-500/5', border: 'border-blue-500' },
+  consumable: { color: 'text-emerald-600', gradient: 'from-emerald-500/5', border: 'border-emerald-500' },
+  artifact: { color: 'text-purple-600', gradient: 'from-purple-500/5', border: 'border-purple-500' },
+  accessory: { color: 'text-amber-500', gradient: 'from-amber-500/5', border: 'border-amber-500' },
+  general: { color: 'text-slate-600', gradient: 'from-slate-500/5', border: 'border-slate-500' },
+  'upgrade-material': { color: 'text-cyan-600', gradient: 'from-cyan-500/5', border: 'border-cyan-500' },
+};
+
 function getTipoItemLabel(tipo: ItemResponse['tipo']) {
   const labels: Record<ItemResponse['tipo'], string> = {
     weapon: 'Arma',
@@ -22,6 +33,8 @@ function getTipoItemLabel(tipo: ItemResponse['tipo']) {
     consumable: 'Consumivel',
     artifact: 'Artefato',
     accessory: 'Acessorio',
+    general: 'Geral',
+    'upgrade-material': 'Material de Upgrade',
   };
 
   return labels[tipo] ?? tipo;
@@ -48,6 +61,9 @@ export function SwipeableItemCard({
 }: SwipeableItemCardProps) {
   const isTouchDevice = useIsTouchDevice();
   const swipeHandlers = useSwipeToDismiss(onDeletar, 80);
+  const visual = TIPO_ITEM_VISUAL[item.tipo] || TIPO_ITEM_VISUAL.general;
+
+  const formatarRunic = (valor: number) => new Intl.NumberFormat('pt-BR').format(valor);
 
   return (
     <div className="relative overflow-hidden h-full">
@@ -60,14 +76,15 @@ export function SwipeableItemCard({
       )}
 
       <div {...(isTouchDevice ? swipeHandlers : {})} className="bg-white dark:bg-gray-800 h-full">
-        <Card hover className="h-full min-h-[18rem]">
-          <CardContent className="p-3 h-full">
+        <Card hover className={`h-full min-h-[18rem] border-t-4 ${visual.border} shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden`}>
+          <div className={`absolute inset-0 bg-gradient-to-b ${visual.gradient} to-transparent pointer-events-none opacity-50`}></div>
+          <CardContent className="p-4 h-full relative z-10">
             <div className="flex flex-col gap-3 h-full">
               <div className="flex items-start justify-between gap-3 cursor-pointer" onClick={onVerResumo}>
                 <div className="flex items-center gap-4 flex-1 min-w-0">
                   {item.icone && (
-                    <div className="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden flex items-center justify-center">
-                      <DynamicIcon name={item.icone} className="w-10 h-10 text-purple-600 dark:text-purple-400" />
+                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden flex items-center justify-center bg-gray-50/30 dark:bg-gray-900/20 border border-gray-200/30 dark:border-gray-700/30 group-hover:scale-105 transition-transform shadow-sm">
+                      <DynamicIcon name={item.icone} className={`w-14 h-14 ${visual.color}`} />
                     </div>
                   )}
 
@@ -96,19 +113,56 @@ export function SwipeableItemCard({
 
               <div className="flex-1 flex flex-col justify-between gap-3">
                 {item.descricao ? (
-                  <p
-                    className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words cursor-pointer min-h-[3rem]"
+                  <div
+                    className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words cursor-pointer min-h-[3rem] prose-sm dark:prose-invert prose-p:my-0 prose-headings:text-xs prose-ul:my-1 prose-li:my-0"
                     onClick={onVerResumo}
                   >
-                    {item.descricao}
-                  </p>
+                    <MarkdownText>{item.descricao}</MarkdownText>
+                  </div>
                 ) : (
                   <div className="min-h-[3rem]" />
                 )}
 
-                <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 min-h-[2.5rem]">
-                  <p>Custo Base {item.custoBase} • Venda {item.precoVenda}</p>
-                  <p>{item.powerIds.length} poderes • {item.powerArrayIds.length} acervos</p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2 py-2 border-y border-gray-100/50 dark:border-gray-800/50">
+                  <div className="flex items-center gap-2 group/stat">
+                    <div className="p-1 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                      <Coins className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 leading-none mb-0.5">V. Real</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{formatarRunic(item.valorBase ?? 0)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 group/stat">
+                    <div className="p-1 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                      <HandCoins className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 leading-none mb-0.5">Venda</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{formatarRunic(item.precoVenda ?? 0)}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 group/stat">
+                    <div className="p-1 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                      <Zap className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 leading-none mb-0.5">Poderes</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{item.powerIds.length}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 group/stat">
+                    <div className="p-1 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                      <Layers className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 leading-none mb-0.5">Acervos</span>
+                      <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{item.powerArrayIds.length}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex items-center justify-between gap-2 pt-1">

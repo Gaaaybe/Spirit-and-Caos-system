@@ -30,6 +30,18 @@ export class DamageDescriptor {
     return this.props.espiritual;
   }
 
+  scaleDie(multiplier: number): DamageDescriptor {
+    if (multiplier === 1) return this;
+    
+    const [count, size] = this.dado.split('d').map(Number);
+    const newSize = size * multiplier;
+    
+    return new DamageDescriptor({
+      ...this.props,
+      dado: `${count}d${newSize}`,
+    });
+  }
+
   isStandardType(): this is { base: StandardDamageType } {
     return STANDARD_DAMAGE_TYPES.includes(this.props.base as StandardDamageType);
   }

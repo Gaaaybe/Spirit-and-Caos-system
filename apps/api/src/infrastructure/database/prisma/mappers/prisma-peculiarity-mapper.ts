@@ -1,8 +1,12 @@
-import type { Prisma, Peculiarity as PrismaPeculiarity } from '@prisma/client';
+import type { Prisma } from '@prisma/client';
 import { UniqueEntityId } from '@/core/entities/unique-entity-ts';
 import { Peculiarity } from '@/domain/power-manager/enterprise/entities/peculiarity';
 
-export function toDomain(raw: PrismaPeculiarity): Peculiarity {
+export type PrismaPeculiarityFull = Prisma.PeculiarityGetPayload<{
+  include: { user: { select: { id: true, name: true } } };
+}>;
+
+export function toDomain(raw: PrismaPeculiarityFull): Peculiarity {
   return Peculiarity.create(
     {
       userId: raw.userId,
@@ -11,6 +15,7 @@ export function toDomain(raw: PrismaPeculiarity): Peculiarity {
       espiritual: raw.espiritual,
       isPublic: raw.isPublic,
       icone: raw.icone ?? undefined,
+      userName: (raw as any).user?.name,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt ?? undefined,
     },

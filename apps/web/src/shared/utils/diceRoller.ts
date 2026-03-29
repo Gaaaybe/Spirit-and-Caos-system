@@ -11,19 +11,26 @@ export interface RollResult {
   d20: number;
   allRolls: number[];
   modifier: number;
-  advantage: number;
+  advantage: number; // >0 para vantagem, <0 para desvantagem
   isCritical: boolean;
   isFumble: boolean;
   timestamp: Date;
 }
 
 /**
- * Rola um d20 com modificador e vantagem/desvantagem
+ * Rola um d20 com modificador e suporte a múltiplas vantagens/desvantagens
  * @param modifier Modificador a ser somado
- * @param advantage >0 para vantagem, <0 para desvantagem, 0 para normal
+ * @param extraDice Quantidade de dados extras a rolar (0 a 6)
+ * @param rule Regra de escolha ('advantage' | 'disadvantage' | 'normal')
+ * @param critMargin Valor mínimo no d20 para considerar crítico (padrão 20)
  */
-export function rollD20(modifier: number = 0, advantage: number = 0): RollResult {
-  const numDice = 1 + Math.abs(advantage);
+export function rollD20(
+  modifier: number = 0, 
+  extraDice: number = 0, 
+  rule: 'advantage' | 'disadvantage' | 'normal' = 'normal',
+  critMargin: number = 20
+): RollResult {
+  const numDice = 1 + extraDice;
   const rolls: number[] = [];
   
   for (let i = 0; i < numDice; i++) {
@@ -31,9 +38,9 @@ export function rollD20(modifier: number = 0, advantage: number = 0): RollResult
   }
   
   let d20: number;
-  if (advantage > 0) {
+  if (rule === 'advantage') {
     d20 = Math.max(...rolls);
-  } else if (advantage < 0) {
+  } else if (rule === 'disadvantage') {
     d20 = Math.min(...rolls);
   } else {
     d20 = rolls[0];
@@ -46,8 +53,8 @@ export function rollD20(modifier: number = 0, advantage: number = 0): RollResult
     d20,
     allRolls: rolls,
     modifier,
-    advantage,
-    isCritical: d20 === 20,
+    advantage: rule === 'advantage' ? extraDice : rule === 'disadvantage' ? -extraDice : 0,
+    isCritical: d20 >= critMargin,
     isFumble: d20 === 1,
     timestamp: new Date(),
   };
@@ -65,41 +72,55 @@ export function rollDice(numDice: number, diceSides: number): number {
 }
 
 /**
- * Rola dano (ex: "2d6+5") com suporte a multiplicador de crítico
- * O multiplicador afeta o resultado final do dano, e não a quantidade de dados.
+ * Rola dano (ex: "2d6+5", "1d8 + 1d6 + 5") com suporte a multiplicador de crítico.
+ * O multiplicador afeta o resultado final do dano (soma total).
  */
 export function rollDamage(damageFormula: string, multiplier: number = 1): { total: number; rolls: number[]; modifier: number; baseTotal: number } {
-  // Tenta casar com padrão XdY+Z ou XdY-Z
-  const match = damageFormula.match(/(\d+)d(\d+)\s*([+-]\s*\d+)?/i);
+  const cleanFormula = damageFormula.replace(/\s+/g, '').toLowerCase();
+  const parts = cleanFormula.split(/([+-])/);
   
-  if (!match) {
-    // Tenta casar com dano plano (ex: "5" ou "+5")
-    const flatMatch = damageFormula.replace(/\s+/g, '').match(/^([+-]?\d+)$/);
-    if (flatMatch) {
-       const flatDamage = parseInt(flatMatch[1]);
-       const finalTotal = flatDamage * multiplier;
-       return { total: finalTotal, rolls: [], modifier: flatDamage, baseTotal: flatDamage };
-    }
-    return { total: 0, rolls: [], modifier: 0, baseTotal: 0 };
-  }
-  
-  const numDice = parseInt(match[1]);
-  const diceSides = parseInt(match[2]);
-  const modifier = match[3] ? parseInt(match[3].replace(/\s+/g, '')) : 0;
-  
-  const rolls: number[] = [];
+  let currentSign = 1;
   let baseTotal = 0;
-  
-  for (let i = 0; i < numDice; i++) {
-    const roll = Math.floor(Math.random() * diceSides) + 1;
-    rolls.push(roll);
-    baseTotal += roll;
+  let modifier = 0;
+  const allRolls: number[] = [];
+
+  for (const part of parts) {
+    if (part === '+') {
+      currentSign = 1;
+      continue;
+    }
+    if (part === '-') {
+      currentSign = -1;
+      continue;
+    }
+    if (!part) continue;
+
+    const diceMatch = part.match(/^(\d+)d(\d+)$/);
+    if (diceMatch) {
+      const numDice = parseInt(diceMatch[1]);
+      const diceSides = parseInt(diceMatch[2]);
+      for (let i = 0; i < numDice; i++) {
+        const roll = Math.floor(Math.random() * diceSides) + 1;
+        allRolls.push(roll);
+        baseTotal += roll * currentSign;
+      }
+    } else {
+      const flatValue = parseInt(part);
+      if (!isNaN(flatValue)) {
+        baseTotal += flatValue * currentSign;
+        modifier += flatValue * currentSign;
+      }
+    }
   }
-  
-  baseTotal += modifier;
+
   const finalTotal = baseTotal * multiplier;
   
-  return { total: finalTotal, rolls, modifier, baseTotal };
+  return { 
+    total: finalTotal, 
+    rolls: allRolls, 
+    modifier, 
+    baseTotal 
+  };
 }
 
 /**

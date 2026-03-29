@@ -8,40 +8,51 @@ import { CheckCircle } from 'lucide-react';
 interface CriadorDePoderModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPoderCriado: (poder: Poder) => void;
+  onPoderCriado?: (poder: Poder) => void;
+  onSave?: (poder: Poder) => void;
+  poderParaEditar?: Poder;
 }
 
-export function CriadorDePoderModal({ isOpen, onClose, onPoderCriado }: CriadorDePoderModalProps) {
+export function CriadorDePoderModal({ isOpen, onClose, onPoderCriado, onSave, poderParaEditar }: CriadorDePoderModalProps) {
   const { poderes } = useBibliotecaPoderes();
   const prevPoderesCount = useRef(poderes.length);
   const lastPoder = poderes[poderes.length - 1];
 
-  // Detecta quando um novo poder é salvo
+  // Reset baseline when modal opens so stale count doesn't trigger onSave immediately
   useEffect(() => {
-    if (isOpen && poderes.length > prevPoderesCount.current && lastPoder) {
-      // Novo poder foi adicionado
+    if (isOpen) {
       prevPoderesCount.current = poderes.length;
     }
-  }, [poderes.length, lastPoder, isOpen]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // Detecta quando um novo poder é criado (não ao editar — nesse caso onSaved do CriadorDePoder já fecha)
+  useEffect(() => {
+    if (!poderParaEditar && isOpen && poderes.length > prevPoderesCount.current && lastPoder) {
+      // Novo poder foi adicionado
+      prevPoderesCount.current = poderes.length;
+      if (onSave) onSave(lastPoder);
+    }
+  }, [poderes.length, lastPoder, isOpen, onSave, poderParaEditar]);
 
   const handleUsarPoderCriado = () => {
     if (lastPoder) {
-      onPoderCriado(lastPoder);
+      if (onPoderCriado) onPoderCriado(lastPoder);
       onClose();
     }
   };
 
-  const poderRecenteSalvo = isOpen && poderes.length > prevPoderesCount.current;
+  const poderRecenteSalvo = !poderParaEditar && isOpen && poderes.length > prevPoderesCount.current;
   
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Criar Novo Poder"
+      title={poderParaEditar ? "Editar Poder" : "Criar Novo Poder"}
       size="xl"
     >
       <div className="py-4">
-        {poderRecenteSalvo && lastPoder && (
+        {poderRecenteSalvo && lastPoder && onPoderCriado && (
           <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-3">
@@ -66,7 +77,7 @@ export function CriadorDePoderModal({ isOpen, onClose, onPoderCriado }: CriadorD
           </div>
         )}
         
-        {!poderRecenteSalvo && (
+        {!poderRecenteSalvo && !poderParaEditar && onPoderCriado && (
           <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
             <p className="text-sm text-blue-800 dark:text-blue-200">
               <strong>💡 Dica:</strong> Crie e salve seu poder. Um botão aparecerá para você usá-lo imediatamente.
@@ -74,7 +85,7 @@ export function CriadorDePoderModal({ isOpen, onClose, onPoderCriado }: CriadorD
           </div>
         )}
         
-        <CriadorDePoder />
+        <CriadorDePoder poderInicial={poderParaEditar} onSaved={onSave ? (poderSalvo) => onSave(poderSalvo) : undefined} />
       </div>
     </Modal>
   );

@@ -19,10 +19,7 @@ export class CopyPublicPeculiarityController {
 
   @Post()
   @HttpCode(201)
-  async handle(
-    @Param('peculiarityId') peculiarityId: string,
-    @CurrentUser() user: UserPayload,
-  ) {
+  async handle(@Param('peculiarityId') peculiarityId: string, @CurrentUser() user: UserPayload) {
     const result = await this.copyPublicPeculiarity.execute({
       peculiarityId,
       userId: user.sub,

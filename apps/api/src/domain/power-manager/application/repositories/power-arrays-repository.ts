@@ -6,6 +6,7 @@ export abstract class PowerArraysRepository {
   abstract findByPowerId(powerId: string): Promise<PowerArray[]>;
   abstract findMany(params: PaginationParams): Promise<PowerArray[]>;
   abstract findByUserId(userId: string, params: PaginationParams): Promise<PowerArray[]>;
+  abstract findByCharacterId(characterId: string): Promise<PowerArray[]>;
   abstract findByDomain(domainName: string, params: PaginationParams): Promise<PowerArray[]>;
   abstract findPublic(params: PaginationParams): Promise<PowerArray[]>;
   abstract create(powerArray: PowerArray): Promise<void>;

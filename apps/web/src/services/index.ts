@@ -3,4 +3,6 @@ export * from './powers.service';
 export * from './powerArrays.service';
 export * from './peculiarities.service';
 export * from './items.service';
+export * from './characters.service';
+export * from './characters.types';
 export * from './types';

@@ -60,6 +60,7 @@ export class CreatePowerUseCase {
   }: CreatePowerUseCaseRequest): Promise<CreatePowerUseCaseResponse> {
     const costResult = await this.powerCostCalculator.calculate({
       effects,
+      parametros,
       globalModifications,
     });
 

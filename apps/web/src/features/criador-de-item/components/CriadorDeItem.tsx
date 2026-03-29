@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Package, Save, RefreshCw, Link2, Sword, Shield, FlaskConical, FileText, Plus, Eye, Sparkles, BookOpen } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Package, Save, RefreshCw, Link2, Sword, Shield, FlaskConical, FileText, Plus, Eye, Sparkles, BookOpen, Hammer, Box } from 'lucide-react';
 import { DOMINIOS } from '@/data';
 import { usePeculiaridades } from '@/shared/hooks/usePeculiaridades';
 import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Textarea, Badge, toast, Tooltip, DynamicIcon } from '@/shared/ui';
@@ -10,19 +10,22 @@ import { useItems } from '../hooks/useItems';
 import { SeletorVinculosModal } from './SeletorVinculosModal';
 import { ResumoItem } from './ResumoItem';
 import { ResumoVinculoModal } from './ResumoVinculoModal';
-import type { ItemResponse, UpdateItemPayload } from '@/services/types';
+import type { ItemResponse, ItemType, UpdateItemPayload } from '@/services/types';
+import { UPGRADE_PATAMARES, type UpgradePatamarId } from '../hooks/useItemBuilder';
 
-function ItemTypeIcon({ tipo }: { tipo: 'weapon' | 'defensive-equipment' | 'consumable' | 'artifact' | 'accessory' }) {
+function ItemTypeIcon({ tipo }: { tipo: ItemType }) {
   if (tipo === 'weapon') return <Sword className="w-4 h-4" />;
   if (tipo === 'defensive-equipment') return <Shield className="w-4 h-4" />;
   if (tipo === 'consumable') return <FlaskConical className="w-4 h-4" />;
+  if (tipo === 'upgrade-material') return <Hammer className="w-4 h-4" />;
+  if (tipo === 'general') return <Box className="w-4 h-4" />;
   return <Package className="w-4 h-4" />;
 }
 
 const BASE_PRESETS = ['FOR', 'DES', 'CON', 'INT', 'SAB', 'CAR'] as const;
 const BASE_CUSTOM_VALUE = '__custom__';
 
-export function CriadorDeItem() {
+export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResponse, onSaved?: (item: ItemResponse) => void }) {
   const { criar, atualizar, loading } = useItems();
   const { poderes } = usePoderes();
   const { acervos } = usePowerArrays();
@@ -48,18 +51,30 @@ export function CriadorDeItem() {
     updateWeaponField,
     updateDefensiveField,
     updateConsumableField,
+    setUpgradeMaterialPatamar,
     hydrateFromItem,
     getValidationErrors,
     buildPayload,
     reset,
   } = useItemBuilder();
 
+  const hydratedRef = useRef<string | null>(null);
+
   useEffect(() => {
+    if (itemInicial) {
+      if (hydratedRef.current === itemInicial.id) return;
+      hydratedRef.current = itemInicial.id;
+      hydrateFromItem(itemInicial);
+      return;
+    }
+
+    if (hydratedRef.current === 'localStorage') return;
     const raw = localStorage.getItem('criador-de-item-carregar');
     if (!raw) {
       return;
     }
 
+    hydratedRef.current = 'localStorage';
     try {
       const item = JSON.parse(raw) as ItemResponse;
       hydrateFromItem(item);
@@ -69,7 +84,7 @@ export function CriadorDeItem() {
     } finally {
       localStorage.removeItem('criador-de-item-carregar');
     }
-  }, [hydrateFromItem]);
+  });
 
   const dominioAtual = state.dominio.name;
 
@@ -154,10 +169,12 @@ export function CriadorDeItem() {
         const updated = await atualizar(state.editingItemId, payload as UpdateItemPayload);
         hydrateFromItem(updated);
         toast.success(`Item "${updated.nome}" atualizado com sucesso!`);
+        if (onSaved) onSaved(updated);
       } else {
         const item = await criar(payload);
         toast.success(`Item "${item.nome}" criado com sucesso!`);
         reset();
+        if (onSaved) onSaved(item);
       }
     } catch {
       toast.error('Erro ao salvar item. Verifique os campos e tente novamente.');
@@ -199,6 +216,8 @@ export function CriadorDeItem() {
                 { value: 'consumable', label: 'Consumível' },
                 { value: 'artifact', label: 'Artefato' },
                 { value: 'accessory', label: 'Acessório' },
+                { value: 'general', label: 'Item Geral' },
+                { value: 'upgrade-material', label: 'Material de Upgrade' },
               ]}
               placeholder=""
             />
@@ -490,11 +509,40 @@ export function CriadorDeItem() {
             </div>
           )}
 
-          {(state.tipo === 'artifact' || state.tipo === 'accessory') && (
+          {(state.tipo === 'artifact' || state.tipo === 'accessory' || state.tipo === 'general') && (
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Este tipo não requer campos extras obrigatórios. Você já pode vincular poderes/acervos e salvar.
             </p>
           )}
+
+          {state.tipo === 'upgrade-material' && (() => {
+            const patamar = UPGRADE_PATAMARES.find((p) => p.id === state.upgradeMaterial.patamarId);
+            return (
+              <div className="space-y-3">
+                <Select
+                  label="Patamar do Material"
+                  value={String(state.upgradeMaterial.patamarId)}
+                  onChange={(e) => setUpgradeMaterialPatamar(Number(e.target.value) as UpgradePatamarId)}
+                  options={UPGRADE_PATAMARES.map((p) => ({
+                    value: String(p.id),
+                    label: `${p.nome} (até ${p.maxUpgradeLimit}x · ${p.custoBase.toLocaleString('pt-BR')}R)`,
+                  }))}
+                  placeholder=""
+                />
+                {patamar && (
+                  <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 p-3 text-sm space-y-1">
+                    <p className="font-semibold text-amber-800 dark:text-amber-300">ᚱ {patamar.nome}</p>
+                    <p className="text-amber-700 dark:text-amber-400">
+                      Permite aprimorar até <strong>{patamar.maxUpgradeLimit}x</strong> · Custo sugerido: <strong>{patamar.custoBase.toLocaleString('pt-BR')} ᚱ</strong>
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-500">
+                      O custo base foi atualizado automaticamente. Ajuste-o acima se necessário.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </CardContent>
       </Card>
 

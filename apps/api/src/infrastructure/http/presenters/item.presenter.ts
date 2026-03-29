@@ -2,6 +2,7 @@ import { Artifact } from '@/domain/item-manager/enterprise/entities/artifact';
 import { Consumable } from '@/domain/item-manager/enterprise/entities/consumable';
 import { DefensiveEquipment } from '@/domain/item-manager/enterprise/entities/defensive-equipment';
 import type { Item, ItemBaseProps } from '@/domain/item-manager/enterprise/entities/item';
+import { UpgradeMaterial } from '@/domain/item-manager/enterprise/entities/upgrade-material';
 import { Weapon } from '@/domain/item-manager/enterprise/entities/weapon';
 
 export class ItemPresenter {
@@ -9,10 +10,13 @@ export class ItemPresenter {
     const base = {
       id: item.id.toString(),
       userId: item.userId ?? null,
+      characterId: item.characterId ?? null,
       tipo: item.tipo,
       nome: item.nome,
       descricao: item.descricao,
       isPublic: item.isPublic,
+      canStack: item.canStack,
+      maxStack: item.maxStack,
       icone: item.icone ?? null,
       notas: item.notas ?? null,
       dominio: {
@@ -29,12 +33,13 @@ export class ItemPresenter {
       powerArrayIds: item.powerArrayIds.getItems().map((uid) => uid.toString()),
       createdAt: item.createdAt,
       updatedAt: item.updatedAt ?? null,
+      userName: item.userName ?? null,
     };
 
     if (item instanceof Weapon) {
       return {
         ...base,
-        danos: item.danos.map((d) => ({
+        danos: item.danosAtuais.map((d) => ({
           dado: d.dado,
           base: d.base,
           espiritual: d.espiritual,
@@ -73,6 +78,14 @@ export class ItemPresenter {
 
     if (item instanceof Artifact) {
       return { ...base, isAttuned: item.isAttuned };
+    }
+
+    if (item instanceof UpgradeMaterial) {
+      return {
+        ...base,
+        tier: item.tier,
+        maxUpgradeLimit: item.maxUpgradeLimit,
+      };
     }
 
     return base;

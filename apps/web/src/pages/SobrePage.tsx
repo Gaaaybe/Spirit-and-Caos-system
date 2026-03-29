@@ -3,7 +3,7 @@ import { BookOpen, Gamepad2, Building2, Calculator, Rocket, Keyboard, User, Ligh
 
 export function SobrePage() {
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

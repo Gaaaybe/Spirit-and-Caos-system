@@ -76,6 +76,7 @@ export interface PoderResponse {
   globalModifications: ModificacaoAplicadaResponse[];
   createdAt: string;
   updatedAt: string | null;
+  userName: string | null;
 }
 
 // ─── Payload criação/atualização de Poder ─────────────────────────────────────
@@ -138,6 +139,7 @@ export interface AcervoResponse {
   powers: PoderResponse[];
   createdAt: string;
   updatedAt: string | null;
+  userName: string | null;
 }
 
 export interface CreateAcervoPayload {
@@ -162,7 +164,9 @@ export type ItemType =
   | 'defensive-equipment'
   | 'consumable'
   | 'artifact'
-  | 'accessory';
+  | 'accessory'
+  | 'general'
+  | 'upgrade-material';
 
 export type WeaponRange = 'adjacente' | 'natural' | 'curto' | 'medio' | 'longo';
 export type EquipmentType = 'traje' | 'protecao';
@@ -178,10 +182,13 @@ export interface DamageDescriptorResponse {
 export interface ItemBaseResponse {
   id: string;
   userId: string | null;
+  characterId: string | null;
   tipo: ItemType;
   nome: string;
   descricao: string;
   isPublic: boolean;
+  canStack: boolean;
+  maxStack: number;
   icone: string | null;
   notas: string | null;
   dominio: DominioResponse;
@@ -194,6 +201,7 @@ export interface ItemBaseResponse {
   powerArrayIds: string[];
   createdAt: string;
   updatedAt: string | null;
+  userName: string | null;
 }
 
 export interface WeaponItemResponse extends ItemBaseResponse {
@@ -235,12 +243,24 @@ export interface AccessoryItemResponse extends ItemBaseResponse {
   tipo: 'accessory';
 }
 
+export interface GeneralItemResponse extends ItemBaseResponse {
+  tipo: 'general';
+}
+
+export interface UpgradeMaterialItemResponse extends ItemBaseResponse {
+  tipo: 'upgrade-material';
+  tier: number;
+  maxUpgradeLimit: number;
+}
+
 export type ItemResponse =
   | WeaponItemResponse
   | DefensiveItemResponse
   | ConsumableItemResponse
   | ArtifactItemResponse
-  | AccessoryItemResponse;
+  | AccessoryItemResponse
+  | GeneralItemResponse
+  | UpgradeMaterialItemResponse;
 
 export interface DamageDescriptorPayload {
   dado: string;
@@ -284,7 +304,13 @@ export type CreateItemPayload =
       isRefeicao: boolean;
     })
   | (ItemCommonPayload & { tipo: 'artifact' })
-  | (ItemCommonPayload & { tipo: 'accessory' });
+  | (ItemCommonPayload & { tipo: 'accessory' })
+  | (ItemCommonPayload & { tipo: 'general' })
+  | (ItemCommonPayload & {
+      tipo: 'upgrade-material';
+      tier: number;
+      maxUpgradeLimit: number;
+    });
 
 interface ItemCommonUpdatePayload extends Omit<Partial<ItemCommonPayload>, 'icone'> {
   icone?: string | null;
@@ -312,7 +338,13 @@ export type UpdateItemPayload =
       qtdDoses?: number;
     })
   | (ItemCommonUpdatePayload & { tipo: 'artifact' })
-  | (ItemCommonUpdatePayload & { tipo: 'accessory' });
+  | (ItemCommonUpdatePayload & { tipo: 'accessory' })
+  | (ItemCommonUpdatePayload & { tipo: 'general' })
+  | (ItemCommonUpdatePayload & {
+      tipo: 'upgrade-material';
+      tier?: number;
+      maxUpgradeLimit?: number;
+    });
 
 // ─── Peculiaridade ────────────────────────────────────────────────────────────
 
@@ -326,6 +358,7 @@ export interface PeculiaridadeResponse {
   icone: string | null;
   createdAt: string;
   updatedAt: string | null;
+  userName: string | null;
 }
 
 export interface CreatePeculiaridadePayload {

@@ -1,6 +1,7 @@
-import { BookOpen, Copy, Eye, FileText, FlaskConical, Gem, Package, Shield, Sparkles, Star, Sword, Zap } from 'lucide-react';
+import { BookOpen, Copy, Eye, FileText, FlaskConical, Gem, Package, RefreshCw, Shield, Sparkles, Star, Sword, Zap } from 'lucide-react';
 import { Button, Card, CardContent, Modal, ModalFooter, toast, DynamicIcon } from '@/shared/ui';
 import { DOMINIOS } from '@/data';
+import { getThemeByItemType, PatternOverlay } from '@/shared/utils/summary-themes';
 import type { AcervoResponse, DomainName, ItemResponse, PoderResponse, SpoilageState, WeaponRange } from '@/services/types';
 
 interface ResumoItemProps {
@@ -24,6 +25,7 @@ interface ResumoItemProps {
   onOpenPowerDetails: (powerId: string) => void;
   onOpenPowerArrayDetails: (powerArrayId: string) => void;
   itemData?: ItemResponse;
+  isLoadingVinculos?: boolean;
 }
 
 function tipoLabel(tipo: string): string {
@@ -39,11 +41,11 @@ function tipoLabel(tipo: string): string {
 }
 
 function tipoIconFallback(tipo: string) {
-  if (tipo === 'weapon') return <Sword className="w-8 h-8 text-white/80" />;
-  if (tipo === 'defensive-equipment') return <Shield className="w-8 h-8 text-white/80" />;
-  if (tipo === 'consumable') return <FlaskConical className="w-8 h-8 text-white/80" />;
-  if (tipo === 'artifact') return <Gem className="w-8 h-8 text-white/80" />;
-  return <Package className="w-8 h-8 text-white/80" />;
+  if (tipo === 'weapon') return <Sword className="w-16 h-16 text-white/80" />;
+  if (tipo === 'defensive-equipment') return <Shield className="w-16 h-16 text-white/80" />;
+  if (tipo === 'consumable') return <FlaskConical className="w-16 h-16 text-white/80" />;
+  if (tipo === 'artifact') return <Gem className="w-16 h-16 text-white/80" />;
+  return <Package className="w-16 h-16 text-white/80" />;
 }
 
 function dominioLabel(dominio: ResumoItemProps['dominio']): string {
@@ -243,6 +245,7 @@ export function ResumoItem({
   onOpenPowerDetails,
   onOpenPowerArrayDetails,
   itemData,
+  isLoadingVinculos,
 }: ResumoItemProps) {
   const itemIcon = icone?.trim() ?? '';
 
@@ -280,26 +283,32 @@ export function ResumoItem({
     toast.success('Resumo do item copiado para a área de transferência.');
   };
 
+  const theme = getThemeByItemType(tipo);
+  const IconWatermark = theme.icon;
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="" size="xl">
       <div className="space-y-6">
-        {/* Header com gradiente */}
-        <div className="relative -mt-6 -mx-6 p-8 bg-gradient-to-br from-espirito-600 to-espirito-800 dark:from-espirito-700 dark:to-espirito-900 text-white rounded-t-lg overflow-hidden">
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2" />
+        {/* Header com gradiente dinâmico por tipo */}
+        <div className={`relative -mt-6 -mx-6 p-8 bg-gradient-to-br ${theme.bgGradient} ${theme.textColor} rounded-t-lg overflow-hidden transition-colors duration-500`}>
+          {/* Padrão decorativo dinâmico */}
+          <PatternOverlay pattern={theme.pattern} />
+
+          {/* Ícone Watermark Gigante */}
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/4 opacity-10 pointer-events-none">
+            <IconWatermark className="w-96 h-96 transform rotate-12" />
           </div>
 
           <div className="relative z-10">
-            <p className="text-xs uppercase tracking-widest opacity-80 flex items-center gap-2 mb-4">
+            <p className={`text-xs uppercase tracking-widest ${theme.accentColor} opacity-80 flex items-center gap-2 mb-4`}>
               <FileText className="w-4 h-4" /> Resumo do Item
             </p>
 
             <div className="flex items-start justify-between gap-4">
               <div className="flex items-start gap-4 flex-1 min-w-0">
-                <div className="flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden backdrop-blur-sm border border-white/20 bg-white/10 flex items-center justify-center">
+                <div className="flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 bg-black/20 border-gray-200/30 flex items-center justify-center p-0.5 shadow-md">
                   {itemIcon ? (
-                    <DynamicIcon name={itemIcon} className="w-14 h-14 text-yellow-300" />
+                    <DynamicIcon name={itemIcon} className="w-full h-full object-cover rounded-xl" />
                   ) : (
                     tipoIconFallback(tipo)
                   )}
@@ -321,23 +330,23 @@ export function ResumoItem({
                 </div>
               </div>
 
-              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[90px] flex-shrink-0">
-                <p className="text-espirito-200 text-xs mb-1">Nível</p>
-                <p className="text-4xl font-bold text-yellow-300">{nivelCalculado}</p>
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[90px] flex-shrink-0 border border-white/20">
+                <p className={`${theme.accentColor} text-xs mb-1`}>Nível</p>
+                <p className="text-4xl font-bold text-yellow-300 drop-shadow-sm">{nivelCalculado}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-3 gap-3 mt-6">
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <p className="text-espirito-200 text-xs mb-1">Custo Base</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <p className={`${theme.accentColor} text-xs mb-1`}>Custo Base</p>
                 <p className="text-2xl font-bold">{custoBase}</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <p className="text-espirito-200 text-xs mb-1">Custo Real</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <p className={`${theme.accentColor} text-xs mb-1`}>Custo Real</p>
                 <p className="text-2xl font-bold">{custoRealCalculado}</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <p className="text-espirito-200 text-xs mb-1">Preço de Venda</p>
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <p className={`${theme.accentColor} text-xs mb-1`}>Preço de Venda</p>
                 <p className="text-2xl font-bold">{precoVendaCalculado}</p>
               </div>
             </div>
@@ -361,39 +370,49 @@ export function ResumoItem({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Card>
             <CardContent className="pt-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-3">
-                <Sword className="w-4 h-4" /> Poderes Vinculados ({selectedPowers.length})
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2">
+                  <Sword className="w-4 h-4" /> Poderes Vinculados ({selectedPowers.length})
+                </p>
+                {isLoadingVinculos && <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-500" />}
+              </div>
               <div className="space-y-2">
-                {selectedPowers.length === 0 ? (
+                {selectedPowers.length === 0 && !isLoadingVinculos ? (
                   <p className="text-sm text-gray-500">Nenhum poder vinculado</p>
                 ) : (
-                  selectedPowers.map((power) => (
-                    <button
-                      key={power.id}
-                      type="button"
-                      onClick={() => onOpenPowerDetails(power.id)}
-                      className="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2 min-w-0">
-                          <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                            {power.icone ? (
-                              <DynamicIcon name={power.icone} className="w-full h-full" />
-                            ) : (
-                              <Sparkles className="w-4 h-4 text-gray-400" />
-                            )}
+                  <>
+                    {selectedPowers.map((power) => (
+                      <button
+                        key={power.id}
+                        type="button"
+                        onClick={() => onOpenPowerDetails(power.id)}
+                        className="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                              {power.icone ? (
+                                <DynamicIcon name={power.icone} className="w-full h-full" />
+                              ) : (
+                                <Sparkles className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{power.nome}</p>
+                              <p className="text-xs text-gray-500 line-clamp-2">{power.descricao || 'Sem descrição.'}</p>
+                              <p className="text-[11px] text-gray-500 mt-1">Efeitos: {power.effects.length}</p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{power.nome}</p>
-                            <p className="text-xs text-gray-500 line-clamp-2">{power.descricao || 'Sem descrição.'}</p>
-                            <p className="text-[11px] text-gray-500 mt-1">Efeitos: {power.effects.length}</p>
-                          </div>
+                          <Eye className="w-4 h-4 text-gray-400 shrink-0" />
                         </div>
-                        <Eye className="w-4 h-4 text-gray-400 shrink-0" />
+                      </button>
+                    ))}
+                    {isLoadingVinculos && (
+                      <div className="flex items-center justify-center p-4 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg animate-pulse">
+                         <p className="text-xs text-gray-400 italic">Buscando poderes vinculados...</p>
                       </div>
-                    </button>
-                  ))
+                    )}
+                  </>
                 )}
               </div>
             </CardContent>
@@ -401,39 +420,49 @@ export function ResumoItem({
 
           <Card>
             <CardContent className="pt-4">
-              <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2 mb-3">
-                <Shield className="w-4 h-4" /> Acervos Vinculados ({selectedPowerArrays.length})
-              </p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs uppercase tracking-wide text-gray-500 flex items-center gap-2">
+                  <Shield className="w-4 h-4" /> Acervos Vinculados ({selectedPowerArrays.length})
+                </p>
+                {isLoadingVinculos && <RefreshCw className="w-3.5 h-3.5 animate-spin text-purple-500" />}
+              </div>
               <div className="space-y-2">
-                {selectedPowerArrays.length === 0 ? (
+                {selectedPowerArrays.length === 0 && !isLoadingVinculos ? (
                   <p className="text-sm text-gray-500">Nenhum acervo vinculado</p>
                 ) : (
-                  selectedPowerArrays.map((powerArray) => (
-                    <button
-                      key={powerArray.id}
-                      type="button"
-                      onClick={() => onOpenPowerArrayDetails(powerArray.id)}
-                      className="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2 min-w-0">
-                          <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                            {powerArray.icone ? (
-                              <DynamicIcon name={powerArray.icone} className="w-full h-full" />
-                            ) : (
-                              <BookOpen className="w-4 h-4 text-gray-400" />
-                            )}
+                  <>
+                    {selectedPowerArrays.map((powerArray) => (
+                      <button
+                        key={powerArray.id}
+                        type="button"
+                        onClick={() => onOpenPowerArrayDetails(powerArray.id)}
+                        className="w-full text-left rounded-lg border border-gray-200 dark:border-gray-700 p-2 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start gap-2 min-w-0">
+                            <div className="w-9 h-9 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
+                              {powerArray.icone ? (
+                                <DynamicIcon name={powerArray.icone} className="w-full h-full" />
+                              ) : (
+                                <BookOpen className="w-4 h-4 text-gray-400" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{powerArray.nome}</p>
+                              <p className="text-xs text-gray-500 line-clamp-2">{powerArray.descricao || 'Sem descrição.'}</p>
+                              <p className="text-[11px] text-gray-500 mt-1">Poderes: {powerArray.powers.length}</p>
+                            </div>
                           </div>
-                          <div className="min-w-0">
-                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{powerArray.nome}</p>
-                            <p className="text-xs text-gray-500 line-clamp-2">{powerArray.descricao || 'Sem descrição.'}</p>
-                            <p className="text-[11px] text-gray-500 mt-1">Poderes: {powerArray.powers.length}</p>
-                          </div>
+                          <Eye className="w-4 h-4 text-gray-400 shrink-0" />
                         </div>
-                        <Eye className="w-4 h-4 text-gray-400 shrink-0" />
+                      </button>
+                    ))}
+                    {isLoadingVinculos && (
+                      <div className="flex items-center justify-center p-4 border border-dashed border-gray-200 dark:border-gray-800 rounded-lg animate-pulse">
+                         <p className="text-xs text-gray-400 italic">Buscando acervos vinculados...</p>
                       </div>
-                    </button>
-                  ))
+                    )}
+                  </>
                 )}
               </div>
             </CardContent>

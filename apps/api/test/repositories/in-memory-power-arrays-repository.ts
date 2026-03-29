@@ -32,6 +32,10 @@ export class InMemoryPowerArraysRepository extends PowerArraysRepository {
     return filtered.slice(startIndex, endIndex);
   }
 
+  async findByCharacterId(characterId: string): Promise<PowerArray[]> {
+    return this.items.filter((item) => item.characterId === characterId);
+  }
+
   async findByDomain(domainName: string, params: PaginationParams): Promise<PowerArray[]> {
     const filtered = this.items.filter((item) => item.dominio.name === domainName);
 

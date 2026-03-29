@@ -19,7 +19,7 @@ export function Input({
 }: InputProps) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
   
-  const baseClasses = "w-full px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1";
+  const baseClasses = "w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1";
   const stateClasses = error 
     ? "border-caos-300 focus:border-caos-500 focus:ring-caos-500" 
     : "border-gray-300 dark:border-gray-700 focus:border-espirito-500 focus:ring-espirito-500";
@@ -72,7 +72,7 @@ export function Textarea({
 }: TextareaProps) {
   const inputId = id || label?.toLowerCase().replace(/\s+/g, '-');
   
-  const baseClasses = "w-full px-3 py-2 border rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 resize-y";
+  const baseClasses = "w-full px-3 py-2 border rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1 resize-y";
   const stateClasses = error 
     ? "border-caos-300 focus:border-caos-500 focus:ring-caos-500" 
     : "border-gray-300 dark:border-gray-700 focus:border-espirito-500 focus:ring-espirito-500";

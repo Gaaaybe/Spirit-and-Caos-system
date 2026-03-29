@@ -15,22 +15,26 @@ import {
   DefensiveEquipment,
   EquipmentType,
 } from '@/domain/item-manager/enterprise/entities/defensive-equipment';
+import { GeneralItem } from '@/domain/item-manager/enterprise/entities/general-item';
 import type { Item, ItemBaseProps } from '@/domain/item-manager/enterprise/entities/item';
 import { DurabilityStatus, ItemType } from '@/domain/item-manager/enterprise/entities/item';
+import { UpgradeMaterial } from '@/domain/item-manager/enterprise/entities/upgrade-material';
 import { Weapon, WeaponRange } from '@/domain/item-manager/enterprise/entities/weapon';
 import { DamageDescriptor } from '@/domain/item-manager/enterprise/entities/value-objects/damage-descriptor';
 import { UpgradeLevel } from '@/domain/item-manager/enterprise/entities/value-objects/upgrade-level';
 import { ItemPowerArrayIdList } from '@/domain/item-manager/enterprise/entities/watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from '@/domain/item-manager/enterprise/entities/watched-lists/item-power-id-list';
-import {
-  Domain,
-  DomainName,
-} from '@/domain/shared/enterprise/value-objects/domain';
+import { Domain, DomainName } from '@/domain/shared/enterprise/value-objects/domain';
 
 // ─── Type helpers ────────────────────────────────────────────────────────────
 
 export type PrismaItemFull = Prisma.ItemGetPayload<{
-  include: { itemDamages: true; itemPowers: true; itemPowerArrays: true };
+  include: { 
+    itemDamages: true; 
+    itemPowers: true; 
+    itemPowerArrays: true;
+    user: { select: { id: true, name: true } }
+  };
 }>;
 
 // ─── Lookup tables ───────────────────────────────────────────────────────────
@@ -69,6 +73,8 @@ const ITEM_TYPE_TO_DOMAIN: Record<PrismaItemType, ItemType> = {
   CONSUMABLE: ItemType.CONSUMABLE,
   ARTIFACT: ItemType.ARTIFACT,
   ACCESSORY: ItemType.ACCESSORY,
+  GENERAL: ItemType.GENERAL,
+  UPGRADE_MATERIAL: ItemType.UPGRADE_MATERIAL,
 };
 
 const ITEM_TYPE_TO_PRISMA: Record<ItemType, PrismaItemType> = {
@@ -77,6 +83,8 @@ const ITEM_TYPE_TO_PRISMA: Record<ItemType, PrismaItemType> = {
   [ItemType.CONSUMABLE]: 'CONSUMABLE',
   [ItemType.ARTIFACT]: 'ARTIFACT',
   [ItemType.ACCESSORY]: 'ACCESSORY',
+  [ItemType.GENERAL]: 'GENERAL',
+  [ItemType.UPGRADE_MATERIAL]: 'UPGRADE_MATERIAL',
 };
 
 const WEAPON_RANGE_TO_DOMAIN: Record<PrismaWeaponRange, WeaponRange> = {
@@ -152,6 +160,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
 
   const base = {
     userId: raw.userId ?? undefined,
+    characterId: raw.characterId ?? undefined,
     nome: raw.nome,
     descricao: raw.descricao,
     dominio,
@@ -162,7 +171,10 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
     powerArrayIds: powerArrayIdList,
     icone: raw.icone ?? undefined,
     isPublic: raw.isPublic,
+    canStack: raw.canStack,
+    maxStack: raw.maxStack,
     notas: raw.notas ?? undefined,
+    userName: raw.user?.name,
     createdAt: raw.createdAt,
     updatedAt: raw.updatedAt ?? undefined,
   };
@@ -175,9 +187,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
       return Weapon.create(
         {
           ...base,
-          danos: sortedDamages.map((d) =>
-            DamageDescriptor.create(d.dado, d.base, d.espiritual),
-          ),
+          danos: sortedDamages.map((d) => DamageDescriptor.create(d.dado, d.base, d.espiritual)),
           upgradeLevel: UpgradeLevel.create(raw.upgradeLevelValue ?? 0, raw.upgradeLevelMax ?? 7),
           critMargin: raw.critMargin!,
           critMultiplier: raw.critMultiplier!,
@@ -194,7 +204,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
         {
           ...base,
           tipoEquipamento: EQUIPMENT_TYPE_TO_DOMAIN[raw.tipoEquipamento!],
-          baseRD: raw.critMargin ?? 2, // reuses critMargin slot — see toPrisma
+          baseRD: raw.baseRD ?? 2,
           upgradeLevel: UpgradeLevel.create(raw.upgradeLevelValue ?? 0, raw.upgradeLevelMax ?? 9),
           atributoEscalonamento: raw.atributoEscalonamento ?? undefined,
         },
@@ -208,9 +218,7 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
           descritorEfeito: raw.descritorEfeito!,
           qtdDoses: raw.qtdDoses!,
           isRefeicao: raw.isRefeicao!,
-          spoilageState: raw.spoilageState
-            ? SPOILAGE_TO_DOMAIN[raw.spoilageState]
-            : undefined,
+          spoilageState: raw.spoilageState ? SPOILAGE_TO_DOMAIN[raw.spoilageState] : undefined,
         },
         entityId,
       );
@@ -226,6 +234,19 @@ export function toDomain(raw: PrismaItemFull): Item<ItemBaseProps> {
 
     case ItemType.ACCESSORY:
       return Accessory.create({ ...base }, entityId);
+
+    case ItemType.GENERAL:
+      return GeneralItem.create({ ...base }, entityId);
+
+    case ItemType.UPGRADE_MATERIAL:
+      return UpgradeMaterial.create(
+        {
+          ...base,
+          tier: raw.materialTier!,
+          maxUpgradeLimit: raw.materialMaxUpgradeLimit!,
+        },
+        entityId,
+      );
   }
 }
 
@@ -237,10 +258,13 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
   const base: Prisma.ItemUncheckedCreateInput = {
     id,
     userId: item.userId ?? null,
+    characterId: item.characterId ?? null,
     tipo: ITEM_TYPE_TO_PRISMA[item.tipo],
     nome: item.nome,
     descricao: item.descricao,
     isPublic: item.isPublic,
+    canStack: item.canStack,
+    maxStack: item.maxStack,
     icone: item.icone ?? null,
     notas: item.notas ?? null,
     durabilidade: DURABILITY_TO_PRISMA[item.durabilidade],
@@ -291,7 +315,7 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
     return {
       ...base,
       tipoEquipamento: EQUIPMENT_TYPE_TO_PRISMA[item.tipoEquipamento],
-      critMargin: item.baseRD, // reuse slot for baseRD (weapon-only field semantically)
+      baseRD: item.baseRD,
       atributoEscalonamento: item.atributoEscalonamento ?? null,
       upgradeLevelValue: item.upgradeLevel.value,
       upgradeLevelMax: item.upgradeLevel.maxLevel,
@@ -310,6 +334,14 @@ export function toPrisma(item: Item<ItemBaseProps>): Prisma.ItemUncheckedCreateI
 
   if (item instanceof Artifact) {
     return { ...base, isAttuned: item.isAttuned };
+  }
+
+  if (item instanceof UpgradeMaterial) {
+    return {
+      ...base,
+      materialTier: item.tier,
+      materialMaxUpgradeLimit: item.maxUpgradeLimit,
+    };
   }
 
   return base;

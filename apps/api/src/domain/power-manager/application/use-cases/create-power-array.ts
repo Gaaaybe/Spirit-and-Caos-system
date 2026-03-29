@@ -60,7 +60,7 @@ export class CreatePowerArrayUseCase {
       powers.push(power);
     }
 
-    const custoTotal = PowerCost.sum(powers.map((p) => p.custoTotal));
+    const custoTotal = this.calculatePowerArrayCost(powers);
 
     const powersList = new PowerArrayPowerList();
     powersList.update(powers);
@@ -94,5 +94,22 @@ export class CreatePowerArrayUseCase {
       }
       throw error;
     }
+  }
+
+  private calculatePowerArrayCost(powers: Power[]): PowerCost {
+    if (powers.length === 0) {
+      return PowerCost.createZero();
+    }
+
+    const highestPda = Math.max(...powers.map((power) => power.custoTotal.pda));
+    const additionalPowersCost = Math.max(0, powers.length - 1);
+    const totalPE = powers.reduce((sum, power) => sum + power.custoTotal.pe, 0);
+    const totalEspacos = powers.reduce((sum, power) => sum + power.custoTotal.espacos, 0);
+
+    return PowerCost.create({
+      pda: highestPda + additionalPowersCost,
+      pe: totalPE,
+      espacos: totalEspacos,
+    });
   }
 }

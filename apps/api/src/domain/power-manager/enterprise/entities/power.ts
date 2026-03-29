@@ -14,6 +14,7 @@ import { PowerGlobalModificationList } from './watched-lists/power-global-modifi
 
 interface PowerProps {
   userId?: string;
+  characterId?: string;
   nome: string;
   descricao: string;
   dominio: Domain;
@@ -25,6 +26,7 @@ interface PowerProps {
   isPublic: boolean;
   icone?: string;
   notas?: string;
+  userName?: string;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -32,6 +34,10 @@ interface PowerProps {
 export class Power extends OwnableEntity<PowerProps> {
   get userId(): string | undefined {
     return this.props.userId;
+  }
+
+  get characterId(): string | undefined {
+    return this.props.characterId;
   }
 
   get nome(): string {
@@ -78,12 +84,35 @@ export class Power extends OwnableEntity<PowerProps> {
     return this.props.notas;
   }
 
+  get userName(): string | undefined {
+    return this.props.userName;
+  }
+
   get createdAt(): Date {
     return this.props.createdAt;
   }
 
   get updatedAt(): Date | undefined {
     return this.props.updatedAt;
+  }
+
+  copyForCharacter(characterId: string, userId: string): Power {
+    const effectsList = new PowerEffectList();
+    effectsList.update(this.effects.getItems());
+
+    const globalModificationsList = new PowerGlobalModificationList();
+    globalModificationsList.update(this.globalModifications.getItems());
+
+    return Power.create({
+      ...this.props,
+      userId,
+      characterId,
+      effects: effectsList,
+      globalModifications: globalModificationsList,
+      isPublic: false,
+      createdAt: new Date(),
+      updatedAt: undefined,
+    });
   }
 
   makePublic(): Power {
@@ -164,6 +193,7 @@ export class Power extends OwnableEntity<PowerProps> {
     return Power.create(
       {
         userId: this.props.userId,
+        characterId: this.props.characterId,
         nome: partial.nome ?? this.props.nome,
         descricao: partial.descricao ?? this.props.descricao,
         dominio: partial.dominio ?? this.props.dominio,
@@ -218,7 +248,10 @@ export class Power extends OwnableEntity<PowerProps> {
   }
 
   static create(
-    props: Optional<PowerProps, 'isPublic' | 'createdAt' | 'notas' | 'icone' | 'globalModifications'>,
+    props: Optional<
+      PowerProps,
+      'isPublic' | 'createdAt' | 'notas' | 'icone' | 'globalModifications'
+    >,
     id?: UniqueEntityId,
   ): Power {
     const power = new Power(

@@ -8,7 +8,7 @@ import { PeculiarityPresenter } from '../../presenters/peculiarity.presenter';
 
 const createPeculiarityBodySchema = z.object({
   nome: z.string().min(2).max(100),
-  descricao: z.string().min(10).max(1000),
+  descricao: z.string().min(10).max(10000),
   espiritual: z.boolean(),
   isPublic: z.boolean().optional(),
   icone: z.url('Ícone deve ser um link válido').optional(),

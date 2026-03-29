@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, Link, useLocation } from 'react-
 import { UserCircle, GitBranch, BookOpen, Moon, Sun, Users, LogIn, LogOut, Globe, ChevronDown, Layers, Zap } from 'lucide-react';
 import { useDarkMode, useScrollToTop, useMetaTags } from './shared/hooks';
 import { Button, ToastContainer } from './shared/ui';
-import { CriadorPage, BibliotecaPage, SobrePage, GerenciadorPage, LandingPage, LoginPage, PersonagensPage, CampanhasPage, ComunidadePage } from './pages';
+import { CriadorPage, BibliotecaPage, SobrePage, GerenciadorPage, LandingPage, LoginPage, PersonagensPage, CharacterSheetDetailPage, CampanhasPage, ComunidadePage } from './pages';
 import { Breadcrumbs, PrivateRoute } from './shared/components';
 import { useAuth } from './context/useAuth';
 import { MigracaoLocalStorage } from './features/criador-de-poder/components/MigracaoLocalStorage';
@@ -107,10 +107,13 @@ function Navigation() {
 function AppContent() {
   const { isDark, toggle } = useDarkMode();
   const { user, isAuthenticated, logout } = useAuth();
+  const location = useLocation();
   
   // Routing enhancements
   useScrollToTop();
   useMetaTags();
+
+  const isFicha = location.pathname.includes('/personagens/') && location.pathname.split('/').length > 2;
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50/30 to-gray-100 dark:from-gray-950 dark:via-espirito-950/20 dark:to-gray-950 transition-all duration-500">
@@ -179,12 +182,15 @@ function AppContent() {
         </div>
       </header>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <Breadcrumbs />
+      <main className="flex-1 w-full py-4 sm:py-8">
+        <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${isFicha ? 'max-w-[1600px]' : 'max-w-7xl'}`}>
+          <Breadcrumbs />
+        </div>
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/entrar" element={<LoginPage />} />
           <Route path="/personagens" element={<PersonagensPage />} />
+          <Route path="/personagens/:id" element={<CharacterSheetDetailPage />} />
           <Route path="/campanhas" element={<CampanhasPage />} />
           <Route
             path="/criador"

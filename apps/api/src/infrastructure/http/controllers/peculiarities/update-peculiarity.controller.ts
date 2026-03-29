@@ -17,12 +17,10 @@ import { PeculiarityPresenter } from '../../presenters/peculiarity.presenter';
 
 const updatePeculiarityBodySchema = z.object({
   nome: z.string().min(3).max(100).optional(),
-  descricao: z.string().min(10).max(500).optional(),
+  descricao: z.string().min(10).max(10000).optional(),
   espiritual: z.boolean().optional(),
   isPublic: z.boolean().optional(),
-  icone: z
-    .union([z.url('Ícone deve ser um link válido'), z.null()])
-    .optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
 });
 
 type UpdatePeculiarityBodySchema = z.infer<typeof updatePeculiarityBodySchema>;

@@ -26,6 +26,10 @@ export class InMemoryPowersRepository extends PowersRepository {
     return filtered.slice(startIndex, endIndex);
   }
 
+  async findByCharacterId(characterId: string): Promise<Power[]> {
+    return this.items.filter((item) => item.characterId === characterId);
+  }
+
   async findByDomain(domainName: string, params: PaginationParams): Promise<Power[]> {
     const filtered = this.items.filter((item) => item.dominio.name === domainName);
 

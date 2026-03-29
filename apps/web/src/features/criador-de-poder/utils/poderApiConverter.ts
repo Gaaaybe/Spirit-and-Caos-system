@@ -60,27 +60,34 @@ function efeitoResponseToEfeitoAplicado(efeito: EfeitoAplicadoResponse): EfeitoA
  * Converte um `PoderResponse` (API) em `Poder` (editor interno).
  */
 export function poderResponseToPoder(p: PoderResponse): Poder {
+  if (!p) throw new Error('PoderResponse is required');
+
   return {
     id: p.id,
-    nome: p.nome,
-    descricao: p.descricao,
+    nome: p.nome || 'Poder sem nome',
+    descricao: p.descricao || '',
     icone: p.icone ?? undefined,
-    dominioId: p.dominio.name,
-    dominioAreaConhecimento: p.dominio.areaConhecimento ?? undefined,
-    dominioIdPeculiar: p.dominio.peculiarId ?? undefined,
-    efeitos: p.effects.map(efeitoResponseToEfeitoAplicado),
-    modificacoesGlobais: p.globalModifications.map((m, i) =>
+    dominioId: p.dominio?.name || 'natural',
+    dominioAreaConhecimento: p.dominio?.areaConhecimento ?? undefined,
+    dominioIdPeculiar: p.dominio?.peculiarId ?? undefined,
+    efeitos: (p.effects || []).map(efeitoResponseToEfeitoAplicado),
+    modificacoesGlobais: (p.globalModifications || []).map((m, i) =>
       modResponseToModAplicada(m, `global-mod-${i}`),
     ),
-    acao: p.parametros.acao,
-    alcance: p.parametros.alcance,
-    duracao: p.parametros.duracao,
+    acao: p.parametros?.acao ?? 0,
+    alcance: p.parametros?.alcance ?? 0,
+    duracao: p.parametros?.duracao ?? 0,
     custoAlternativo: p.custoAlternativo
       ? {
           tipo: p.custoAlternativo.tipo,
           descricao: p.custoAlternativo.descricao,
         }
       : undefined,
+    custoTotal: {
+      pda: p.custoTotal?.pda ?? 0,
+      pe: p.custoTotal?.pe ?? 0,
+      espacos: p.custoTotal?.espacos ?? 0,
+    },
   };
 }
 
@@ -108,7 +115,7 @@ export function poderResponseToPoderSalvo(p: PoderResponse): PoderSalvo {
  *  - `powers`    (API)  →  `poderes`   (legado)
  *  - `createdAt` (API)  →  `dataCriacao`
  */
-export function acervoResponseToAcervo(a: AcervoResponse): Acervo {
+export function acervoResponseToAcervo(a: AcervoResponse): Acervo & { custoTotal: { pda: number; pe: number; espacos: number } } {
   return {
     id: a.id,
     nome: a.nome,
@@ -120,6 +127,11 @@ export function acervoResponseToAcervo(a: AcervoResponse): Acervo {
     dominioId: a.dominio.name,
     dominioAreaConhecimento: a.dominio.areaConhecimento ?? undefined,
     dominioIdPeculiar: a.dominio.peculiarId ?? undefined,
+    custoTotal: {
+      pda: a.custoTotal.pda,
+      pe: a.custoTotal.pe,
+      espacos: a.custoTotal.espacos,
+    },
   };
 }
 
@@ -212,6 +224,14 @@ export interface PoderLegacy {
   acao?: number;
   alcance?: number;
   duracao?: number;
+  icone?: string;
+  notas?: string;
+  custoAlternativo?: {
+    tipo: 'pe' | 'pv' | 'atributo' | 'item' | 'material';
+    descricao?: string;
+    valorMaterial?: number;
+    usaEfeitoColateral?: boolean;
+  };
 }
 
 /**
@@ -285,5 +305,12 @@ export function legacyPoderToCreatePayload(raw: unknown): CreatePoderPayload {
         nota: m.nota,
       }),
     ),
+    icone: legacy.icone?.trim() || undefined,
+    notas: legacy.notas?.trim() || undefined,
+    custoAlternativo: legacy.custoAlternativo ? {
+      tipo: legacy.custoAlternativo.tipo,
+      quantidade: legacy.custoAlternativo.tipo === 'material' ? (legacy.custoAlternativo.valorMaterial ?? 1000) : 1,
+      descricao: legacy.custoAlternativo.descricao,
+    } : undefined,
   };
 }

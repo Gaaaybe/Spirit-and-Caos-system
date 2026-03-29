@@ -8,8 +8,10 @@ import { Accessory } from '../../enterprise/entities/accessory';
 import { Artifact } from '../../enterprise/entities/artifact';
 import { Consumable } from '../../enterprise/entities/consumable';
 import { DefensiveEquipment, EquipmentType } from '../../enterprise/entities/defensive-equipment';
+import { GeneralItem } from '../../enterprise/entities/general-item';
 import type { Item, ItemBaseProps } from '../../enterprise/entities/item';
 import { ItemType } from '../../enterprise/entities/item';
+import { UpgradeMaterial } from '../../enterprise/entities/upgrade-material';
 import { Weapon, WeaponRange } from '../../enterprise/entities/weapon';
 import type { DamageDescriptor } from '../../enterprise/entities/value-objects/damage-descriptor';
 import { ItemPowerArrayIdList } from '../../enterprise/entities/watched-lists/item-power-array-id-list';
@@ -31,6 +33,8 @@ interface UpdateItemCommonProps {
   notas?: string;
   powerIds?: string[];
   powerArrayIds?: string[];
+  canStack?: boolean;
+  maxStack?: number;
 }
 
 type UpdateItemRequest =
@@ -55,7 +59,13 @@ type UpdateItemRequest =
       qtdDoses?: number;
     })
   | (UpdateItemCommonProps & { tipo: ItemType.ARTIFACT })
-  | (UpdateItemCommonProps & { tipo: ItemType.ACCESSORY });
+  | (UpdateItemCommonProps & { tipo: ItemType.ACCESSORY })
+  | (UpdateItemCommonProps & { tipo: ItemType.GENERAL })
+  | (UpdateItemCommonProps & {
+      tipo: ItemType.UPGRADE_MATERIAL;
+      tier?: number;
+      maxUpgradeLimit?: number;
+    });
 
 interface UpdateItemUseCaseResponseData {
   item: Item<ItemBaseProps>;
@@ -154,7 +164,9 @@ export class UpdateItemUseCase {
       }
     } else {
       for (const currentPowerArrayId of existing.powerArrayIds.getItems()) {
-        const powerArray = await this.powerArraysLookupPort.findById(currentPowerArrayId.toString());
+        const powerArray = await this.powerArraysLookupPort.findById(
+          currentPowerArrayId.toString(),
+        );
 
         if (!powerArray) {
           return left(new ResourceNotFoundError());
@@ -184,6 +196,8 @@ export class UpdateItemUseCase {
       notas: request.notas,
       powerIds: newPowerIds,
       powerArrayIds: newPowerArrayIds,
+      canStack: request.canStack,
+      maxStack: request.maxStack,
     };
 
     let updatedItem: Item<ItemBaseProps>;
@@ -218,6 +232,14 @@ export class UpdateItemUseCase {
       updatedItem = existing.update(commonPartial);
     } else if (existing instanceof Accessory && request.tipo === ItemType.ACCESSORY) {
       updatedItem = existing.update(commonPartial);
+    } else if (existing instanceof GeneralItem && request.tipo === ItemType.GENERAL) {
+      updatedItem = existing.update(commonPartial);
+    } else if (existing instanceof UpgradeMaterial && request.tipo === ItemType.UPGRADE_MATERIAL) {
+      updatedItem = existing.update({
+        ...commonPartial,
+        tier: request.tier,
+        maxUpgradeLimit: request.maxUpgradeLimit,
+      });
     } else {
       return left(new NotAllowedError());
     }

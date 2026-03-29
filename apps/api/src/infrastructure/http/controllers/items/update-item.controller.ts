@@ -16,10 +16,7 @@ import { EquipmentType } from '@/domain/item-manager/enterprise/entities/defensi
 import { ItemType } from '@/domain/item-manager/enterprise/entities/item';
 import { DamageDescriptor } from '@/domain/item-manager/enterprise/entities/value-objects/damage-descriptor';
 import { WeaponRange } from '@/domain/item-manager/enterprise/entities/weapon';
-import {
-  Domain,
-  DomainName,
-} from '@/domain/shared/enterprise/value-objects/domain';
+import { Domain, DomainName } from '@/domain/shared/enterprise/value-objects/domain';
 import { CurrentUser } from '@/infrastructure/auth/current-user-decorator';
 import type { UserPayload } from '@/infrastructure/auth/jwt.strategy';
 import { ZodValidationPipe } from '../../pipes/zod-validation-pipe';
@@ -67,45 +64,47 @@ const commonOptional = {
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).optional(),
-  icone: z
-    .union([z.url('Ícone deve ser um link válido'), z.null()])
-    .optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
   powerArrayIds: z.array(z.string().min(1)).optional(),
+  canStack: z.boolean().optional(),
+  maxStack: z.number().int().min(2).optional(),
 };
 
 const updateItemBodySchema = z.discriminatedUnion('tipo', [
-  z.object({
-    ...commonOptional,
-    tipo: z.literal(ItemType.WEAPON),
-    danos: z.array(damageDescriptorSchema).min(1).optional(),
-    critMargin: z.number().int().min(2).max(20).optional(),
-    critMultiplier: z.number().int().min(1).max(7).optional(),
-    alcance: z
-      .enum([
-        WeaponRange.ADJACENTE,
-        WeaponRange.NATURAL,
-        WeaponRange.CURTO,
-        WeaponRange.MEDIO,
-        WeaponRange.LONGO,
-      ])
-      .optional(),
-    alcanceExtraMetros: z.number().min(0).multipleOf(0.5).optional(),
-    atributoEscalonamento: z.string().min(1).optional(),
-  }).superRefine((data, ctx) => {
-    const alcanceEfetivo = data.alcance;
+  z
+    .object({
+      ...commonOptional,
+      tipo: z.literal(ItemType.WEAPON),
+      danos: z.array(damageDescriptorSchema).min(1).optional(),
+      critMargin: z.number().int().min(2).max(20).optional(),
+      critMultiplier: z.number().int().min(1).max(7).optional(),
+      alcance: z
+        .enum([
+          WeaponRange.ADJACENTE,
+          WeaponRange.NATURAL,
+          WeaponRange.CURTO,
+          WeaponRange.MEDIO,
+          WeaponRange.LONGO,
+        ])
+        .optional(),
+      alcanceExtraMetros: z.number().min(0).multipleOf(0.5).optional(),
+      atributoEscalonamento: z.string().min(1).optional(),
+    })
+    .superRefine((data, ctx) => {
+      const alcanceEfetivo = data.alcance;
 
-    if (
-      alcanceEfetivo !== undefined &&
-      alcanceEfetivo !== WeaponRange.NATURAL &&
-      (data.alcanceExtraMetros ?? 0) > 0
-    ) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['alcanceExtraMetros'],
-        message: 'Apenas armas de alcance natural podem ter alcance extra',
-      });
-    }
-  }),
+      if (
+        alcanceEfetivo !== undefined &&
+        alcanceEfetivo !== WeaponRange.NATURAL &&
+        (data.alcanceExtraMetros ?? 0) > 0
+      ) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['alcanceExtraMetros'],
+          message: 'Apenas armas de alcance natural podem ter alcance extra',
+        });
+      }
+    }),
   z.object({
     ...commonOptional,
     tipo: z.literal(ItemType.DEFENSIVE_EQUIPMENT),
@@ -126,6 +125,16 @@ const updateItemBodySchema = z.discriminatedUnion('tipo', [
   z.object({
     ...commonOptional,
     tipo: z.literal(ItemType.ACCESSORY),
+  }),
+  z.object({
+    ...commonOptional,
+    tipo: z.literal(ItemType.GENERAL),
+  }),
+  z.object({
+    ...commonOptional,
+    tipo: z.literal(ItemType.UPGRADE_MATERIAL),
+    tier: z.number().int().min(1).max(4).optional(),
+    maxUpgradeLimit: z.number().int().min(1).optional(),
   }),
 ]);
 
@@ -162,6 +171,8 @@ export class UpdateItemController {
       powerIds: body.powerIds,
       icone: body.icone,
       powerArrayIds: body.powerArrayIds,
+      canStack: body.canStack,
+      maxStack: body.maxStack,
     };
 
     let result: Awaited<ReturnType<UpdateItemUseCase['execute']>>;
@@ -194,6 +205,15 @@ export class UpdateItemController {
       });
     } else if (body.tipo === ItemType.ARTIFACT) {
       result = await this.updateItem.execute({ ...common, tipo: ItemType.ARTIFACT });
+    } else if (body.tipo === ItemType.GENERAL) {
+      result = await this.updateItem.execute({ ...common, tipo: ItemType.GENERAL });
+    } else if (body.tipo === ItemType.UPGRADE_MATERIAL) {
+      result = await this.updateItem.execute({
+        ...common,
+        tipo: ItemType.UPGRADE_MATERIAL,
+        tier: body.tier,
+        maxUpgradeLimit: body.maxUpgradeLimit,
+      });
     } else {
       result = await this.updateItem.execute({ ...common, tipo: ItemType.ACCESSORY });
     }

@@ -153,6 +153,7 @@ describe('UpdatePowerUseCase', () => {
       expect(result.value.power.parametros.acao).toBe(1);
       expect(result.value.power.parametros.alcance).toBe(2);
       expect(result.value.power.parametros.duracao).toBe(3);
+      expect(result.value.power.custoTotal.pda).toBe(70);
     }
   });
 

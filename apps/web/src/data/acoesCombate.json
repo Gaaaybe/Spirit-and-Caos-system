@@ -1,0 +1,128 @@
+[
+  {
+    "id": "atacar",
+    "nome": "Atacar",
+    "tipo": "PADRAO",
+    "descricao": "Realiza um teste de ataque contra um oponente no seu alcance. Se o ataque for em área ou baseado em percepção, não é necessário fazer o teste de ataque, pois o efeito ocorre automaticamente."
+  },
+  {
+    "id": "atrasar",
+    "nome": "Atrasar",
+    "tipo": "PADRAO",
+    "descricao": "Permite que você aja mais tarde na ordem de Iniciativa. Você reduz sua Iniciativa voluntariamente pelo resto do combate e age no momento que escolher."
+  },
+  {
+    "id": "desengajar",
+    "nome": "Desengajar",
+    "tipo": "PADRAO",
+    "descricao": "Ao usar esta ação, o seu movimento pelo resto do turno não provoca ataques de oportunidade dos inimigos."
+  },
+  {
+    "id": "ajudar-combate",
+    "nome": "Ajudar em Combate",
+    "tipo": "PADRAO",
+    "descricao": "Você presta auxílio a um aliado. A criatura ajudada recebe vantagem no próximo teste de habilidade que fizer para completar a atividade, desde que o faça antes do seu próximo turno."
+  },
+  {
+    "id": "preparar",
+    "nome": "Preparar",
+    "tipo": "PADRAO",
+    "descricao": "Você prepara uma ação (padrão, movimento ou livre) para ser realizada mais tarde, estipulando uma circunstância específica. Quando o gatilho ocorrer, você usa sua Reação para realizar a ação preparada."
+  },
+  {
+    "id": "agarrar",
+    "nome": "Agarrar",
+    "tipo": "PADRAO",
+    "descricao": "Exige um teste de ataque com as mãos livres ou arma natural. Se vencer, a criatura fica Agarrada, e você se move com metade do deslocamento se quiser arrastá-la. Você pode soltá-la como ação livre, atacá-la com a mão livre, ou substituir um ataque por um novo teste para esmagá-la/sufocá-la (causando dano de impacto). O alvo pode tentar se soltar gastando uma Ação Padrão para vencer um teste de Força."
+  },
+  {
+    "id": "derrubar",
+    "nome": "Derrubar",
+    "tipo": "PADRAO",
+    "descricao": "Exige um teste de ataque no seu alcance natural. Se passar, o alvo fica sob a condição Caído (isso normalmente não causa dano direto)."
+  },
+  {
+    "id": "desarmar",
+    "nome": "Desarmar",
+    "tipo": "PADRAO",
+    "descricao": "Exige um teste de ataque. Se vencer, você derruba o item que o alvo está segurando. Se for um ataque desarmado, você pode pegar o item caindo como uma Ação Livre. Desarmar à distância só é possível com um acerto crítico."
+  },
+  {
+    "id": "empurrar",
+    "nome": "Empurrar",
+    "tipo": "PADRAO",
+    "descricao": "Exige um teste de ataque no alcance natural. Se passar, empurra o alvo 1,5 metros. Para cada 5 pontos de diferença no teste, você empurra mais 1,5m. Pode gastar uma Ação de Movimento para avançar junto com ele."
+  },
+  {
+    "id": "quebrar",
+    "nome": "Quebrar",
+    "tipo": "PADRAO",
+    "descricao": "Você tenta danificar um objeto vestido ou segurado pelo oponente. Exige um teste de ataque contra a defesa do alvo (ataques a objetos segurados sofrem +3 desvantagens). Se passar, causa dano ao objeto em vez do personagem."
+  },
+  {
+    "id": "recuperar-se",
+    "nome": "Recuperar-se",
+    "tipo": "PADRAO",
+    "descricao": "Utiliza o turno inteiro para reunir energia. Você remove o nível mais alto de dano ou fadiga, ou faz um teste de salvamento contra um efeito contínuo. Só pode ser usado uma vez por conflito. Ao se recuperar, você recebe +2 nas suas defesas ativas até o próximo turno."
+  },
+  {
+    "id": "mover-se",
+    "nome": "Mover-se",
+    "tipo": "MOVIMENTO",
+    "descricao": "Você se desloca até o limite do seu deslocamento (o padrão terrestre é 9m). Você pode fazer um teste de Atletismo (CD 15) como uma Ação Livre para tentar correr mais rápido (+1 grau de velocidade por grau de sucesso)."
+  },
+  {
+    "id": "mirar",
+    "nome": "Mirar",
+    "tipo": "MOVIMENTO",
+    "descricao": "Ajusta o seu ataque para o próximo golpe, que deve obrigatoriamente ser um ataque na mesma rodada. Concede +2 vantagens para ataques corpo a corpo ou à distância curtos, e +1 vantagem para distâncias maiores."
+  },
+  {
+    "id": "comandar",
+    "nome": "Comandar",
+    "tipo": "MOVIMENTO",
+    "descricao": "Dá uma ordem a um personagem controlado ou lacaio. Para comandar mais de um grupo diferente, você precisará gastar ações de movimento adicionais."
+  },
+  {
+    "id": "levantar-se",
+    "nome": "Levantar-se",
+    "tipo": "MOVIMENTO",
+    "descricao": "Passar da posição Caído para em pé. Pode ser feito como Ação Livre se o personagem for bem-sucedido em um teste de Acrobacia ou possuir o benefício De Pé."
+  },
+  {
+    "id": "investida",
+    "nome": "Investida",
+    "tipo": "COMPLETA",
+    "descricao": "Você avança até o dobro do seu deslocamento (mínimo de 3 metros) em linha reta e faz um ataque corpo a corpo no final. Você ganha vantagem no ataque, mas fica Vulnerável até o seu próximo turno. Não pode ser feito em terreno difícil."
+  },
+  {
+    "id": "golpe-misericordia",
+    "nome": "Golpe de Misericórdia",
+    "tipo": "COMPLETA",
+    "descricao": "Um golpe fatal realizado contra um alvo que esteja Inconsciente ou Morrendo. Mata a criatura instantaneamente, embora jogadores e NPCs importantes tenham a chance de rolar o dado de Lesões em vez de morrerem automaticamente."
+  },
+  {
+    "id": "ataque-duas-armas",
+    "nome": "Ataque com Duas Armas",
+    "tipo": "LIVRE",
+    "descricao": "Se você estiver atacando com uma arma de uma mão, pode usar uma Ação Livre para realizar um ataque extra com a arma da outra mão. Esse segundo golpe usa a mesma rolagem de acerto do primeiro, mas não soma o seu modificador de atributo no dano."
+  },
+  {
+    "id": "quebra-movimento",
+    "nome": "Quebra de Movimento",
+    "tipo": "REGRA",
+    "descricao": "Você pode fracionar a sua ação de movimento. Se você tem 9 metros, pode andar 3 metros, atacar (ação padrão), e depois andar os 6 metros restantes."
+  },
+  {
+    "id": "ataque-furtivo",
+    "nome": "Ataque Camuflado / Furtivo",
+    "tipo": "REGRA",
+    "descricao": "Se o alvo tem camuflagem parcial, os ataques contra ele têm 25% de chance de errar (1 em 1d4). Se a camuflagem for total, a chance de erro é de 50% (1 em 1d2). Estar camuflado concede ao atacante +1 ou +2 vantagens em seus ataques."
+  },
+  {
+    "id": "ataque-oportunidade",
+    "nome": "Ataque de Oportunidade",
+    "tipo": "REACAO",
+    "descricao": "É uma Reação disparada quando um inimigo passa ou sai do seu alcance de ameaça desprevenidamente. O ataque interrompe o movimento do alvo um instante antes de ele sair do alcance."
+  }
+]

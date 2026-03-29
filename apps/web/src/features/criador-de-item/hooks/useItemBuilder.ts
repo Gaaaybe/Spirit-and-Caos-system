@@ -6,6 +6,15 @@ import type {
   ItemType,
 } from '@/services/types';
 
+export const UPGRADE_PATAMARES = [
+  { id: 1, nome: 'Fragmento', tier: 1, maxUpgradeLimit: 2, custoBase: 500 },
+  { id: 2, nome: 'Estilhaço', tier: 2, maxUpgradeLimit: 4, custoBase: 5000 },
+  { id: 3, nome: 'Pedaço', tier: 3, maxUpgradeLimit: 6, custoBase: 50000 },
+  { id: 4, nome: 'Placa', tier: 4, maxUpgradeLimit: 9, custoBase: 100000 },
+] as const;
+
+export type UpgradePatamarId = (typeof UPGRADE_PATAMARES)[number]['id'];
+
 interface ItemBuilderState {
   tipo: ItemType;
   nome: string;
@@ -40,6 +49,11 @@ interface ItemBuilderState {
     qtdDoses: number;
     isRefeicao: boolean;
   };
+  upgradeMaterial: {
+    patamarId: UpgradePatamarId;
+    tier: number;
+    maxUpgradeLimit: number;
+  };
 }
 
 const createInitialState = (): ItemBuilderState => ({
@@ -72,6 +86,11 @@ const createInitialState = (): ItemBuilderState => ({
     qtdDoses: 1,
     isRefeicao: false,
   },
+  upgradeMaterial: {
+    patamarId: 1 as UpgradePatamarId,
+    tier: 1,
+    maxUpgradeLimit: 2,
+  },
 });
 
 export function useItemBuilder() {
@@ -100,6 +119,7 @@ export function useItemBuilder() {
         weapon: prev.tipo === item.tipo ? prev.weapon : createInitialState().weapon,
         defensive: prev.tipo === item.tipo ? prev.defensive : createInitialState().defensive,
         consumable: prev.tipo === item.tipo ? prev.consumable : createInitialState().consumable,
+        upgradeMaterial: prev.tipo === item.tipo ? prev.upgradeMaterial : createInitialState().upgradeMaterial,
       } satisfies ItemBuilderState;
 
       if (item.tipo === 'weapon') {
@@ -126,6 +146,15 @@ export function useItemBuilder() {
           descritorEfeito: item.descritorEfeito,
           qtdDoses: item.qtdDoses,
           isRefeicao: item.isRefeicao,
+        };
+      }
+
+      if (item.tipo === 'upgrade-material') {
+        const patamar = UPGRADE_PATAMARES.find((p) => p.tier === item.tier) ?? UPGRADE_PATAMARES[0];
+        next.upgradeMaterial = {
+          patamarId: patamar.id,
+          tier: item.tier,
+          maxUpgradeLimit: item.maxUpgradeLimit,
         };
       }
 
@@ -221,6 +250,20 @@ export function useItemBuilder() {
     value: string | number | boolean,
   ) => {
     setState((prev) => ({ ...prev, consumable: { ...prev.consumable, [key]: value } }));
+  };
+
+  const setUpgradeMaterialPatamar = (patamarId: UpgradePatamarId) => {
+    const patamar = UPGRADE_PATAMARES.find((p) => p.id === patamarId);
+    if (!patamar) return;
+    setState((prev) => ({
+      ...prev,
+      custoBase: patamar.custoBase,
+      upgradeMaterial: {
+        patamarId,
+        tier: patamar.tier,
+        maxUpgradeLimit: patamar.maxUpgradeLimit,
+      },
+    }));
   };
 
   const getValidationErrors = () => {
@@ -325,7 +368,20 @@ export function useItemBuilder() {
       return { ...common, tipo: 'artifact' };
     }
 
-    return { ...common, tipo: 'accessory' };
+    if (state.tipo === 'accessory') {
+      return { ...common, tipo: 'accessory' };
+    }
+
+    if (state.tipo === 'general') {
+      return { ...common, tipo: 'general' };
+    }
+
+    return {
+      ...common,
+      tipo: 'upgrade-material',
+      tier: state.upgradeMaterial.tier,
+      maxUpgradeLimit: state.upgradeMaterial.maxUpgradeLimit,
+    };
   };
 
   const reset = () => {
@@ -345,6 +401,7 @@ export function useItemBuilder() {
     updateWeaponField,
     updateDefensiveField,
     updateConsumableField,
+    setUpgradeMaterialPatamar,
     hydrateFromItem,
     getValidationErrors,
     buildPayload,

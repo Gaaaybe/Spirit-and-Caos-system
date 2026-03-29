@@ -69,9 +69,7 @@ const updatePowerArrayBodySchema = z.object({
   powerIds: z.array(z.string()).min(1).optional(),
   isPublic: z.boolean().optional(),
   notas: z.string().max(2000).optional(),
-  icone: z
-    .union([z.url('Ícone deve ser um link válido'), z.null()])
-    .optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
 });
 
 const DOMAIN_NAME_MAP: Record<string, DomainName> = {

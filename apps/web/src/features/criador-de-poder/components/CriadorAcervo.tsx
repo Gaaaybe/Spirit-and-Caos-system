@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Modal, ModalFooter, Button, Input, Badge, Card, toast, InlineHelp, EmptyState } from '../../../shared/ui';
 import { usePowerArrays } from '../hooks/usePowerArrays';
 import { useBibliotecaPoderes } from '../hooks/useBibliotecaPoderes';
@@ -28,24 +28,31 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
   const [poderesSelecionados, setPoderesSelecionados] = useState<Poder[]>(acervoInicial?.poderes || []);
   const [buscaPoder, setBuscaPoder] = useState('');
   const [salvando, setSalvando] = useState(false);
+  const loadedAcervoId = useRef<string | null>(null);
 
   // Sincronizar estado quando acervoInicial mudar ou modal abrir
   useEffect(() => {
     if (isOpen) {
-      if (acervoInicial) {
-        // Modo edição: carregar dados
-        setNome(acervoInicial.nome);
-        setDescritor(acervoInicial.descritor);
-        setIcone(acervoInicial.icone || '');
-        setPoderesSelecionados(acervoInicial.poderes);
-      } else {
-        // Modo criar: limpar campos
-        setNome('');
-        setDescritor('');
-        setIcone('');
-        setPoderesSelecionados([]);
+      const currentId = acervoInicial?.id || 'new';
+      if (currentId !== loadedAcervoId.current) {
+        if (acervoInicial) {
+          // Modo edição: carregar dados
+          setNome(acervoInicial.nome);
+          setDescritor(acervoInicial.descritor);
+          setIcone(acervoInicial.icone || '');
+          setPoderesSelecionados(acervoInicial.poderes);
+        } else {
+          // Modo criar: limpar campos
+          setNome('');
+          setDescritor('');
+          setIcone('');
+          setPoderesSelecionados([]);
+        }
+        setBuscaPoder('');
+        loadedAcervoId.current = currentId;
       }
-      setBuscaPoder('');
+    } else {
+      loadedAcervoId.current = null;
     }
   }, [acervoInicial, isOpen]);
 

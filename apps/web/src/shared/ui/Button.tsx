@@ -22,7 +22,7 @@ export function Button({
   className = '',
   ...props 
 }: ButtonProps) {
-  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 hover:scale-105";
+  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 hover:scale-105";
   
   const variants = {
     primary: "bg-gradient-to-r from-espirito-600 to-espirito-500 hover:from-espirito-700 hover:to-espirito-600 text-white focus:ring-espirito-500 shadow-lg hover:shadow-xl hover:shadow-espirito-500/50 dark:from-espirito-500 dark:to-espirito-400 dark:hover:from-espirito-600 dark:hover:to-espirito-500 dark:hover:shadow-espirito-400/30",

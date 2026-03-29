@@ -7,6 +7,7 @@ interface BottomSheetProps {
   title?: string;
   children: React.ReactNode;
   showCloseButton?: boolean;
+  closeOnOverlayClick?: boolean;
   maxHeight?: string;
 }
 
@@ -16,6 +17,7 @@ export function BottomSheet({
   title,
   children,
   showCloseButton = true,
+  closeOnOverlayClick = false,
   maxHeight = '90vh'
 }: BottomSheetProps) {
   useEffect(() => {
@@ -48,7 +50,7 @@ export function BottomSheet({
       {/* Backdrop */}
       <div 
         className="fixed inset-0 z-50 bg-black bg-opacity-50 backdrop-blur-sm animate-fade-in"
-        onClick={onClose}
+        onClick={() => closeOnOverlayClick && onClose()}
       />
       
       {/* Bottom Sheet */}

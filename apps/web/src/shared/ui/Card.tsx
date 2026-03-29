@@ -13,7 +13,7 @@ export function Card({
   hover = false,
   ...props 
 }: CardProps) {
-  const baseClasses = "bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-xl border border-gray-200/80 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/70";
+  const baseClasses = "bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-lg border border-gray-200/80 dark:border-gray-700/50 shadow-lg dark:shadow-gray-900/70";
   
   const paddingClasses = {
     none: '',

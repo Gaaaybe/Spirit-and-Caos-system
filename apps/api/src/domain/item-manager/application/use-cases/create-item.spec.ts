@@ -176,7 +176,7 @@ describe('CreateItemUseCase', () => {
   });
 
   it('should associate powers with matching domain', async () => {
-    powersLookupPort.powers.push({
+    powersLookupPort.items.push({
       id: 'power-1',
       nome: 'Fio Cortante',
       domainName: DomainName.ARMA_BRANCA,
@@ -205,7 +205,7 @@ describe('CreateItemUseCase', () => {
   });
 
   it('should return InvalidItemDomainError if power domain does not match item domain', async () => {
-    powersLookupPort.powers.push({
+    powersLookupPort.items.push({
       id: 'power-sagrado',
       nome: 'Chama Divina',
       domainName: DomainName.SAGRADO,
@@ -252,14 +252,14 @@ describe('CreateItemUseCase', () => {
   });
 
   it('should calculate item level from linked powers and power arrays', async () => {
-    powersLookupPort.powers.push({
+    powersLookupPort.items.push({
       id: 'power-1',
       nome: 'Fio Cortante',
       domainName: DomainName.ARMA_BRANCA,
       itemLevelContribution: 3,
     });
 
-    powerArraysLookupPort.powerArrays.push({
+    powerArraysLookupPort.items.push({
       id: 'array-1',
       nome: 'Arsenal Cortante',
       domainName: DomainName.ARMA_BRANCA,
@@ -328,4 +328,3 @@ describe('CreateItemUseCase', () => {
     }
   });
 });
-

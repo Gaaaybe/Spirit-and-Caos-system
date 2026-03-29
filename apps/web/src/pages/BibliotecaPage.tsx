@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState } from '../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState, Badge, Select } from '../shared/ui';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
-import { SwipeablePoderCard } from '../features/criador-de-poder/components/SwipeablePoderCard';
+import { SwipeablePoderCard, DOMINIO_VISUAL } from '../features/criador-de-poder/components/SwipeablePoderCard';
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
 import { ListaAcervos } from '../features/criador-de-poder/components/ListaAcervos';
 import { usePowerArrays } from '../features/criador-de-poder/hooks/usePowerArrays';
@@ -9,13 +9,15 @@ import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder
 import { useItems } from '../features/criador-de-item/hooks/useItems';
 import { ResumoItem } from '../features/criador-de-item/components/ResumoItem';
 import { ResumoVinculoModal } from '../features/criador-de-item/components/ResumoVinculoModal';
-import { SwipeableItemCard } from '../features/criador-de-item/components/SwipeableItemCard';
+import { SwipeableItemCard, TIPO_ITEM_VISUAL } from '../features/criador-de-item/components/SwipeableItemCard';
 import { poderResponseToPoderSalvo, poderResponseToPoder, legacyPoderToCreatePayload } from '../features/criador-de-poder/utils/poderApiConverter';
 import { calcularDetalhesPoder } from '../features/criador-de-poder/regras/calculadoraCusto';
 import { useCatalog } from '../context/useCatalog';
 import { useNavigate } from 'react-router-dom';
 import { Library, Sparkles, Plus, Package, RefreshCw, AlertCircle, Download, Upload } from 'lucide-react';
+import { getErrorMessage } from '../shared/utils/error-handler';
 import type { PoderResponse, CreatePoderPayload, ItemResponse } from '../services/types';
+import type { PoderSalvo } from '../features/criador-de-poder/types';
 
 export function BibliotecaPage() {
   const navigate = useNavigate();
@@ -68,16 +70,18 @@ export function BibliotecaPage() {
   const [duplicandoId, setDuplicandoId] = useState<string | null>(null);
   const [exportandoId, setExportandoId] = useState<string | null>(null);
   const [exportandoTodos, setExportandoTodos] = useState(false);
-  const [importando, setImportando] = useState(false);
   const [togglePublicId, setTogglePublicId] = useState<string | null>(null);
   const [buscaItens, setBuscaItens] = useState('');
+  const [importando, setImportando] = useState(false);
+  const [filtroDominio, setFiltroDominio] = useState<string>('todos');
+  const [ordemItens, setOrdemItens] = useState<'nome' | 'nivel' | 'preco' | 'recentes'>('recentes');
   const [carregandoItemId, setCarregandoItemId] = useState<string | null>(null);
   const [deletandoItemId, setDeletandoItemId] = useState<string | null>(null);
   const [togglePublicItemId, setTogglePublicItemId] = useState<string | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
-  const [abaAtiva, setAbaAtiva] = useState<'poderes' | 'itens' | 'acervos' | 'customizados'>(() => {
+  const [abaAtiva, setAbaAtiva] = useState<'poderes' | 'itens' | 'acervos' | 'peculiaridades'>(() => {
     const saved = localStorage.getItem('biblioteca-aba-ativa');
-    return (saved as 'poderes' | 'itens' | 'acervos' | 'customizados') || 'poderes';
+    return (saved as 'poderes' | 'itens' | 'acervos' | 'peculiaridades') || 'poderes';
   });
 
   // Persistir aba ativa
@@ -88,20 +92,111 @@ export function BibliotecaPage() {
   // Converte PoderResponse[] → PoderSalvo[] para exibição no SwipeablePoderCard
   const poderesSalvos = useMemo(() => poderes.map(poderResponseToPoderSalvo), [poderes]);
 
-  const poderesFiltrados = poderesSalvos.filter((p) =>
-    p.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    (p.descricao && p.descricao.toLowerCase().includes(busca.toLowerCase())),
-  );
+  const poderesFiltrados = useMemo(() => {
+    return poderesSalvos.filter((p) => {
+      const matchBusca = p.nome.toLowerCase().includes(busca.toLowerCase()) || 
+                        (p.descricao && p.descricao.toLowerCase().includes(busca.toLowerCase()));
+      const matchDominio = filtroDominio === 'todos' || p.dominioId === filtroDominio;
+      // Para o patamar, precisaríamos dos detalhes do poder (não estão em PoderSalvo diretamente)
+      // Se necessário, faríamos uma filtragem mais profunda aqui
+      return matchBusca && matchDominio;
+    });
+  }, [poderesSalvos, busca, filtroDominio]);
 
-  const itensFiltrados = useMemo(
-    () =>
-      items.filter(
-        (item) =>
-          item.nome.toLowerCase().includes(buscaItens.toLowerCase()) ||
-          item.descricao.toLowerCase().includes(buscaItens.toLowerCase()),
-      ),
-    [items, buscaItens],
-  );
+  const itensFiltrados = useMemo(() => {
+    const filtrados = items.filter((item) => {
+      const matchBusca = item.nome.toLowerCase().includes(buscaItens.toLowerCase()) || 
+                        item.descricao.toLowerCase().includes(buscaItens.toLowerCase());
+      const matchDominio = filtroDominio === 'todos' || item.dominio.name === filtroDominio;
+      return matchBusca && matchDominio;
+    });
+
+    return [...filtrados].sort((a, b) => {
+      if (ordemItens === 'nome') return a.nome.localeCompare(b.nome);
+      if (ordemItens === 'nivel') return (b.nivelItem || 0) - (a.nivelItem || 0);
+      if (ordemItens === 'preco') return (b.valorBase || 0) - (a.valorBase || 0);
+      if (ordemItens === 'recentes') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return 0;
+    });
+  }, [items, buscaItens, filtroDominio, ordemItens]);
+  
+  // Agrupar poderes por domínio para exibição organizada
+  const dominiosMap = useMemo(() => {
+    const map: Record<string, { nome: string, poderes: PoderSalvo[] }> = {};
+    
+    // Obter nomes reais dos domínios do contexto/data (simulado aqui ou importado)
+    // Para simplificar, usamos um mapeamento estático baseado nos IDs conhecidos
+    const nomesDominiios: Record<string, string> = {
+      natural: 'Domínio Natural',
+      sagrado: 'Domínio Sagrado',
+      sacrilegio: 'Domínio Sacrilégio',
+      psiquico: 'Domínio Psíquico',
+      cientifico: 'Domínio Científico',
+      peculiar: 'Domínio Peculiar',
+      'arma-branca': 'Armas Brancas',
+      'arma-fogo': 'Armas de Fogo',
+      'arma-tensao': 'Armas de Tensão',
+      'arma-explosiva': 'Armas Explosivas',
+      'arma-tecnologica': 'Armas Tecnológicas',
+    };
+
+    poderesFiltrados.forEach(p => {
+      const domId = p.dominioId || 'natural';
+      if (!map[domId]) {
+        map[domId] = { 
+          nome: nomesDominiios[domId] || `Domínio: ${domId}`, 
+          poderes: [] 
+        };
+      }
+      map[domId].poderes.push(p);
+    });
+
+    return map;
+  }, [poderesFiltrados]);
+
+  // Agrupar itens por tipo
+  const itensAgrupados = useMemo(() => {
+    const map: Record<string, { nome: string, items: ItemResponse[] }> = {};
+    
+    itensFiltrados.forEach(item => {
+      const tipo = item.tipo;
+      if (!map[tipo]) {
+        const labels: Record<string, string> = {
+          weapon: 'Armas',
+          'defensive-equipment': 'Equipamentos Defensivos',
+          consumable: 'Consumíveis',
+          artifact: 'Artefatos',
+          accessory: 'Acessórios',
+          general: 'Itens Gerais',
+          'upgrade-material': 'Materiais de Upgrade'
+        };
+        map[tipo] = { nome: labels[tipo] || tipo, items: [] };
+      }
+      map[tipo].items.push(item);
+    });
+
+    return map;
+  }, [itensFiltrados]);
+
+  const tiposOrdenados = useMemo(() => {
+    const ordem = ['weapon', 'defensive-equipment', 'consumable', 'artifact', 'accessory', 'general', 'upgrade-material'];
+    return Object.keys(itensAgrupados).sort((a, b) => ordem.indexOf(a) - ordem.indexOf(b));
+  }, [itensAgrupados]);
+
+  // Lista de IDs de domínios ordenados alfabeticamente ou por importância
+  const dominiosOrdenados = useMemo(() => {
+    return Object.keys(dominiosMap).sort((a, b) => {
+      // Prioridade para domínios espirituais, depois Armas
+      const prioridade = ['natural', 'sagrado', 'sacrilegio', 'psiquico', 'cientifico', 'peculiar'];
+      const idxA = prioridade.indexOf(a);
+      const idxB = prioridade.indexOf(b);
+      
+      if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+      if (idxA !== -1) return -1;
+      if (idxB !== -1) return 1;
+      return a.localeCompare(b);
+    });
+  }, [dominiosMap]);
 
   // ─── Ações ────────────────────────────────────────────────────────────────────
 
@@ -116,8 +211,8 @@ export function BibliotecaPage() {
       localStorage.setItem('criador-aba-ativa', JSON.stringify('poderes'));
       navigate('/criador');
       toast.success(`Poder "${poderResp.nome}" carregado!`);
-    } catch {
-      toast.error('Erro ao carregar poder no editor.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setCarregandoId(null);
     }
@@ -128,8 +223,8 @@ export function BibliotecaPage() {
     try {
       await deletar(id);
       toast.success(`Poder "${nome}" deletado.`);
-    } catch {
-      toast.error(`Erro ao deletar "${nome}".`);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setDeletandoId(null);
     }
@@ -173,8 +268,8 @@ export function BibliotecaPage() {
       };
       await criar(payload);
       toast.success(`Cópia de "${nome}" criada.`);
-    } catch {
-      toast.error(`Erro ao duplicar "${nome}".`);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setDuplicandoId(null);
     }
@@ -185,8 +280,8 @@ export function BibliotecaPage() {
     try {
       await atualizar(poder.id, { isPublic: !poder.isPublic });
       toast.success(poder.isPublic ? `"${poder.nome}" agora é privado.` : `"${poder.nome}" publicado!`);
-    } catch {
-      toast.error('Erro ao alterar visibilidade.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setTogglePublicId(null);
     }
@@ -199,8 +294,8 @@ export function BibliotecaPage() {
       localStorage.setItem('criador-aba-ativa', JSON.stringify('itens'));
       navigate('/criador');
       toast.success(`Item "${item.nome}" carregado no criador.`);
-    } catch {
-      toast.error('Erro ao carregar item no criador.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setCarregandoItemId(null);
     }
@@ -211,8 +306,8 @@ export function BibliotecaPage() {
     try {
       await deletarItem(item.id);
       toast.success(`Item "${item.nome}" deletado.`);
-    } catch {
-      toast.error(`Erro ao deletar "${item.nome}".`);
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setDeletandoItemId(null);
     }
@@ -226,8 +321,8 @@ export function BibliotecaPage() {
         isPublic: !item.isPublic,
       });
       toast.success(item.isPublic ? `"${item.nome}" agora é privado.` : `"${item.nome}" publicado!`);
-    } catch {
-      toast.error('Erro ao alterar visibilidade do item.');
+    } catch (err) {
+      toast.error(getErrorMessage(err));
     } finally {
       setTogglePublicItemId(null);
     }
@@ -272,10 +367,10 @@ export function BibliotecaPage() {
           falhou++;
         }
       }
-      if (ok > 0) toast.success(`${ok} poder${ok > 1 ? 'es' : ''} importado${ok > 1 ? 's' : ''} com sucesso!`);
-      if (falhou > 0) toast.error(`${falhou} poder${falhou > 1 ? 'es' : ''} não pud${falhou > 1 ? 'eram' : 'e'} ser importado${falhou > 1 ? 's' : ''}.`);
-    } catch {
-      toast.error('Arquivo inválido. Certifique-se de usar um JSON exportado pelo Aetherium.');
+      if (ok > 0) toast.success(`Sucesso! ${ok} poder${ok > 1 ? 'es' : ''} importado${ok > 1 ? 's' : ''} e salvo${ok > 1 ? 's' : ''} na biblioteca.`);
+      if (falhou > 0) toast.error(`${falhou} poder${falhou > 1 ? 'es' : ''} falhou na importação devido a erros de formato.`);
+    } catch (err: any) {
+      toast.error(err?.message || 'Arquivo inválido. Certifique-se de usar um JSON exportado pelo Aetherium.');
     } finally {
       setImportando(false);
     }
@@ -310,21 +405,21 @@ export function BibliotecaPage() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Abas de navegação */}
       <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700">
-        {(['poderes', 'itens', 'acervos', 'customizados'] as const).map((aba) => {
+        {(['poderes', 'itens', 'acervos', 'peculiaridades'] as const).map((aba) => {
           const labels = {
             poderes: 'Poderes Salvos',
             itens: 'Itens Salvos',
             acervos: 'Acervos',
-            customizados: 'Itens Customizados',
+            peculiaridades: 'Peculiaridades',
           };
           const icons = {
             poderes: <Library className="w-4 h-4" />,
             itens: <Package className="w-4 h-4" />,
             acervos: <Package className="w-4 h-4" />,
-            customizados: <Sparkles className="w-4 h-4" />,
+            peculiaridades: <Sparkles className="w-4 h-4" />,
           };
           return (
             <button
@@ -422,6 +517,42 @@ export function BibliotecaPage() {
           )}
 
           {/* Lista de poderes */}
+          {/* Barra de Filtros e Busca */}
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="flex-1">
+              <Input
+                placeholder="Buscar por nome ou descrição..."
+                value={abaAtiva === 'poderes' ? busca : buscaItens}
+                onChange={(e) => (abaAtiva === 'poderes' ? setBusca(e.target.value) : setBuscaItens(e.target.value))}
+                className="w-full"
+              />
+            </div>
+            <div className="flex gap-2 min-w-[200px]">
+              <Select
+                value={filtroDominio}
+                onChange={(e) => setFiltroDominio(e.target.value)}
+                options={[
+                  { value: 'todos', label: 'Todos os Domínios' },
+                  ...Object.keys(DOMINIO_VISUAL).map(id => {
+                    const nomes: Record<string, string> = {
+                      natural: 'Natural', sagrado: 'Sagrado', sacrilegio: 'Sacrilégio',
+                      psiquico: 'Psíquico', cientifico: 'Científico', peculiar: 'Peculiar',
+                      'arma-branca': 'Arma Branca', 'arma-fogo': 'Arma de Fogo',
+                      'arma-tensao': 'Arma de Tensão', 'arma-explosiva': 'Arma Explosiva',
+                      'arma-tecnologica': 'Arma Tecnológica'
+                    };
+                    return { value: id, label: nomes[id] || id };
+                  })
+                ]}
+              />
+              {(filtroDominio !== 'todos' || busca !== '' || buscaItens !== '') && (
+                <Button variant="ghost" size="sm" onClick={() => { setFiltroDominio('todos'); setBusca(''); setBuscaItens(''); }}>
+                  Limpar
+                </Button>
+              )}
+            </div>
+          </div>
+
           {!loading && poderesFiltrados.length === 0 ? (
             <EmptyState
               icon={<Library className="w-12 h-12 text-gray-400" />}
@@ -438,27 +569,50 @@ export function BibliotecaPage() {
               }}
             />
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {poderesFiltrados.map((poderSalvo) => {
-                const poderResp = poderes.find((p) => p.id === poderSalvo.id)!;
+            <div className="space-y-12">
+              {dominiosOrdenados.map(domId => {
+                const { nome, poderes: poderesDoGrupo } = dominiosMap[domId];
+                if (poderesDoGrupo.length === 0) return null;
+                const visualHeader = DOMINIO_VISUAL[domId] || DOMINIO_VISUAL.natural;
+
                 return (
-                  <SwipeablePoderCard
-                    key={poderSalvo.id}
-                    poder={poderSalvo}
-                    isPublic={poderResp.isPublic}
-                    onCarregar={() => handleCarregar(poderResp)}
-                    onDuplicar={() => handleDuplicar(poderResp, poderSalvo.nome)}
-                    onExportar={() => handleExportar(poderResp, poderSalvo.nome)}
-                    onDeletar={() => handleDeletar(poderSalvo.id, poderSalvo.nome)}
-                    onTogglePublic={() => handleTogglePublic(poderResp)}
-                    onVerResumo={() => setPoderVisualizando(poderResp)}
-                    formatarData={formatarData}
-                    carregandoId={carregandoId}
-                    deletandoId={deletandoId}
-                    duplicandoId={duplicandoId}
-                    exportandoId={exportandoId}
-                    togglePublicId={togglePublicId}
-                  />
+                  <div key={domId} className="space-y-6">
+                    <div className="flex items-center gap-4 p-2 rounded-r-xl bg-gradient-to-r from-gray-50/50 to-transparent dark:from-gray-900/20">
+                      <div className={`w-1.5 h-8 rounded-full ${visualHeader.borderColor.replace('border-', 'bg-')} shadow-[0_0_10px_rgba(0,0,0,0.1)]`} />
+                      <h3 className={`text-xl font-black uppercase tracking-tighter whitespace-nowrap ${visualHeader.color} drop-shadow-sm`}>
+                        {nome}
+                      </h3>
+                      <div className="h-px bg-gray-200 dark:bg-gray-700 w-full opacity-30"></div>
+                      <Badge variant="secondary" className={`${visualHeader.color.replace('text-', 'bg-').replace('600', '100').replace('400', '900/40')} border-none px-3 font-bold shadow-sm`}>
+                        {poderesDoGrupo.length}
+                      </Badge>
+                    </div>
+                    
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {poderesDoGrupo.map((poderSalvo) => {
+                        const poderResp = poderes.find((p) => p.id === poderSalvo.id)!;
+                        return (
+                          <SwipeablePoderCard
+                            key={poderSalvo.id}
+                            poder={poderSalvo}
+                            isPublic={poderResp.isPublic}
+                            onCarregar={() => handleCarregar(poderResp)}
+                            onDuplicar={() => handleDuplicar(poderResp, poderSalvo.nome)}
+                            onExportar={() => handleExportar(poderResp, poderSalvo.nome)}
+                            onDeletar={() => handleDeletar(poderSalvo.id, poderSalvo.nome)}
+                            onTogglePublic={() => handleTogglePublic(poderResp)}
+                            onVerResumo={() => setPoderVisualizando(poderResp)}
+                            formatarData={formatarData}
+                            carregandoId={carregandoId}
+                            deletandoId={deletandoId}
+                            duplicandoId={duplicandoId}
+                            exportandoId={exportandoId}
+                            togglePublicId={togglePublicId}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
                 );
               })}
             </div>
@@ -496,11 +650,49 @@ export function BibliotecaPage() {
             </CardHeader>
             <CardContent>
               {items.length > 0 && !loadingItens && (
-                <Input
-                  placeholder="Buscar por nome ou descrição..."
-                  value={buscaItens}
-                  onChange={(e) => setBuscaItens(e.target.value)}
-                />
+                <div className="flex flex-col md:flex-row gap-4">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Buscar por nome ou descrição..."
+                      value={buscaItens}
+                      onChange={(e) => setBuscaItens(e.target.value)}
+                    />
+                  </div>
+                  <div className="flex gap-2 min-w-[300px]">
+                    <Select
+                      value={filtroDominio}
+                      onChange={(e) => setFiltroDominio(e.target.value)}
+                      options={[
+                        { value: 'todos', label: 'Todos os Domínios' },
+                        ...Object.keys(DOMINIO_VISUAL).map(id => {
+                          const nomes: Record<string, string> = {
+                            natural: 'Natural', sagrado: 'Sagrado', sacrilegio: 'Sacrilégio',
+                            psiquico: 'Psíquico', cientifico: 'Científico', peculiar: 'Peculiar',
+                            'arma-branca': 'Arma Branca', 'arma-fogo': 'Arma de Fogo',
+                            'arma-tensao': 'Arma de Tensão', 'arma-explosiva': 'Arma Explosiva',
+                            'arma-tecnologica': 'Arma Tecnológica'
+                          };
+                          return { value: id, label: nomes[id] || id };
+                        })
+                      ]}
+                    />
+                    <Select
+                      value={ordemItens}
+                      onChange={(e) => setOrdemItens(e.target.value as any)}
+                      options={[
+                        { value: 'recentes', label: 'Mais Recentes' },
+                        { value: 'preco', label: 'Preço (Maior)' },
+                        { value: 'nivel', label: 'Nível (Maior)' },
+                        { value: 'nome', label: 'Nome (A-Z)' },
+                      ]}
+                    />
+                    {(filtroDominio !== 'todos' || buscaItens !== '') && (
+                      <Button variant="ghost" size="sm" onClick={() => { setFiltroDominio('todos'); setBuscaItens(''); }}>
+                        Limpar
+                      </Button>
+                    )}
+                  </div>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -531,21 +723,44 @@ export function BibliotecaPage() {
               }}
             />
           ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {itensFiltrados.map((item) => (
-                <SwipeableItemCard
-                  key={item.id}
-                  item={item}
-                  onCarregar={() => handleCarregarItem(item)}
-                  onDeletar={() => handleDeletarItem(item)}
-                  onTogglePublic={() => handleTogglePublicItem(item)}
-                  onVerResumo={() => setItemVisualizando(item)}
-                  formatarData={formatarData}
-                  carregandoId={carregandoItemId}
-                  deletandoId={deletandoItemId}
-                  togglePublicId={togglePublicItemId}
-                />
-              ))}
+            <div className="space-y-12 pb-12">
+              {tiposOrdenados.map(tipoId => {
+                const { nome, items: itensDoGrupo } = itensAgrupados[tipoId];
+                if (itensDoGrupo.length === 0) return null;
+                const visualHeader = TIPO_ITEM_VISUAL[tipoId] || TIPO_ITEM_VISUAL.general;
+
+                return (
+                  <div key={tipoId} className="space-y-6">
+                    <div className="flex items-center gap-4 p-2 rounded-r-xl bg-gradient-to-r from-gray-50/50 to-transparent dark:from-gray-900/20">
+                      <div className={`w-1.5 h-8 rounded-full ${visualHeader.border.replace('border-', 'bg-')} shadow-[0_0_10px_rgba(0,0,0,0.1)]`} />
+                      <h3 className={`text-xl font-black uppercase tracking-tighter whitespace-nowrap ${visualHeader.color} drop-shadow-sm`}>
+                        {nome}
+                      </h3>
+                      <div className="h-px bg-gray-200 dark:bg-gray-700 w-full opacity-30"></div>
+                      <Badge variant="secondary" className={`${visualHeader.color.replace('text-', 'bg-').replace('600', '100').replace('400', '900/40')} border-none px-3 font-bold shadow-sm`}>
+                        {itensDoGrupo.length}
+                      </Badge>
+                    </div>
+
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {itensDoGrupo.map((item) => (
+                        <SwipeableItemCard
+                          key={item.id}
+                          item={item}
+                          onCarregar={() => handleCarregarItem(item)}
+                          onDeletar={() => handleDeletarItem(item)}
+                          onTogglePublic={() => handleTogglePublicItem(item)}
+                          onVerResumo={() => setItemVisualizando(item)}
+                          formatarData={formatarData}
+                          carregandoId={carregandoItemId}
+                          deletandoId={deletandoItemId}
+                          togglePublicId={togglePublicItemId}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </>
@@ -554,8 +769,8 @@ export function BibliotecaPage() {
       {/* ── Aba Acervos ── */}
       {abaAtiva === 'acervos' && <ListaAcervos />}
 
-      {/* ── Aba Customizados ── */}
-      {abaAtiva === 'customizados' && <GerenciadorCustomizados />}
+      {/* ── Aba Peculiaridades ── */}
+      {abaAtiva === 'peculiaridades' && <GerenciadorCustomizados />}
 
       {/* Modal Resumo do Poder */}
       {poderVisualizandoConvertido && (
