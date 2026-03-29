@@ -39,6 +39,7 @@ export interface DetalhesAcervo {
   custoPdAPrincipal: number;
   custoPdAOutros: number; // quantidade de outros × 1
   custoPdATotal: number;
+  peTotal: number;
   
   // Espaços
   espacosTotal: number;

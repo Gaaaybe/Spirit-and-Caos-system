@@ -20,6 +20,7 @@
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.9.6",
     "reactflow": "^11.11.4",
+    "recharts": "^3.8.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {

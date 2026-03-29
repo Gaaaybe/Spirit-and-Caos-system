@@ -3,6 +3,7 @@ import { Modal, ModalFooter, Button, Badge, Card, CardContent, toast, DynamicIco
 import { MarkdownText } from '../../../shared/components';
 import { Poder, ModificacaoAplicada } from '../regras/calculadoraCusto';
 import { ESCALAS, type Modificacao, DOMINIOS } from '../../../data';
+import { getThemeByDomain, PatternOverlay } from '../../../shared/utils/summary-themes';
 import { useCatalog } from '@/context/useCatalog';
 import { usePeculiaridades } from '../../../shared/hooks/usePeculiaridades';
 import type { DetalhesPoder } from '../types';
@@ -248,6 +249,9 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
     toast.success('Resumo copiado para a área de transferência!');
   };
 
+  const theme = getThemeByDomain(poder.dominioId);
+  const IconWatermark = theme.icon;
+
   return (
     <Modal
       isOpen={isOpen}
@@ -256,12 +260,14 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
       size="xl"
     >
       <div className="space-y-6">
-        {/* Header Premium com Gradiente */}
-        <div className="relative -mt-6 -mx-6 p-8 bg-gradient-to-br from-espirito-600 to-espirito-800 dark:from-espirito-700 dark:to-espirito-900 text-white rounded-t-lg overflow-hidden">
-          {/* Padrão decorativo */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full -translate-y-1/2 translate-x-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full translate-y-1/2 -translate-x-1/2"></div>
+        {/* Header Premium com Gradiente Dinâmico por Domínio */}
+        <div className={`relative -mt-6 -mx-6 p-8 bg-gradient-to-br ${theme.bgGradient} ${theme.textColor} rounded-t-lg overflow-hidden transition-colors duration-500`}>
+          {/* Padrão decorativo dinâmico */}
+          <PatternOverlay pattern={theme.pattern} />
+          
+          {/* Ícone Watermark Gigante */}
+          <div className="absolute top-1/2 right-0 -translate-y-1/2 translate-x-1/4 opacity-10 pointer-events-none">
+            <IconWatermark className="w-96 h-96 transform rotate-12" />
           </div>
           
           <div className="relative z-10">
@@ -269,8 +275,8 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
               <div className="flex-1">
                 <div className="flex items-center gap-4 mb-2">
                   {poder.icone && (
-                    <div className="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden backdrop-blur-sm flex items-center justify-center">
-                      <DynamicIcon name={poder.icone} className="w-14 h-14 text-yellow-300" />
+                    <div className="flex-shrink-0 w-24 h-24 rounded-2xl overflow-hidden border-2 bg-black/20 border-gray-200/30 flex items-center justify-center p-0.5 shadow-md">
+                      <DynamicIcon name={poder.icone} className="w-full h-full object-cover rounded-xl" />
                     </div>
                   )}
                   <h2 className="text-3xl font-bold">{poder.nome}</h2>
@@ -282,10 +288,10 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                 )}
               </div>
               
-              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[120px]">
-                <p className="text-espirito-200 text-sm mb-1">Custo Total</p>
-                <p className="text-4xl font-bold text-yellow-300">{detalhes.custoPdATotal}</p>
-                <p className="text-xs text-espirito-200">PdA</p>
+              <div className="text-center bg-white/10 backdrop-blur-sm rounded-lg p-4 min-w-[120px] border border-white/20">
+                <p className={`${theme.accentColor} text-sm mb-1`}>Custo Total</p>
+                <p className="text-4xl font-bold text-yellow-300 drop-shadow-sm">{detalhes.custoPdATotal}</p>
+                <p className={`text-xs ${theme.accentColor}`}>PdA</p>
               </div>
             </div>
 
@@ -301,14 +307,14 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                   {poder.modificacoesGlobais.length + poder.efeitos.reduce((acc, ef) => acc + ef.modificacoesLocais.length, 0)}
                 </p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <p className="text-espirito-200 text-xs mb-1 flex items-center justify-center gap-1">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <p className={`${theme.accentColor} text-xs mb-1 flex items-center justify-center gap-1`}>
                   <Zap className="w-3 h-3" /> PE Total
                 </p>
                 <p className="text-2xl font-bold">{detalhes.peTotal}</p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center">
-                <p className="text-espirito-200 text-xs mb-1 flex items-center justify-center gap-1">
+              <div className="bg-white/10 backdrop-blur-sm rounded-lg p-3 text-center border border-white/10">
+                <p className={`${theme.accentColor} text-xs mb-1 flex items-center justify-center gap-1`}>
                   <Package className="w-3 h-3" /> Espaços
                 </p>
                 <p className="text-2xl font-bold">{detalhes.espacosTotal}</p>
@@ -360,22 +366,25 @@ export function ResumoPoder({ isOpen, onClose, poder, detalhes }: ResumoPoderPro
                 if (!peculiaridade) return null;
                 
                 return (
-                  <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-lg p-4 mt-4 border border-purple-400/50">
-                    <div className="flex items-center gap-2 mb-2">
-                      <Sparkles className="w-5 h-5 text-purple-200" />
-                      <p className="text-purple-100 text-sm font-semibold uppercase">Peculiaridade</p>
+                  <div className="bg-slate-950/40 backdrop-blur-md rounded-xl p-4 mt-4 border border-white/10 shadow-2xl relative overflow-hidden group">
+                    {/* Brilho decorativo sutil no canto */}
+                    <div className="absolute -top-4 -right-4 w-16 h-16 bg-purple-500/20 rounded-full blur-2xl group-hover:bg-purple-500/30 transition-colors" />
+
+                    <div className="flex items-center gap-2 mb-2 relative z-10">
+                      <Sparkles className="w-5 h-5 text-purple-300" />
+                      <p className="text-purple-200 text-xs font-bold uppercase tracking-wider">Peculiaridade</p>
                     </div>
-                    <p className="text-lg font-bold text-purple-100">
+                    <p className="text-xl font-bold text-white relative z-10 drop-shadow-sm">
                       {peculiaridade.nome}
-                      <span className="text-sm font-normal text-purple-200 ml-2">
-                        {peculiaridade.espiritual ? '(Espiritual)' : '(Não Espiritual)'}
+                      <span className="text-xs font-medium text-purple-300/80 ml-2 bg-purple-500/10 px-2 py-0.5 rounded-full border border-purple-500/20">
+                        {peculiaridade.espiritual ? 'Espiritual' : 'Físico'}
                       </span>
                     </p>
                     
                     {peculiaridade.descricao && (
-                      <div className="mt-3 text-xs">
-                        <div className="bg-white/10 rounded p-2">
-                          <div className="text-purple-200">
+                      <div className="mt-3 text-sm relative z-10">
+                        <div className="bg-white/5 rounded-lg p-3 border border-white/5">
+                          <div className="text-gray-100 leading-relaxed">
                             <MarkdownText>{peculiaridade.descricao}</MarkdownText>
                           </div>
                         </div>

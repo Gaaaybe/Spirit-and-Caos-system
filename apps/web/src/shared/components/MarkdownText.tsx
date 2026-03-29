@@ -19,9 +19,9 @@ export function MarkdownText({ children, className = '' }: MarkdownTextProps) {
           h3: ({ children }) => <h3 className="text-base font-bold mb-1 mt-2 first:mt-0">{children}</h3>,
           
           // Listas
-          ul: ({ children }) => <ul className="list-disc list-inside mb-2 space-y-1">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal list-inside mb-2 space-y-1">{children}</ol>,
-          li: ({ children }) => <li className="ml-2">{children}</li>,
+          ul: ({ children }) => <ul className="list-disc ml-6 mb-2 space-y-1">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal ml-6 mb-2 space-y-1">{children}</ol>,
+          li: ({ children }) => <li className="">{children}</li>,
           
           // Ênfase
           strong: ({ children }) => <strong className="font-bold">{children}</strong>,

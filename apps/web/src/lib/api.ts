@@ -28,9 +28,16 @@ export function setUnauthorizedHandler(handler: (() => void) | null): void {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // 401 - Sessão expirada
     if (error.response?.status === 401 && _onUnauthorized) {
       _onUnauthorized();
     }
+    
+    // Podemos logar erros em desenvolvimento para facilitar o debug
+    if (import.meta.env.DEV) {
+      console.error('[API Error]:', error.response?.status, error.message);
+    }
+
     return Promise.reject(error);
   },
 );

@@ -20,7 +20,7 @@ export function CriadorPage() {
   };
 
   return (
-    <div className="relative">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
       <div className="mb-4 border-b border-gray-200 dark:border-gray-700 flex gap-1">
         <button
           onClick={() => setAba('poderes')}

@@ -13,3 +13,5 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { InlineHelp } from './InlineHelp';
 export { EmptyState } from './EmptyState';
 export { BottomSheet, BottomSheetFooter } from './BottomSheet';
+export { Dropdown } from './Dropdown';
+export type { DropdownOption } from './Dropdown';

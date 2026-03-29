@@ -1,25 +1,64 @@
-import { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast, DynamicIcon } from '../../../shared/ui';
+import { useState, useMemo } from 'react';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast, Badge, Select } from '../../../shared/ui';
 import { usePowerArrays } from '../hooks/usePowerArrays';
 import { CriadorAcervo } from './CriadorAcervo';
 import { ResumoAcervo } from './ResumoAcervo';
 import { acervoResponseToAcervo } from '../utils/poderApiConverter';
+import { SwipeableAcervoCard } from './SwipeableAcervoCard';
+import { DOMINIO_VISUAL } from './SwipeablePoderCard';
 import type { Acervo } from '../types/acervo.types';
 import type { AcervoResponse } from '../../../services/types';
-import { Package, Plus, Search, Globe, Lock } from 'lucide-react';
+import { Package, Plus, Search, Library } from 'lucide-react';
 
 export function ListaAcervos() {
   const { acervos, deletar, atualizar, carregar } = usePowerArrays();
   const [busca, setBusca] = useState('');
+  const [ordenacao, setOrdenacao] = useState<'nome' | 'quantidade' | 'recentes'>('recentes');
   const [modalCriar, setModalCriar] = useState(false);
   const [acervoEditando, setAcervoEditando] = useState<Acervo | null>(null);
   const [acervoVisualizando, setAcervoVisualizando] = useState<Acervo | null>(null);
   const [togglePublicId, setTogglePublicId] = useState<string | null>(null);
 
-  const acervosFiltrados = acervos.filter((a: AcervoResponse) =>
-    a.nome.toLowerCase().includes(busca.toLowerCase()) ||
-    a.descricao.toLowerCase().includes(busca.toLowerCase()),
-  );
+  const acervosFiltrados = useMemo(() => {
+    const filtrados = acervos.filter((a: AcervoResponse) =>
+      a.nome.toLowerCase().includes(busca.toLowerCase()) ||
+      a.descricao.toLowerCase().includes(busca.toLowerCase()),
+    );
+
+    return [...filtrados].sort((a, b) => {
+      if (ordenacao === 'nome') return a.nome.localeCompare(b.nome);
+      if (ordenacao === 'quantidade') return (b.powers?.length || 0) - (a.powers?.length || 0);
+      if (ordenacao === 'recentes') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      return 0;
+    });
+  }, [acervos, busca, ordenacao]);
+
+  // Agrupar acervos por domínio
+  const acervosAgrupados = useMemo(() => {
+    const map: Record<string, { nome: string, items: AcervoResponse[] }> = {};
+    
+    acervosFiltrados.forEach(acervo => {
+      const domId = acervo.dominio.name || 'natural';
+      if (!map[domId]) {
+        const nomes: Record<string, string> = {
+          natural: 'Natural', sagrado: 'Sagrado', sacrilegio: 'Sacrilégio',
+          psiquico: 'Psíquico', cientifico: 'Científico', peculiar: 'Peculiar',
+          'arma-branca': 'Arma Branca', 'arma-fogo': 'Arma de Fogo',
+          'arma-tensao': 'Arma de Tensão', 'arma-explosiva': 'Arma Explosiva',
+          'arma-tecnologica': 'Arma Tecnológica'
+        };
+        map[domId] = { nome: nomes[domId] || domId, items: [] };
+      }
+      map[domId].items.push(acervo);
+    });
+
+    return map;
+  }, [acervosFiltrados]);
+
+  const dominiosOrdenados = useMemo(() => {
+    const ordem = ['natural', 'sagrado', 'sacrilegio', 'psiquico', 'cientifico', 'peculiar', 'arma-branca', 'arma-fogo', 'arma-tensao', 'arma-explosiva', 'arma-tecnologica'];
+    return Object.keys(acervosAgrupados).sort((a, b) => ordem.indexOf(a) - ordem.indexOf(b));
+  }, [acervosAgrupados]);
 
   const handleDeletar = async (id: string, nome: string) => {
     if (confirm(`Tem certeza que deseja deletar o acervo "${nome}"?`)) {
@@ -47,30 +86,32 @@ export function ListaAcervos() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
+            <div className="flex-1">
               <CardTitle className="flex items-center gap-2">
-                <Package className="w-5 h-5" /> Acervos de Poderes
+                <Library className="w-5 h-5 text-purple-600 dark:text-purple-400" /> Acervos de Poderes
               </CardTitle>
               <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {acervos.length} {acervos.length === 1 ? 'acervo' : 'acervos'}
+                {acervos.length} {acervos.length === 1 ? 'acervo' : 'acervos'} salvos
               </p>
             </div>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => setModalCriar(true)}
-              className="flex items-center gap-2"
-            >
-              <Plus className="w-4 h-4" /> Novo Acervo
-            </Button>
+            <div className="flex items-center">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={() => setModalCriar(true)}
+                className="flex items-center gap-2 shadow-lg shadow-purple-500/20"
+              >
+                <Plus className="w-5 h-5" /> Novo Acervo
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
           {acervos.length > 0 && (
-            <div className="mb-4">
-              <div className="relative">
+            <div className="flex flex-col md:flex-row gap-4 mb-8">
+              <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <Input
                   value={busca}
@@ -78,6 +119,22 @@ export function ListaAcervos() {
                   placeholder="Buscar acervos..."
                   className="pl-10"
                 />
+              </div>
+              <div className="flex gap-2 min-w-[300px]">
+                <Select
+                  value={ordenacao}
+                  onChange={(e) => setOrdenacao(e.target.value as any)}
+                  options={[
+                    { value: 'recentes', label: 'Mais Recentes' },
+                    { value: 'quantidade', label: 'Mais Poderes' },
+                    { value: 'nome', label: 'Nome (A-Z)' },
+                  ]}
+                />
+                {(busca !== '' || ordenacao !== 'recentes') && (
+                  <Button variant="ghost" size="sm" onClick={() => { setBusca(''); setOrdenacao('recentes'); }}>
+                    Limpar
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -101,71 +158,42 @@ export function ListaAcervos() {
               }}
             />
           ) : (
-            <div className="space-y-3">
-              {acervosFiltrados.map((acervo) => (
-                <Card 
-                  key={acervo.id} 
-                  className="p-3 cursor-pointer hover:shadow-md transition-shadow min-h-[11rem]"
-                  onClick={() => setAcervoVisualizando(acervoResponseToAcervo(acervo))}
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-3 mb-2">
-                        <div className="flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                          {acervo.icone ? (
-                            <DynamicIcon name={acervo.icone} className="w-10 h-10 text-purple-600 dark:text-purple-400" />
-                          ) : (
-                            <Package className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
-                            {acervo.nome}
-                          </h3>
-                        </div>
-                        {acervo.isPublic && (
-                          <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
-                            <Globe className="w-3 h-3" /> Público
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                        <span className="font-medium">Descritor:</span> {acervo.descricao}
-                      </p>
-                      <p className="text-sm text-gray-500 dark:text-gray-500">
-                        {acervo.powers.length} {acervo.powers.length === 1 ? 'poder' : 'poderes'}
-                      </p>
+            <div className="space-y-12 pb-12">
+              {dominiosOrdenados.map(domId => {
+                const { nome, items: itensDoGrupo } = acervosAgrupados[domId];
+                if (itensDoGrupo.length === 0) return null;
+                const visualHeader = DOMINIO_VISUAL[domId] || DOMINIO_VISUAL.natural;
+
+                return (
+                  <div key={domId} className="space-y-6">
+                    {/* Cabeçalho do Domínio */}
+                    <div className="flex items-center gap-4 p-2 rounded-r-xl bg-gradient-to-r from-gray-50/50 to-transparent dark:from-gray-900/20">
+                      <div className={`w-1.5 h-8 rounded-full ${visualHeader.borderColor.replace('border-', 'bg-')} shadow-[0_0_10px_rgba(0,0,0,0.1)]`} />
+                      <h3 className={`text-xl font-black uppercase tracking-tighter whitespace-nowrap ${visualHeader.color} drop-shadow-sm`}>
+                        {nome}
+                      </h3>
+                      <div className="h-px bg-gray-200 dark:bg-gray-700 w-full opacity-30"></div>
+                      <Badge variant="secondary" className={`${visualHeader.color.replace('text-', 'bg-').replace('600', '100').replace('400', '900/40')} border-none px-3 font-bold shadow-sm`}>
+                        {itensDoGrupo.length}
+                      </Badge>
                     </div>
-                    <div className="flex flex-col gap-2" onClick={(e) => e.stopPropagation()}>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => setAcervoEditando(acervoResponseToAcervo(acervo))}
-                      >
-                        Editar
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleTogglePublic(acervo)}
-                        title={acervo.isPublic ? 'Tornar privado' : 'Publicar'}
-                        loading={togglePublicId === acervo.id}
-                        disabled={togglePublicId !== null && togglePublicId !== acervo.id}
-                        className={acervo.isPublic ? 'text-green-600 hover:text-green-700' : 'text-gray-400 hover:text-gray-600'}
-                      >
-                        {acervo.isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="danger"
-                        onClick={() => handleDeletar(acervo.id, acervo.nome)}
-                      >
-                        Deletar
-                      </Button>
+
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                      {itensDoGrupo.map((acervo) => (
+                        <SwipeableAcervoCard
+                          key={acervo.id}
+                          acervo={acervo}
+                          onEditar={() => setAcervoEditando(acervoResponseToAcervo(acervo))}
+                          onDeletar={() => handleDeletar(acervo.id, acervo.nome)}
+                          onTogglePublic={() => handleTogglePublic(acervo)}
+                          onVerResumo={() => setAcervoVisualizando(acervoResponseToAcervo(acervo))}
+                          togglePublicId={togglePublicId}
+                        />
+                      ))}
                     </div>
                   </div>
-                </Card>
-              ))}
+                );
+              })}
             </div>
           )}
         </CardContent>

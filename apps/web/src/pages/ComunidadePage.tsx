@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
   Button,
   Input,
@@ -10,12 +8,12 @@ import {
   EmptyState,
   toast,
   DynamicIcon,
-  Modal,
+  Dropdown,
 } from '../shared/ui';
-import { fetchPublicPowers } from '../services/powers.service';
-import { fetchPublicPowerArrays, copyPowerArray } from '../services/powerArrays.service';
+import { fetchPublicPowerArrays, copyPowerArray, getPowerArrayById } from '../services/powerArrays.service';
 import { fetchPublicPeculiarities, copyPeculiarity } from '../services/peculiarities.service';
 import { fetchPublicItems, copyPublicItem } from '../services/items.service';
+import { fetchPublicPowers, getPowerById } from '../services/powers.service';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { ResumoPoder } from '../features/criador-de-poder/components/ResumoPoder';
 import { ResumoAcervo } from '../features/criador-de-poder/components/ResumoAcervo';
@@ -27,16 +25,23 @@ import { useCatalog } from '../context/useCatalog';
 import { useAuth } from '../context/useAuth';
 import { useNavigate } from 'react-router-dom';
 import type { PoderResponse, AcervoResponse, PeculiaridadeResponse, ItemResponse } from '../services/types';
+import { getThemeByDomain, getThemeByItemType, PatternOverlay } from '../shared/utils/summary-themes';
+import { MarkdownText } from '../shared/components/MarkdownText';
+import { ResumoPeculiaridade } from '../features/criador-de-poder/components/ResumoPeculiaridade';
+import { DOMINIOS } from '@/data';
 import {
   Globe,
   Zap,
   Package,
+  Sparkles,
   Search,
-  Copy,
   RefreshCw,
   AlertCircle,
+  Copy,
   Lock,
-  Sparkles,
+  Sword,
+  Layers,
+  ArrowUpDown,
 } from 'lucide-react';
 
 // ─── Sub-componentes ──────────────────────────────────────────────────────────
@@ -52,59 +57,85 @@ function CardPoderPublico({
   copiandoId: string | null;
   onVerResumo: () => void;
 }) {
+  const theme = getThemeByDomain(poder.dominio.name);
+
   return (
-    <Card hover className="flex flex-col">
-      <CardContent className="p-4 flex flex-col gap-3 flex-1">
-        <div
-          className="flex items-start justify-between gap-2 cursor-pointer"
-          onClick={onVerResumo}
-        >
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 mb-2">
-              {poder.icone && (
-                <img
-                  src={poder.icone}
-                  alt={poder.nome}
-                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                />
+    <Card 
+      hover 
+      padding="none"
+      className={`flex flex-row overflow-hidden transition-all duration-300 border-l-4 border-purple-500/50 min-h-[180px] h-auto shadow-xl`}
+    >
+      <div 
+        className={`w-24 relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br ${theme.bgGradient} bg-opacity-10 cursor-pointer group`}
+        onClick={onVerResumo}
+      >
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors z-0" />
+        <PatternOverlay pattern={theme.pattern} />
+        {poder.icone ? (
+          <img
+            src={poder.icone}
+            alt={poder.nome}
+            className="w-16 h-16 rounded-xl object-cover shadow-2xl z-10 border border-white/20 transition-transform group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center z-10 border border-white/20 shadow-2xl transition-transform group-hover:scale-110">
+             <Zap className="w-8 h-8 text-white opacity-80" />
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-5 flex flex-col justify-between flex-1 min-w-0 relative">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onVerResumo}>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-bold text-gray-950 dark:text-gray-50 truncate text-xl leading-tight">
+              {poder.nome}
+            </h3>
+            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] font-black bg-slate-100 dark:bg-slate-800">
+              {poder.custoTotal.pda} PdA
+            </Badge>
+          </div>
+          
+          <div className="flex flex-col gap-1 mb-3">
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-900/10 dark:bg-white/10 ${theme.accentColor}`}>
+                {poder.dominio.name}
+              </span>
+              {poder.userName && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">
+                  por {poder.userName}
+                </span>
               )}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words hover:text-purple-600 dark:hover:text-purple-400 transition-colors">
-                  {poder.nome}
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5 capitalize">
-                  {poder.dominio.name}
-                </p>
-              </div>
             </div>
           </div>
-          <Badge variant="secondary" size="sm" className="flex-shrink-0">
-            {poder.effects.length} {poder.effects.length === 1 ? 'efeito' : 'efeitos'}
-          </Badge>
+
+          <div className="text-xs text-gray-600 dark:text-gray-400 max-h-[72px] overflow-hidden leading-relaxed">
+            <MarkdownText>{poder.descricao}</MarkdownText>
+          </div>
         </div>
 
-        {poder.descricao && (
-          <p
-            className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 break-words flex-1 cursor-pointer"
-            onClick={onVerResumo}
-          >
-            {poder.descricao}
-          </p>
-        )}
-
-        <div className="flex items-center justify-between pt-1 mt-auto">
-          <span className="text-xs text-gray-400">
-            {poder.custoTotal.pda} PdA{poder.custoTotal.pe > 0 ? ` · ${poder.custoTotal.pe} PE` : ''}
-          </span>
+        <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex gap-2.5">
+             <div className="flex flex-col">
+               <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Efeitos</span>
+               <span className="text-sm font-black text-gray-700 dark:text-gray-300 leading-none">{poder.effects.length}</span>
+             </div>
+             {poder.custoTotal.pe > 0 && (
+               <div className="flex flex-col border-l border-gray-100 dark:border-gray-800 pl-2.5">
+                 <span className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">Custo</span>
+                 <span className="text-sm font-black text-purple-600 dark:text-purple-400 leading-none">{poder.custoTotal.pe} PE</span>
+               </div>
+             )}
+          </div>
+          
           <Button
             variant="primary"
             size="sm"
-            onClick={() => onCopiar(poder.id)}
+            onClick={(e) => { e.stopPropagation(); onCopiar(poder.id); }}
             loading={copiandoId === poder.id}
             disabled={copiandoId !== null}
-            className="flex items-center gap-1.5"
+            className={`h-9 px-5 text-[11px] font-black shadow-lg shadow-purple-500/20 active:scale-95 transition-all uppercase tracking-widest`}
           >
-            <Copy className="w-3.5 h-3.5" /> Copiar
+            <Copy className="w-3.5 h-3.5 mr-1.5" /> COPIAR
           </Button>
         </div>
       </CardContent>
@@ -123,49 +154,88 @@ function CardAcervoPublico({
   copiandoId: string | null;
   onVerResumo: () => void;
 }) {
+  const theme = getThemeByDomain(acervo.dominio.name);
+
   return (
-    <Card hover className="overflow-hidden cursor-pointer group" onClick={onVerResumo}>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2 mb-2">
-              {acervo.icone ? (
-                <img
-                  src={acervo.icone}
-                  alt={acervo.nome}
-                  className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-                />
-              ) : (
-                <Package className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
-              )}
-              <div className="flex-1 min-w-0">
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                  {acervo.nome}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-0.5">
-                  <span className="font-medium">Descritor:</span> {acervo.descricao}
-                </p>
-              </div>
-            </div>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-              {acervo.powers.length} {acervo.powers.length === 1 ? 'poder' : 'poderes'} ·{' '}
-              {acervo.custoTotal.pda} PdA{acervo.custoTotal.pe > 0 ? ` · ${acervo.custoTotal.pe} PE` : ''}
-            </p>
+    <Card 
+      hover 
+      padding="none"
+      className={`flex flex-row overflow-hidden transition-all duration-300 border-l-4 border-purple-500/50 min-h-[180px] h-auto shadow-xl`}
+    >
+      <div 
+        className={`w-24 relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br ${theme.bgGradient} bg-opacity-10 cursor-pointer group`}
+        onClick={onVerResumo}
+      >
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors z-0" />
+        <PatternOverlay pattern={theme.pattern} />
+        {acervo.icone ? (
+          <img
+            src={acervo.icone}
+            alt={acervo.nome}
+            className="w-16 h-16 rounded-xl object-cover shadow-2xl z-10 border border-white/20 transition-transform group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center z-10 border border-white/20 shadow-2xl transition-transform group-hover:scale-110">
+             <Layers className="w-8 h-8 text-white opacity-80" />
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0 mt-1">
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={(e) => { e.stopPropagation(); onCopiar(acervo.id); }}
-              loading={copiandoId === acervo.id}
-              disabled={copiandoId !== null}
-              className="flex items-center gap-1.5"
-            >
-              <Copy className="w-3.5 h-3.5" /> Copiar
-            </Button>
+        )}
+      </div>
+
+      <CardContent className="p-5 flex flex-col justify-between flex-1 min-w-0 relative">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onVerResumo}>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-bold text-gray-950 dark:text-gray-50 truncate text-xl leading-tight">
+              {acervo.nome}
+            </h3>
+            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] font-black bg-slate-100 dark:bg-slate-800">
+              {acervo.custoTotal.pda} PdA
+            </Badge>
+          </div>
+          
+          <div className="flex flex-col gap-1 mb-3">
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-900/10 dark:bg-white/10 ${theme.accentColor}`}>
+                 ACERVO · {acervo.dominio.name}
+              </span>
+              {acervo.userName && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">
+                  por {acervo.userName}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="text-xs text-gray-600 dark:text-gray-400 max-h-[72px] overflow-hidden leading-relaxed">
+            <MarkdownText>{acervo.descricao}</MarkdownText>
           </div>
         </div>
-      </div>
+
+        <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex gap-2.5">
+             <div className="flex flex-col">
+               <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Poderes</span>
+               <span className="text-sm font-black text-gray-700 dark:text-gray-300 leading-none">{acervo.powers.length}</span>
+             </div>
+             {acervo.custoTotal.pe > 0 && (
+               <div className="flex flex-col border-l border-gray-100 dark:border-gray-800 pl-2.5">
+                 <span className="text-[9px] text-purple-400 font-bold uppercase tracking-wider">Custo</span>
+                 <span className="text-sm font-black text-purple-600 dark:text-purple-400 leading-none">{acervo.custoTotal.pe} PE</span>
+               </div>
+             )}
+          </div>
+          
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={(e) => { e.stopPropagation(); onCopiar(acervo.id); }}
+            loading={copiandoId === acervo.id}
+            disabled={copiandoId !== null}
+            className={`h-9 px-5 text-[11px] font-black shadow-lg shadow-purple-500/20 active:scale-95 transition-all uppercase tracking-widest`}
+          >
+            <Copy className="w-3.5 h-3.5 mr-1.5" /> COPIAR
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -181,72 +251,95 @@ function CardItemPublico({
   copiandoId: string | null;
   onVerResumo: () => void;
 }) {
+  const theme = getThemeByItemType(item.tipo);
+  
   const tipoLabel: Record<ItemResponse['tipo'], string> = {
     weapon: 'Arma',
-    'defensive-equipment': 'Equipamento Defensivo',
+    'defensive-equipment': 'Equipam. Defensivo',
     consumable: 'Consumível',
     artifact: 'Artefato',
     accessory: 'Acessório',
+    general: 'Geral',
+    'upgrade-material': 'Mat. Upgrade',
   };
 
   return (
-    <Card hover className="flex flex-col cursor-pointer" onClick={onVerResumo}>
-      <CardContent className="p-4 flex flex-col gap-3 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            {item.icone ? (
-              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                <DynamicIcon name={item.icone} className="w-full h-full" />
-              </div>
-            ) : (
-              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                <Package className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words">
-                {item.nome}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-500 mt-0.5">
-                {tipoLabel[item.tipo]} · Nível {item.nivelItem}
-              </p>
+    <Card 
+      hover 
+      padding="none"
+      className={`flex flex-row overflow-hidden transition-all duration-300 border-l-4 border-blue-500/50 min-h-[180px] h-auto shadow-xl`}
+    >
+      <div 
+        className={`w-24 relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br ${theme.bgGradient} bg-opacity-10 cursor-pointer group`}
+        onClick={onVerResumo}
+      >
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors z-0" />
+        <PatternOverlay pattern={theme.pattern} />
+        {item.icone ? (
+          <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm shadow-2xl z-10 border border-white/20 overflow-hidden transition-transform group-hover:scale-110">
+             <DynamicIcon name={item.icone} className="w-full h-full p-2 text-white" />
+          </div>
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center z-10 border border-white/20 shadow-2xl transition-transform group-hover:scale-110">
+             <Sword className="w-8 h-8 text-white opacity-80" />
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-5 flex flex-col justify-between flex-1 min-w-0 relative">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onVerResumo}>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-bold text-gray-950 dark:text-gray-50 truncate text-xl leading-tight">
+              {item.nome}
+            </h3>
+            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] font-black bg-slate-100 dark:bg-slate-800">
+               {item.precoVenda}R
+            </Badge>
+          </div>
+          
+          <div className="flex flex-col gap-1 mb-3">
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-900/10 dark:bg-white/10 ${theme.accentColor}`}>
+                 {tipoLabel[item.tipo]} · NV {item.nivelItem}
+              </span>
+              {item.userName && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">
+                  por {item.userName}
+                </span>
+              )}
             </div>
           </div>
-          <Badge variant="secondary" size="sm" className="flex-shrink-0">
-            {item.precoVenda} R
-          </Badge>
+
+          <div className="text-xs text-gray-600 dark:text-gray-400 max-h-[72px] overflow-hidden leading-relaxed">
+            <MarkdownText>{item.descricao}</MarkdownText>
+          </div>
         </div>
 
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words flex-1">
-          {item.descricao}
-        </p>
-
-        <div className="flex items-center justify-between text-xs text-gray-500">
-          <span>{item.powerIds.length} poderes</span>
-          <span>{item.powerArrayIds.length} acervos</span>
-        </div>
-
-        <div className="flex justify-end pt-1 mt-auto">
+        <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex gap-2.5">
+             <div className="flex flex-col">
+               <span className="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Vínculos</span>
+               <span className="text-sm font-black text-gray-700 dark:text-gray-300 leading-none">
+                 {item.powerIds.length + item.powerArrayIds.length}
+               </span>
+             </div>
+          </div>
+          
           <Button
             variant="primary"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCopiar(item.id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onCopiar(item.id); }}
             loading={copiandoId === item.id}
             disabled={copiandoId !== null}
-            className="flex items-center gap-1.5"
+            className={`h-9 px-5 text-[11px] font-black shadow-lg shadow-blue-500/20 active:scale-95 transition-all uppercase tracking-widest`}
           >
-            <Copy className="w-3.5 h-3.5" /> Copiar
+            <Copy className="w-3.5 h-3.5 mr-1.5" /> COPIAR
           </Button>
         </div>
       </CardContent>
     </Card>
   );
 }
-
-// ─── Página principal ─────────────────────────────────────────────────────────
 
 function CardPeculiaridadePublica({
   peculiaridade,
@@ -259,53 +352,72 @@ function CardPeculiaridadePublica({
   copiandoId: string | null;
   onVerResumo: () => void;
 }) {
+  const theme = getThemeByDomain('peculiar');
+
   return (
-    <Card hover className="flex flex-col cursor-pointer group" onClick={onVerResumo}>
-      <CardContent className="p-4 flex flex-col gap-3 flex-1">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-start gap-2 flex-1 min-w-0">
-            {peculiaridade.icone && (
-              <img
-                src={peculiaridade.icone}
-                alt={peculiaridade.nome}
-                className="w-10 h-10 rounded-lg object-cover flex-shrink-0"
-              />
-            )}
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100 break-words group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                {peculiaridade.nome}
-              </h3>
-              <span className={`text-xs mt-0.5 font-medium ${
-                peculiaridade.espiritual
-                  ? 'text-espirito-600 dark:text-espirito-400'
-                  : 'text-gray-500 dark:text-gray-500'
-              }`}>
-                {peculiaridade.espiritual ? 'Espiritual' : 'Não espiritual'}
+    <Card 
+      hover 
+      padding="none"
+      className={`flex flex-row overflow-hidden transition-all duration-300 border-l-4 border-purple-500/50 min-h-[180px] h-auto shadow-xl`}
+    >
+      <div 
+        className={`w-24 relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br ${theme.bgGradient} bg-opacity-10 cursor-pointer group`}
+        onClick={onVerResumo}
+      >
+        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-colors z-0" />
+        <PatternOverlay pattern={theme.pattern} />
+        {peculiaridade.icone ? (
+          <img
+            src={peculiaridade.icone}
+            alt={peculiaridade.nome}
+            className="w-16 h-16 rounded-xl object-cover shadow-2xl z-10 border border-white/20 transition-transform group-hover:scale-110"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center z-10 border border-white/20 shadow-2xl transition-transform group-hover:scale-110">
+             <Sparkles className="w-8 h-8 text-white opacity-80" />
+          </div>
+        )}
+      </div>
+
+      <CardContent className="p-5 flex flex-col justify-between flex-1 min-w-0 relative">
+        <div className="flex-1 min-w-0 cursor-pointer" onClick={onVerResumo}>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-bold text-gray-950 dark:text-gray-50 truncate text-xl leading-tight">
+              {peculiaridade.nome}
+            </h3>
+            <Badge variant="secondary" size="sm" className="shrink-0 text-[10px] font-black bg-slate-100 dark:bg-slate-800">
+               Peculiar
+            </Badge>
+          </div>
+          
+          <div className="flex flex-col gap-1 mb-3">
+            <div className="flex items-center gap-2">
+              <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-slate-900/10 dark:bg-white/10 ${theme.accentColor}`}>
+                 {peculiaridade.espiritual ? 'ESPIRITUAL' : 'FÍSICA'}
               </span>
+              {peculiaridade.userName && (
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 font-medium italic">
+                  por {peculiaridade.userName}
+                </span>
+              )}
             </div>
           </div>
-          <Badge variant="secondary" size="sm" className="flex-shrink-0">
-            <Sparkles className="w-3 h-3 mr-1" /> Peculiaridade
-          </Badge>
+
+          <div className="text-xs text-gray-600 dark:text-gray-400 max-h-[72px] overflow-hidden leading-relaxed">
+            <MarkdownText>{peculiaridade.descricao}</MarkdownText>
+          </div>
         </div>
 
-        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3 break-words flex-1">
-          {peculiaridade.descricao}
-        </p>
-
-        <div className="flex justify-end pt-1 mt-auto">
+        <div className="flex items-center justify-end pt-3 mt-2 border-t border-gray-100 dark:border-gray-800">
           <Button
             variant="primary"
             size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              onCopiar(peculiaridade.id);
-            }}
+            onClick={(e) => { e.stopPropagation(); onCopiar(peculiaridade.id); }}
             loading={copiandoId === peculiaridade.id}
             disabled={copiandoId !== null}
-            className="flex items-center gap-1.5"
+            className={`h-9 px-5 text-[11px] font-black shadow-lg shadow-purple-500/20 active:scale-95 transition-all uppercase tracking-widest`}
           >
-            <Copy className="w-3.5 h-3.5" /> Copiar
+            <Copy className="w-3.5 h-3.5 mr-1.5" /> COPIAR
           </Button>
         </div>
       </CardContent>
@@ -314,7 +426,7 @@ function CardPeculiaridadePublica({
 }
 
 export function ComunidadePage() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { copiar } = usePoderes();
   const { efeitos, modificacoes } = useCatalog();
@@ -330,6 +442,14 @@ export function ComunidadePage() {
   const [peculiaridadeVisualizando, setPeculiaridadeVisualizando] = useState<PeculiaridadeResponse | null>(null);
   const [itemPoderResumoId, setItemPoderResumoId] = useState<string | null>(null);
   const [itemAcervoResumoId, setItemAcervoResumoId] = useState<string | null>(null);
+  
+  // Filtros e Ordenação
+  const [filtroDominio, setFiltroDominio] = useState<string | null>(null);
+  const [filtroTipoItem, setFiltroTipoItem] = useState<string | null>(null);
+  const [ordenacao, setOrdenacao] = useState<'novos' | 'nome' | 'pda-desc' | 'pda-asc' | 'preco-desc' | 'preco-asc'>('novos');
+  
+  const [vinculosExtras, setVinculosExtras] = useState<{ poderes: PoderResponse[], acervos: AcervoResponse[] }>({ poderes: [], acervos: [] });
+  const [loadingVinculos, setLoadingVinculos] = useState(false);
 
   const [poderes, setPoderes] = useState<PoderResponse[]>([]);
   const [itens, setItens] = useState<ItemResponse[]>([]);
@@ -360,25 +480,66 @@ export function ComunidadePage() {
     [acervoVisualizando],
   );
 
-  const itemPoderesSelecionados = useMemo(
-    () => (itemVisualizando ? poderes.filter((poder) => itemVisualizando.powerIds.includes(poder.id)) : []),
-    [itemVisualizando, poderes],
-  );
+  const itemPoderesSelecionados = useMemo(() => {
+    if (!itemVisualizando) return [];
+    const publicos = poderes.filter((p) => itemVisualizando.powerIds.includes(p.id));
+    const extras = vinculosExtras.poderes.filter((p) => itemVisualizando.powerIds.includes(p.id));
+    // Combinar e evitar duplicatas
+    const ids = new Set(publicos.map(p => p.id));
+    return [...publicos, ...extras.filter(p => !ids.has(p.id))];
+  }, [itemVisualizando, poderes, vinculosExtras.poderes]);
 
-  const itemAcervosSelecionados = useMemo(
-    () => (itemVisualizando ? acervos.filter((acervo) => itemVisualizando.powerArrayIds.includes(acervo.id)) : []),
-    [itemVisualizando, acervos],
-  );
+  const itemAcervosSelecionados = useMemo(() => {
+    if (!itemVisualizando) return [];
+    const publicos = acervos.filter((a) => itemVisualizando.powerArrayIds.includes(a.id));
+    const extras = vinculosExtras.acervos.filter((a) => itemVisualizando.powerArrayIds.includes(a.id));
+    const ids = new Set(publicos.map(a => a.id));
+    return [...publicos, ...extras.filter(a => !ids.has(a.id))];
+  }, [itemVisualizando, acervos, vinculosExtras.acervos]);
 
-  const itemPoderResumoSelecionado = useMemo(
-    () => (itemPoderResumoId ? poderes.find((poder) => poder.id === itemPoderResumoId) : undefined),
-    [itemPoderResumoId, poderes],
-  );
+  // Carregamento proativo de vínculos ausentes
+  useEffect(() => {
+    if (!itemVisualizando) {
+      setVinculosExtras({ poderes: [], acervos: [] });
+      return;
+    }
 
-  const itemAcervoResumoSelecionado = useMemo(
-    () => (itemAcervoResumoId ? acervos.find((acervo) => acervo.id === itemAcervoResumoId) : undefined),
-    [itemAcervoResumoId, acervos],
-  );
+    const missingPowerIds = itemVisualizando.powerIds.filter(id => !poderes.some(p => p.id === id));
+    const missingAcervoIds = itemVisualizando.powerArrayIds.filter(id => !acervos.some(a => a.id === id));
+
+    if (missingPowerIds.length === 0 && missingAcervoIds.length === 0) return;
+
+    const carregarVinculosAusentes = async () => {
+      setLoadingVinculos(true);
+      try {
+        const [novosPoderes, novosAcervos] = await Promise.all([
+          Promise.all(missingPowerIds.map(id => getPowerById(id).catch(() => null))),
+          Promise.all(missingAcervoIds.map(id => getPowerArrayById(id).catch(() => null)))
+        ]);
+
+        setVinculosExtras(prev => ({
+          poderes: [...prev.poderes, ...(novosPoderes.filter(Boolean) as PoderResponse[])],
+          acervos: [...prev.acervos, ...(novosAcervos.filter(Boolean) as AcervoResponse[])]
+        }));
+      } catch (err) {
+        console.error("Erro ao carregar vínculos extras:", err);
+      } finally {
+        setLoadingVinculos(false);
+      }
+    };
+
+    carregarVinculosAusentes();
+  }, [itemVisualizando, poderes, acervos]);
+
+  const itemPoderResumoSelecionado = useMemo(() => {
+    if (!itemPoderResumoId) return undefined;
+    return poderes.find((p) => p.id === itemPoderResumoId) || vinculosExtras.poderes.find((p) => p.id === itemPoderResumoId);
+  }, [itemPoderResumoId, poderes, vinculosExtras.poderes]);
+
+  const itemAcervoResumoSelecionado = useMemo(() => {
+    if (!itemAcervoResumoId) return undefined;
+    return acervos.find((a) => a.id === itemAcervoResumoId) || vinculosExtras.acervos.find((a) => a.id === itemAcervoResumoId);
+  }, [itemAcervoResumoId, acervos, vinculosExtras.acervos]);
 
   const carregarPoderes = useCallback(async () => {
     setLoadingPoderes(true);
@@ -431,6 +592,62 @@ export function ComunidadePage() {
       setLoadingPeculiaridades(false);
     }
   }, []);
+
+  // Listas Filtradas e Ordenadas
+  const poderesFiltrados = useMemo(() => {
+    let lista = poderes.filter((p) => {
+      const matchTexto = p.nome.toLowerCase().includes(buscaPoderes.toLowerCase()) || 
+                         p.descricao.toLowerCase().includes(buscaPoderes.toLowerCase());
+      const matchDominio = !filtroDominio || p.dominio.name === filtroDominio;
+      return matchTexto && matchDominio;
+    });
+
+    return [...lista].sort((a, b) => {
+      if (ordenacao === 'nome') return a.nome.localeCompare(b.nome);
+      if (ordenacao === 'pda-desc') return b.custoTotal.pda - a.custoTotal.pda;
+      if (ordenacao === 'pda-asc') return a.custoTotal.pda - b.custoTotal.pda;
+      return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+    });
+  }, [poderes, buscaPoderes, filtroDominio, ordenacao]);
+
+  const itensFiltrados = useMemo(() => {
+    let lista = itens.filter((i) => {
+      const matchTexto = i.nome.toLowerCase().includes(buscaItens.toLowerCase()) || 
+                         i.descricao.toLowerCase().includes(buscaItens.toLowerCase());
+      const matchTipo = !filtroTipoItem || i.tipo === filtroTipoItem;
+      return matchTexto && matchTipo;
+    });
+
+    return [...lista].sort((a, b) => {
+      if (ordenacao === 'nome') return a.nome.localeCompare(b.nome);
+      if (ordenacao === 'preco-desc') return b.precoVenda - a.precoVenda;
+      if (ordenacao === 'preco-asc') return a.precoVenda - b.precoVenda;
+      return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+    });
+  }, [itens, buscaItens, filtroTipoItem, ordenacao]);
+
+  const acervosFiltrados = useMemo(() => {
+    let lista = acervos.filter((a) => {
+      const matchTexto = a.nome.toLowerCase().includes(buscaAcervos.toLowerCase()) || 
+                         a.descricao.toLowerCase().includes(buscaAcervos.toLowerCase());
+      const matchDominio = !filtroDominio || a.dominio.name === filtroDominio;
+      return matchTexto && matchDominio;
+    });
+
+    return [...lista].sort((a, b) => {
+      if (ordenacao === 'nome') return a.nome.localeCompare(b.nome);
+      if (ordenacao === 'pda-desc') return b.custoTotal.pda - a.custoTotal.pda;
+      if (ordenacao === 'pda-asc') return a.custoTotal.pda - b.custoTotal.pda;
+      return new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime();
+    });
+  }, [acervos, buscaAcervos, filtroDominio, ordenacao]);
+
+  const peculiaridadesFiltradas = useMemo(() => {
+    return peculiaridades.filter((p) => 
+      p.nome.toLowerCase().includes(buscaPeculiaridades.toLowerCase()) || 
+      p.descricao.toLowerCase().includes(buscaPeculiaridades.toLowerCase())
+    );
+  }, [peculiaridades, buscaPeculiaridades]);
 
   useEffect(() => {
     carregarPoderes();
@@ -507,38 +724,6 @@ export function ComunidadePage() {
     }
   };
 
-  const poderesFiltrados = poderes
-    .filter((p) => p.userId !== user?.id)
-    .filter(
-      (p) =>
-        p.nome.toLowerCase().includes(buscaPoderes.toLowerCase()) ||
-        (p.descricao && p.descricao.toLowerCase().includes(buscaPoderes.toLowerCase())),
-    );
-
-  const itensFiltrados = itens
-    .filter((item) => item.userId !== user?.id)
-    .filter(
-      (item) =>
-        item.nome.toLowerCase().includes(buscaItens.toLowerCase()) ||
-        item.descricao.toLowerCase().includes(buscaItens.toLowerCase()),
-    );
-
-  const acervosFiltrados = acervos
-    .filter((a) => a.userId !== user?.id)
-    .filter(
-      (a) =>
-        a.nome.toLowerCase().includes(buscaAcervos.toLowerCase()) ||
-        a.descricao.toLowerCase().includes(buscaAcervos.toLowerCase()),
-    );
-
-  const peculiaridadesFiltradas = peculiaridades
-    .filter((p) => p.userId !== user?.id)
-    .filter(
-      (p) =>
-        p.nome.toLowerCase().includes(buscaPeculiaridades.toLowerCase()) ||
-        p.descricao.toLowerCase().includes(buscaPeculiaridades.toLowerCase()),
-    );
-
   const isLoading =
     aba === 'poderes'
       ? loadingPoderes
@@ -549,7 +734,7 @@ export function ComunidadePage() {
           : loadingPeculiaridades;
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Hero */}
       <div className="rounded-2xl bg-gradient-to-br from-espirito-600 to-purple-700 dark:from-espirito-800 dark:to-purple-900 p-6 text-white">
         <div className="flex items-center gap-3 mb-2">
@@ -573,14 +758,13 @@ export function ComunidadePage() {
         )}
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 border-b border-gray-200 dark:border-gray-700">
         {(['poderes', 'itens', 'acervos', 'peculiaridades'] as const).map((tab) => {
           const labels = { poderes: 'Poderes', itens: 'Itens', acervos: 'Acervos', peculiaridades: 'Peculiaridades' };
           const icons = {
             poderes: <Zap className="w-4 h-4" />,
-            itens: <Package className="w-4 h-4" />,
-            acervos: <Package className="w-4 h-4" />,
+            itens: <Sword className="w-4 h-4" />,
+            acervos: <Layers className="w-4 h-4" />,
             peculiaridades: <Sparkles className="w-4 h-4" />,
           };
           const counts = {
@@ -593,15 +777,15 @@ export function ComunidadePage() {
             <button
               key={tab}
               onClick={() => setAba(tab)}
-              className={`px-4 py-2.5 font-medium transition-colors border-b-2 flex items-center gap-2 text-sm ${
+              className={`px-4 py-3 font-bold transition-all border-b-2 flex items-center gap-2 text-sm uppercase tracking-tighter ${
                 aba === tab
-                  ? 'border-purple-500 text-purple-600 dark:text-purple-400'
+                  ? 'border-purple-500 text-purple-600 dark:text-purple-400 bg-purple-50/50 dark:bg-purple-900/10'
                   : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
               }`}
             >
               {icons[tab]} {labels[tab]}
               {!isLoading && counts[tab] > 0 && (
-                <span className="text-xs bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full px-1.5 py-0.5">
+                <span className="text-[10px] bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-full px-1.5 py-0.5 ml-1">
                   {counts[tab]}
                 </span>
               )}
@@ -610,45 +794,141 @@ export function ComunidadePage() {
         })}
       </div>
 
+      {/* ── Barra de Ferramentas (Busca, Sort, Filtros) ── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-4">
+        <div className="relative group flex-1 max-w-xl">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors group-focus-within:text-purple-500 text-gray-400">
+            <Search className="w-5 h-5" />
+          </div>
+          <Input
+            placeholder={
+              aba === 'poderes'
+                ? 'Buscar nas Habilidades...'
+                : aba === 'itens'
+                ? 'Buscar itens fabulosos...'
+                : aba === 'acervos'
+                ? 'Buscar acervos temáticos...'
+                : 'Buscar peculiaridades...'
+            }
+            value={
+              aba === 'poderes'
+                ? buscaPoderes
+                : aba === 'itens'
+                ? buscaItens
+                : aba === 'acervos'
+                ? buscaAcervos
+                : buscaPeculiaridades
+            }
+            onChange={(e) => {
+              const v = e.target.value;
+              if (aba === 'poderes') setBuscaPoderes(v);
+              if (aba === 'itens') setBuscaItens(v);
+              if (aba === 'acervos') setBuscaAcervos(v);
+              if (aba === 'peculiaridades') setBuscaPeculiaridades(v);
+            }}
+            className="pl-12 h-14 w-full bg-white dark:bg-slate-900 border-none shadow-xl ring-1 ring-black/5 dark:ring-white/10 focus:ring-2 focus:ring-purple-500 rounded-2xl text-lg transition-all"
+          />
+        </div>
+
+          <Dropdown
+            value={ordenacao}
+            onChange={(v) => setOrdenacao(v as any)}
+            icon={<ArrowUpDown className="w-4 h-4" />}
+            options={[
+              { value: 'novos', label: 'Mais Recentes' },
+              { value: 'nome', label: 'Nome (A-Z)' },
+              ...(aba !== 'itens' 
+                ? [
+                    { value: 'pda-desc', label: 'Maior PdA' },
+                    { value: 'pda-asc', label: 'Menor PdA' },
+                  ]
+                : [
+                    { value: 'preco-desc', label: 'Maior Preço' },
+                    { value: 'preco-asc', label: 'Menor Preço' },
+                  ]
+              ),
+            ]}
+          />
+      </div>
+
+      {/* Filtros de Categoria (Domínios / Tipos Item) */}
+      {(aba === 'poderes' || aba === 'acervos' || aba === 'itens') && (
+        <div className="flex flex-wrap items-center gap-2 mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
+          <button
+            onClick={() => aba === 'itens' ? setFiltroTipoItem(null) : setFiltroDominio(null)}
+            className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md ${
+              (aba === 'itens' ? !filtroTipoItem : !filtroDominio)
+                ? 'bg-purple-600 text-white shadow-purple-500/25 scale-105'
+                : 'bg-white dark:bg-slate-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'
+            }`}
+          >
+            TUDO
+          </button>
+          
+          {aba === 'itens' ? (
+            <>
+              {[
+                { id: 'weapon', label: 'Arma' },
+                { id: 'defensive-equipment', label: 'Defesa' },
+                { id: 'consumable', label: 'Consumível' },
+                { id: 'artifact', label: 'Artefato' },
+                { id: 'accessory', label: 'Acessório' },
+                { id: 'general', label: 'Geral' },
+                { id: 'upgrade-material', label: 'Material' },
+              ].map((tipo) => (
+                <button
+                  key={tipo.id}
+                  onClick={() => setFiltroTipoItem(tipo.id)}
+                  className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md ${
+                    filtroTipoItem === tipo.id
+                      ? 'bg-blue-600 text-white shadow-blue-500/25 scale-105'
+                      : 'bg-white dark:bg-slate-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  {tipo.label}
+                </button>
+              ))}
+            </>
+          ) : (
+            DOMINIOS.map((dom) => (
+              <button
+                key={dom.id}
+                onClick={() => setFiltroDominio(dom.id)}
+                className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all shadow-md ${
+                  filtroDominio === dom.id
+                    ? 'bg-purple-600 text-white shadow-purple-500/25 scale-105'
+                    : 'bg-white dark:bg-slate-900 text-gray-500 hover:bg-gray-50 dark:hover:bg-slate-800'
+                }`}
+              >
+                {dom.nome}
+              </button>
+            ))
+          )}
+        </div>
+      )}
+
       {/* ── Aba Poderes ── */}
       {aba === 'poderes' && (
         <>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Zap className="w-5 h-5" />
-                  {loadingPoderes ? 'Carregando…' : `${poderesFiltrados.length} ${poderesFiltrados.length === 1 ? 'poder público' : 'poderes públicos'}`}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  {poderes.length > 0 && (
-                    <div className="relative flex-1 min-w-48">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        value={buscaPoderes}
-                        onChange={(e) => setBuscaPoderes(e.target.value)}
-                        placeholder="Buscar poderes..."
-                        className="pl-9"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={carregarPoderes}
-                    disabled={loadingPoderes}
-                    className="flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loadingPoderes ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Zap className="w-5 h-5 text-purple-500" />
+              {loadingPoderes ? 'Carregando…' : `${poderesFiltrados.length} Habilidades`}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={carregarPoderes}
+              disabled={loadingPoderes}
+              className="flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingPoderes ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
 
           {erroPoderes && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 mb-6">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="text-sm">{erroPoderes}</span>
             </div>
@@ -683,42 +963,25 @@ export function ComunidadePage() {
       {/* ── Aba Itens ── */}
       {aba === 'itens' && (
         <>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  {loadingItens ? 'Carregando…' : `${itensFiltrados.length} ${itensFiltrados.length === 1 ? 'item público' : 'itens públicos'}`}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  {itens.length > 0 && (
-                    <div className="relative flex-1 min-w-48">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        value={buscaItens}
-                        onChange={(e) => setBuscaItens(e.target.value)}
-                        placeholder="Buscar itens..."
-                        className="pl-9"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={carregarItens}
-                    disabled={loadingItens}
-                    className="flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loadingItens ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Package className="w-5 h-5 text-blue-500" />
+              {loadingItens ? 'Carregando…' : `${itensFiltrados.length} Itens`}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={carregarItens}
+              disabled={loadingItens}
+              className="flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingItens ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
 
           {erroItens && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 mb-6">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="text-sm">{erroItens}</span>
             </div>
@@ -753,42 +1016,25 @@ export function ComunidadePage() {
       {/* ── Aba Acervos ── */}
       {aba === 'acervos' && (
         <>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  {loadingAcervos ? 'Carregando…' : `${acervosFiltrados.length} ${acervosFiltrados.length === 1 ? 'acervo público' : 'acervos públicos'}`}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  {acervos.length > 0 && (
-                    <div className="relative flex-1 min-w-48">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        value={buscaAcervos}
-                        onChange={(e) => setBuscaAcervos(e.target.value)}
-                        placeholder="Buscar acervos..."
-                        className="pl-9"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={carregarAcervos}
-                    disabled={loadingAcervos}
-                    className="flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loadingAcervos ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Layers className="w-5 h-5 text-purple-500" />
+              {loadingAcervos ? 'Carregando…' : `${acervosFiltrados.length} Acervos`}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={carregarAcervos}
+              disabled={loadingAcervos}
+              className="flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingAcervos ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
 
           {erroAcervos && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 mb-6">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="text-sm">{erroAcervos}</span>
             </div>
@@ -823,42 +1069,25 @@ export function ComunidadePage() {
       {/* ── Aba Peculiaridades ── */}
       {aba === 'peculiaridades' && (
         <>
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5" />
-                  {loadingPeculiaridades ? 'Carregando…' : `${peculiaridadesFiltradas.length} ${peculiaridadesFiltradas.length === 1 ? 'peculiaridade pública' : 'peculiaridades públicas'}`}
-                </CardTitle>
-                <div className="flex items-center gap-2">
-                  {peculiaridades.length > 0 && (
-                    <div className="relative flex-1 min-w-48">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input
-                        value={buscaPeculiaridades}
-                        onChange={(e) => setBuscaPeculiaridades(e.target.value)}
-                        placeholder="Buscar peculiaridades..."
-                        className="pl-9"
-                      />
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={carregarPeculiaridades}
-                    disabled={loadingPeculiaridades}
-                    className="flex items-center gap-1.5 flex-shrink-0"
-                  >
-                    <RefreshCw className={`w-4 h-4 ${loadingPeculiaridades ? 'animate-spin' : ''}`} />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-purple-500" />
+              {loadingPeculiaridades ? 'Carregando…' : `${peculiaridadesFiltradas.length} Peculiaridades`}
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={carregarPeculiaridades}
+              disabled={loadingPeculiaridades}
+              className="flex items-center gap-1.5"
+            >
+              <RefreshCw className={`w-4 h-4 ${loadingPeculiaridades ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
 
           {erroPeculiaridades && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400">
+            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 mb-6">
               <AlertCircle className="w-5 h-5 shrink-0" />
               <span className="text-sm">{erroPeculiaridades}</span>
             </div>
@@ -930,6 +1159,7 @@ export function ComunidadePage() {
           onOpenPowerDetails={(powerId) => setItemPoderResumoId(powerId)}
           onOpenPowerArrayDetails={(powerArrayId) => setItemAcervoResumoId(powerArrayId)}
           itemData={itemVisualizando}
+          isLoadingVinculos={loadingVinculos}
         />
       )}
 
@@ -939,46 +1169,17 @@ export function ComunidadePage() {
           setItemPoderResumoId(null);
           setItemAcervoResumoId(null);
         }}
-        poder={itemPoderResumoSelecionado}
-        acervo={itemAcervoResumoSelecionado}
+        poder={itemPoderResumoSelecionado ?? undefined}
+        acervo={itemAcervoResumoSelecionado ?? undefined}
       />
 
+      {/* Resumo Modal Peculiaridade */}
       {peculiaridadeVisualizando && (
-        <Modal
+        <ResumoPeculiaridade
           isOpen={!!peculiaridadeVisualizando}
           onClose={() => setPeculiaridadeVisualizando(null)}
-          title={peculiaridadeVisualizando.nome}
-          size="md"
-        >
-          <div className="space-y-4">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-100 dark:bg-gray-800 shrink-0 flex items-center justify-center">
-                {peculiaridadeVisualizando.icone ? (
-                  <DynamicIcon name={peculiaridadeVisualizando.icone} className="w-full h-full" />
-                ) : (
-                  <Sparkles className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                )}
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wide">Peculiaridade</p>
-                <p className={`text-sm font-medium ${
-                  peculiaridadeVisualizando.espiritual
-                    ? 'text-espirito-600 dark:text-espirito-400'
-                    : 'text-gray-500 dark:text-gray-400'
-                }`}>
-                  {peculiaridadeVisualizando.espiritual ? 'Espiritual' : 'Nao espiritual'}
-                </p>
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/40">
-              <p className="text-xs uppercase tracking-wide text-gray-500 mb-2">Descricao</p>
-              <p className="text-sm text-gray-800 dark:text-gray-200 whitespace-pre-wrap">
-                {peculiaridadeVisualizando.descricao || 'Sem descricao preenchida.'}
-              </p>
-            </div>
-          </div>
-        </Modal>
+          peculiaridade={peculiaridadeVisualizando}
+        />
       )}
     </div>
   );

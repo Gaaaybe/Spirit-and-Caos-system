@@ -206,7 +206,7 @@ export function SeletorModificacao({
             {(busca || tipoFiltro || categoriaFiltro) && (
               <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg px-4 py-2">
                 <span className="text-sm text-blue-700 dark:text-blue-300 flex items-center gap-2">
-                  <BarChart2 className="w-4 h-4" /> Mostrando {modificacoesFiltradas.length} de {MODIFICACOES.length} modificações
+                  <BarChart2 className="w-4 h-4" /> Mostrando {modificacoesFiltradas.length} de {todasModificacoes.length} modificações
                 </span>
                 <Button
                   variant="ghost"
@@ -218,6 +218,7 @@ export function SeletorModificacao({
                 </Button>
               </div>
             )}
+
 
             {/* Lista de Modificações */}
             {modificacoesFiltradas.length === 0 ? (

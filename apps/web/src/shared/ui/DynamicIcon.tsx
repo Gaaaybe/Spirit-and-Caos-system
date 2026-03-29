@@ -19,7 +19,7 @@ export function DynamicIcon({ name, className, ...props }: DynamicIconProps) {
       src={name}
       alt=""
       className={className as string}
-      style={{ display: 'block', objectFit: 'cover', width: '100%', height: '100%' }}
+      style={{ display: 'block', objectFit: 'cover' }}
       {...props}
     />
   );

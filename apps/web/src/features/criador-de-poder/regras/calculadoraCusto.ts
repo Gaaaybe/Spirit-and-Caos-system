@@ -52,6 +52,11 @@ export interface Poder {
     descricao?: string; // Descrição do custo (ex: "Sofre 1d6 de dano", "Perde 2 de Força")
     valorMaterial?: number; // Para tipo 'material', valor em R$ (base 1000R)
   };
+  custoTotal?: {
+    pda: number;
+    pe: number;
+    espacos: number;
+  };
 }
 
 /**

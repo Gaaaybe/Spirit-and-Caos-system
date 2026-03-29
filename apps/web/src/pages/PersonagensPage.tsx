@@ -3,4 +3,4 @@
  * Re-exporta o componente principal da feature
  */
 
-export { PersonagensPage } from '../features/ficha-personagem/components/PersonagensPage';
+export { CharacterSheetPage as PersonagensPage } from '../features/ficha-personagem';

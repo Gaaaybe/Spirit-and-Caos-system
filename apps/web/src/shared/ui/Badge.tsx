@@ -13,7 +13,7 @@ export function Badge({
   className = '',
   ...props 
 }: BadgeProps) {
-  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-full shadow-md border transition-all duration-200 hover:scale-105";
+  const baseClasses = "inline-flex items-center justify-center font-semibold rounded shadow-md border transition-all duration-200 hover:scale-105";
   
   const variants: Record<string, string> = {
     default: "bg-gray-100 text-gray-800 dark:bg-gray-700/80 dark:text-gray-200 border-gray-300 dark:border-gray-600 hover:shadow-lg",

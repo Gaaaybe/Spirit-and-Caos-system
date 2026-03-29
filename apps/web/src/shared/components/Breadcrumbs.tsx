@@ -1,4 +1,6 @@
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, matchPath } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { charactersService } from '@/services/characters.service';
 
 interface BreadcrumbItem {
   label: string;
@@ -19,7 +21,22 @@ const routeLabels: Record<string, string> = {
 
 export function Breadcrumbs() {
   const location = useLocation();
+  const [characterName, setCharacterName] = useState<string | null>(null);
   
+  // Extrai o ID manualmente pois useParams não funciona fora do <Routes>
+  const match = matchPath({ path: '/personagens/:id' }, location.pathname);
+  const id = match?.params.id;
+  
+  useEffect(() => {
+    if (id) {
+      charactersService.getCharacterById(id)
+        .then(char => setCharacterName(char.narrative.identity))
+        .catch(() => setCharacterName(null));
+    } else {
+      setCharacterName(null);
+    }
+  }, [id]);
+
   // Não mostra breadcrumbs na home
   if (location.pathname === '/') {
     return null;
@@ -34,7 +51,12 @@ export function Breadcrumbs() {
   let currentPath = '';
   pathnames.forEach((segment) => {
     currentPath += `/${segment}`;
-    const label = routeLabels[currentPath] || segment;
+    let label = routeLabels[currentPath] || segment;
+    
+    if (id && segment === id && characterName) {
+      label = characterName;
+    }
+    
     breadcrumbs.push({ label, path: currentPath });
   });
 

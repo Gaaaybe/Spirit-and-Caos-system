@@ -5,5 +5,6 @@ export { GerenciadorPage } from './GerenciadorPage';
 export { LandingPage } from './LandingPage';
 export { LoginPage } from './LoginPage';
 export { PersonagensPage } from './PersonagensPage';
+export { CharacterSheetDetailPage } from './CharacterSheetDetailPage';
 export { CampanhasPage } from './CampanhasPage';
 export { ComunidadePage } from './ComunidadePage';
