@@ -13,6 +13,7 @@ import { ItemType } from '../../enterprise/entities/item';
 import { UpgradeMaterial } from '../../enterprise/entities/upgrade-material';
 import { Weapon, WeaponRange } from '../../enterprise/entities/weapon';
 import type { DamageDescriptor } from '../../enterprise/entities/value-objects/damage-descriptor';
+import { UpgradeLevel } from '../../enterprise/entities/value-objects/upgrade-level';
 import { ItemPowerArrayIdList } from '../../enterprise/entities/watched-lists/item-power-array-id-list';
 import { ItemPowerIdList } from '../../enterprise/entities/watched-lists/item-power-id-list';
 import { ItemsRepository } from '../repositories/items-repository';
@@ -45,12 +46,14 @@ type CreateItemRequest =
       alcance: WeaponRange;
       alcanceExtraMetros?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (CreateItemCommonProps & {
       tipo: ItemType.DEFENSIVE_EQUIPMENT;
       tipoEquipamento: EquipmentType;
       baseRD?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (CreateItemCommonProps & {
       tipo: ItemType.CONSUMABLE;
@@ -162,6 +165,9 @@ export class CreateItemUseCase {
           alcance: request.alcance,
           alcanceExtraMetros: request.alcanceExtraMetros,
           atributoEscalonamento: request.atributoEscalonamento,
+          upgradeLevel: request.upgradeLevel !== undefined 
+            ? UpgradeLevel.create(request.upgradeLevel, 7) 
+            : undefined,
         });
         break;
 
@@ -171,6 +177,9 @@ export class CreateItemUseCase {
           tipoEquipamento: request.tipoEquipamento,
           baseRD: request.baseRD,
           atributoEscalonamento: request.atributoEscalonamento,
+          upgradeLevel: request.upgradeLevel !== undefined 
+            ? UpgradeLevel.create(request.upgradeLevel, 9) 
+            : undefined,
         });
         break;
 

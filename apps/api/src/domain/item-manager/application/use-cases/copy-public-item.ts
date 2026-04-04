@@ -33,7 +33,7 @@ export class CopyPublicItemUseCase {
       return left(new ResourceNotFoundError());
     }
 
-    if (!original.canBeAccessedBy()) {
+    if (!original.canBeAccessedBy(userId)) {
       return left(new NotAllowedError());
     }
 

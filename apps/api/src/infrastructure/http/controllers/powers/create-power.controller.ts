@@ -108,7 +108,7 @@ type CreatePowerBodySchema = z.infer<typeof createPowerBodySchema>;
 
 @Controller('/powers')
 export class CreatePowerController {
-  constructor(private createPower: CreatePowerUseCase) {}
+  constructor(private createPower: CreatePowerUseCase) { }
 
   @Post()
   @HttpCode(201)
@@ -168,12 +168,12 @@ export class CreatePowerController {
 
     const custoAlternativoVO = custoAlternativo
       ? AlternativeCost.create({
-          tipo: custoAlternativo.tipo as AlternativeCostType,
-          quantidade: custoAlternativo.quantidade,
-          descricao: custoAlternativo.descricao,
-          atributo: custoAlternativo.atributo,
-          itemId: custoAlternativo.itemId,
-        })
+        tipo: custoAlternativo.tipo as AlternativeCostType,
+        quantidade: custoAlternativo.quantidade,
+        descricao: custoAlternativo.descricao,
+        atributo: custoAlternativo.atributo,
+        itemId: custoAlternativo.itemId,
+      })
       : undefined;
 
     const result = await this.createPower.execute({
@@ -195,7 +195,9 @@ export class CreatePowerController {
 
       switch (error.constructor) {
         case ResourceNotFoundError:
-          throw new NotFoundException(error.message);
+          throw new BadRequestException(
+            `Falha na validação dos dados: ${error.message || 'Um recurso referenciado (efeito ou modificação) não foi encontrado no sistema.'}`,
+          );
         case InvalidVisibilityError:
           throw new BadRequestException(error.message);
         default:

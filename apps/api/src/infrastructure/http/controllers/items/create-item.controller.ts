@@ -85,6 +85,7 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
       ]),
       alcanceExtraMetros: z.number().min(0).multipleOf(0.5).default(0),
       atributoEscalonamento: z.string().min(1).optional(),
+      upgradeLevel: z.number().int().min(0).max(7).optional(),
     })
     .superRefine((data, ctx) => {
       if (data.alcance !== WeaponRange.NATURAL && data.alcanceExtraMetros > 0) {
@@ -101,6 +102,7 @@ const createItemBodySchema = z.discriminatedUnion('tipo', [
     tipoEquipamento: z.enum([EquipmentType.TRAJE, EquipmentType.PROTECAO]),
     baseRD: z.number().int().min(0).optional(),
     atributoEscalonamento: z.string().min(1).optional(),
+    upgradeLevel: z.number().int().min(0).max(9).optional(),
   }),
   z.object({
     ...commonFields,
@@ -175,6 +177,7 @@ export class CreateItemController {
         alcance: body.alcance as WeaponRange,
         alcanceExtraMetros: body.alcanceExtraMetros,
         atributoEscalonamento: body.atributoEscalonamento,
+        upgradeLevel: body.upgradeLevel,
       });
     } else if (body.tipo === ItemType.DEFENSIVE_EQUIPMENT) {
       result = await this.createItem.execute({
@@ -183,6 +186,7 @@ export class CreateItemController {
         tipoEquipamento: body.tipoEquipamento as EquipmentType,
         baseRD: body.baseRD,
         atributoEscalonamento: body.atributoEscalonamento,
+        upgradeLevel: body.upgradeLevel,
       });
     } else if (body.tipo === ItemType.CONSUMABLE) {
       result = await this.createItem.execute({
