@@ -122,9 +122,14 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
     }
 
     // Deriva domínio: usa o preservado do acervo existente ou o do primeiro poder
+    const primeiroPoder = poderesSelecionados[0];
     const dominioId = (acervoInicial?.dominioId ||
-      poderesSelecionados[0]?.dominioId ||
+      primeiroPoder?.dominioId ||
       'natural') as DomainName;
+    const dominioAreaConhecimento =
+      acervoInicial?.dominioAreaConhecimento ?? primeiroPoder?.dominioAreaConhecimento;
+    const dominioIdPeculiar =
+      acervoInicial?.dominioIdPeculiar ?? primeiroPoder?.dominioIdPeculiar;
 
     const isApiId = acervoInicial?.id && /^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$/i.test(acervoInicial.id);
     const iconeTrimmed = icone.trim();
@@ -134,8 +139,8 @@ export function CriadorAcervo({ isOpen, onClose, acervoInicial, onSalvo }: Criad
       descricao: descritor.trim(),
       dominio: {
         name: dominioId,
-        areaConhecimento: acervoInicial?.dominioAreaConhecimento,
-        peculiarId: acervoInicial?.dominioIdPeculiar,
+        areaConhecimento: dominioAreaConhecimento,
+        peculiarId: dominioIdPeculiar,
       },
       powerIds: poderesSelecionados.map((p) => p.id),
     };

@@ -201,7 +201,11 @@ export class PowerArray extends OwnableEntity<PowerArrayProps> {
       );
     }
 
-    if (!props.dominio.equals(firstDomain)) {
+    const arrayDomainMatchesPowers =
+      props.dominio.name === firstDomain.name &&
+      props.dominio.areaConhecimento === firstDomain.areaConhecimento;
+
+    if (!arrayDomainMatchesPowers) {
       throw new DomainValidationError(
         'O domínio do acervo deve ser igual ao domínio dos poderes',
         'dominio',

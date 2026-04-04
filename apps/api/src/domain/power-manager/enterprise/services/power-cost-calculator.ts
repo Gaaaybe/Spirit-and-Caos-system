@@ -85,17 +85,39 @@ export class PowerCostCalculator {
       }
 
       const gradeData = this.getUniversalGradeData(appliedEffect.grau);
-      let pdaEfeito = (effectBase.custoBase + paramsModifierByGrade) * appliedEffect.grau;
+      let custoPorGrauEfeito = effectBase.custoBase + paramsModifierByGrade;
+      let custoFixoEfeito = 0;
       const peEfeito = gradeData.pe;
       let espacosEfeito = gradeData.espacos;
 
       if (appliedEffect.configuracaoId && effectBase.hasConfiguracoes()) {
         const config = effectBase.getConfiguracao(appliedEffect.configuracaoId);
         if (config?.modificadorCusto) {
-          pdaEfeito += config.modificadorCusto * appliedEffect.grau;
+          custoPorGrauEfeito += config.modificadorCusto;
         }
       }
 
+      // Modificações GLOBAIS: custoPorGrau somado ao custoPorGrau do efeito
+      //                        custoFixo somado ao custoFixo do efeito
+      for (const globalMod of globalModifications) {
+        const modBase = await this.modificationsRepository.findById(globalMod.modificationBaseId);
+        if (!modBase) {
+          return left(new ResourceNotFoundError());
+        }
+
+        const grauMod = globalMod.grau ?? 1;
+        const selectedConfigurationId =
+          typeof globalMod.parametros?.configuracaoSelecionada === 'string'
+            ? globalMod.parametros.configuracaoSelecionada
+            : undefined;
+        const { custoFixo: cfGlobal, custoPorGrau: cpgGlobal } =
+          modBase.calcularCustoComConfiguracao(selectedConfigurationId);
+
+        custoPorGrauEfeito += cpgGlobal * grauMod;
+        custoFixoEfeito += cfGlobal;
+      }
+
+      // Modificações LOCAIS
       for (const modification of appliedEffect.modifications) {
         const modBase = await this.modificationsRepository.findById(
           modification.modificationBaseId,
@@ -110,14 +132,20 @@ export class PowerCostCalculator {
           typeof modification.parametros?.configuracaoSelecionada === 'string'
             ? modification.parametros.configuracaoSelecionada
             : undefined;
-        const { custoFixo, custoPorGrau } = modBase.calcularCustoComConfiguracao(
-          selectedConfigurationId,
-        );
-        const custoMod = custoFixo + custoPorGrau * grauMod;
-        pdaEfeito += custoMod * appliedEffect.grau;
+        const { custoFixo: cfLocal, custoPorGrau: cpgLocal } =
+          modBase.calcularCustoComConfiguracao(selectedConfigurationId);
+
+        custoPorGrauEfeito += cpgLocal * grauMod;
+        custoFixoEfeito += cfLocal;
       }
 
-      pdaEfeito = Math.max(0, pdaEfeito);
+      // custoPorGrau final não pode ser menor que 1 (mesma regra do frontend: Math.max(1, ...))
+      custoPorGrauEfeito = Math.max(1, custoPorGrauEfeito);
+
+      const grauParaCalculo = appliedEffect.grau < 1 ? 1 : appliedEffect.grau;
+      let pdaEfeito = custoPorGrauEfeito * grauParaCalculo + custoFixoEfeito;
+      pdaEfeito = Math.max(1, pdaEfeito);
+
       espacosEfeito = Math.max(0, espacosEfeito);
 
       const custoEfeito = PowerCost.create({
@@ -131,19 +159,6 @@ export class PowerCostCalculator {
       totalPdA += pdaEfeito;
       totalPE += peEfeito;
       totalEspacos += espacosEfeito;
-    }
-
-    for (const globalMod of globalModifications) {
-      const modBase = await this.modificationsRepository.findById(globalMod.modificationBaseId);
-
-      if (!modBase) {
-        return left(new ResourceNotFoundError());
-      }
-
-      const grauMod = globalMod.grau ?? 1;
-      const custoMod = modBase.custoFixo + modBase.custoPorGrau * grauMod;
-
-      totalPdA += custoMod * totalPdA;
     }
 
     totalPdA = Math.max(0, totalPdA);

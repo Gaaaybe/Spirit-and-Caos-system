@@ -7,6 +7,7 @@ import {
   Post,
 } from '@nestjs/common';
 import { z } from 'zod';
+import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { CreatePowerArrayUseCase } from '@/domain/power-manager/application/use-cases/create-power-array';
 import { InvalidVisibilityError } from '@/domain/power-manager/application/use-cases/errors/invalid-visibility-error';
@@ -111,25 +112,32 @@ export class CreatePowerArrayController {
         })
       : undefined;
 
-    const result = await this.createPowerArray.execute({
-      nome,
-      descricao,
-      dominio: dominioVO,
-      parametrosBase: parametrosBaseVO,
-      powerIds,
-      isPublic,
-      notas,
-      icone,
-      userId: user.sub,
-    });
+    try {
+      const result = await this.createPowerArray.execute({
+        nome,
+        descricao,
+        dominio: dominioVO,
+        parametrosBase: parametrosBaseVO,
+        powerIds,
+        isPublic,
+        notas,
+        icone,
+        userId: user.sub,
+      });
 
-    if (result.isLeft()) {
-      const error = result.value;
-      if (error instanceof ResourceNotFoundError) throw new NotFoundException(error.message);
-      if (error instanceof InvalidVisibilityError) throw new BadRequestException(error.message);
-      throw new BadRequestException();
+      if (result.isLeft()) {
+        const error = result.value;
+        if (error instanceof ResourceNotFoundError) throw new NotFoundException(error.message);
+        if (error instanceof InvalidVisibilityError) throw new BadRequestException(error.message);
+        throw new BadRequestException();
+      }
+
+      return PowerArrayPresenter.toHTTP(result.value.powerArray);
+    } catch (error) {
+      if (error instanceof DomainValidationError) {
+        throw new BadRequestException(error.message);
+      }
+      throw error;
     }
-
-    return PowerArrayPresenter.toHTTP(result.value.powerArray);
   }
 }
