@@ -372,6 +372,7 @@ model Character {
   equipmentSlots     Json
   inventory          Json
   conditions         Json
+  unarmedMastery     Json?
 
   deathState   DeathState @default(ALIVE)
   deathCounter Int        @default(0)
