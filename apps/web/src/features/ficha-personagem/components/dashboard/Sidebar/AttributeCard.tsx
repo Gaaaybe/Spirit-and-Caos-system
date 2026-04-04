@@ -50,7 +50,7 @@ export function AttributeCard({ character, onSync }: AttributeCardProps) {
     localAttributes.wisdom.baseValue +
     localAttributes.charisma.baseValue;
 
-  const allowedPoints = 67 + (level * (level - 1)) / 2;
+  const allowedPoints = 67 + (level * (level + 1)) / 2;
   const remainingPoints = allowedPoints - totalSpent;
 
   const handleUpdateBase = (key: keyof typeof localAttributes, delta: number) => {

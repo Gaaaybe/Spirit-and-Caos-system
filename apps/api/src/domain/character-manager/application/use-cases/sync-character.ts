@@ -142,7 +142,7 @@ export class SyncCharacterUseCase {
 
       // Validação de limite de pontos por nível
       // Progressão triangular: 67 + (nivel * (nivel - 1) / 2)
-      const allowedPoints = 67 + (character.level * (character.level - 1)) / 2;
+      const allowedPoints = 67 + (character.level * (character.level + 1)) / 2;
       const spentPoints = newAttributes.totalBasePoints;
 
       if (spentPoints > allowedPoints) {
