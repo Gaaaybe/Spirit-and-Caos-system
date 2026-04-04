@@ -34,7 +34,7 @@ export class Attribute {
   }
 
   get baseModifier(): number {
-    return Math.floor((this.baseValue - 10) / 2);
+    return Math.ceil((this.baseValue - 10) / 2);
   }
 
   get rollModifier(): number {

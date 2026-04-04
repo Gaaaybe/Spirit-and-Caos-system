@@ -208,8 +208,8 @@ export function AttributeCard({ character, onSync }: AttributeCardProps) {
                     <div className="text-right">
                       <p className="text-[10px] font-bold text-gray-400 uppercase mb-1">Modificador Final</p>
                       <p className="text-xl font-black text-gray-900 dark:text-white">
-                        {Math.floor((localAttr.baseValue - 10) / 2) + localAttr.extraBonus >= 0 ? '+' : ''}
-                        {Math.floor((localAttr.baseValue - 10) / 2) + localAttr.extraBonus}
+                        {Math.ceil((localAttr.baseValue - 10) / 2) + localAttr.extraBonus >= 0 ? '+' : ''}
+                        {Math.ceil((localAttr.baseValue - 10) / 2) + localAttr.extraBonus}
                       </p>
                     </div>
                   </div>
