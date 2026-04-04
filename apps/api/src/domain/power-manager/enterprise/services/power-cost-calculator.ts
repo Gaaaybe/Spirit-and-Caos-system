@@ -53,8 +53,8 @@ export class PowerCostCalculator {
   > {
     const custoPorEfeito = new Map<string, PowerCost>();
     let totalPdA = 0;
-    let totalPE = 0;
-    let totalEspacos = 0;
+    const espacosPorEfeito: number[] = [];
+    const pePorEfeito: number[] = [];
 
     const defaultParamsPerEffect = [] as Array<{
       acao: number;
@@ -88,7 +88,7 @@ export class PowerCostCalculator {
       let custoPorGrauEfeito = effectBase.custoBase + paramsModifierByGrade;
       let custoFixoEfeito = 0;
       const peEfeito = gradeData.pe;
-      let espacosEfeito = gradeData.espacos;
+      const espacosEfeito = Math.max(0, gradeData.espacos);
 
       if (appliedEffect.configuracaoId && effectBase.hasConfiguracoes()) {
         const config = effectBase.getConfiguracao(appliedEffect.configuracaoId);
@@ -146,8 +146,6 @@ export class PowerCostCalculator {
       let pdaEfeito = custoPorGrauEfeito * grauParaCalculo + custoFixoEfeito;
       pdaEfeito = Math.max(1, pdaEfeito);
 
-      espacosEfeito = Math.max(0, espacosEfeito);
-
       const custoEfeito = PowerCost.create({
         pda: pdaEfeito,
         pe: peEfeito,
@@ -157,12 +155,77 @@ export class PowerCostCalculator {
       custoPorEfeito.set(appliedEffect.id.toString(), custoEfeito);
 
       totalPdA += pdaEfeito;
-      totalPE += peEfeito;
-      totalEspacos += espacosEfeito;
+      espacosPorEfeito.push(espacosEfeito);
+      pePorEfeito.push(peEfeito);
+    }
+
+    // Espaços e PE: mesmo que o frontend — maior efeito + 1 por efeito adicional
+    // Frontend: calcularEspacosTotal → max(espacos) + (numEfeitos - 1)
+    // Frontend: calcularPETotal → max(pe) + (numEfeitos - 1)
+    const maiorEspacos = espacosPorEfeito.length > 0 ? Math.max(...espacosPorEfeito) : 0;
+    const maiorPE = pePorEfeito.length > 0 ? Math.max(...pePorEfeito) : 0;
+    const qtdEfeitosAdicionais = Math.max(0, effects.length - 1);
+
+    let totalEspacos = maiorEspacos + qtdEfeitosAdicionais;
+    let totalPE = maiorPE + qtdEfeitosAdicionais;
+
+    // ── Modificações globais especiais de PE e Espaços ──────────────────────
+    // Espelha calcularPETotal() e calcularEspacosTotal() do frontend
+    const getOpcao = (mod: (typeof globalModifications)[number]) =>
+      typeof mod.parametros?.opcao === 'string' ? mod.parametros.opcao : undefined;
+
+    const modPEDobrado = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-dobrado' && getOpcao(m) === 'PE Dobrado',
+    );
+    const modPETotal = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-total' && getOpcao(m) === 'Todos PE',
+    );
+    const modPEReduzido = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-reduzido' && getOpcao(m) === 'PE pela Metade',
+    );
+    const modPEMinimo = globalModifications.find(
+      (m) =>
+        m.modificationBaseId === 'custo-pe-minimo' &&
+        getOpcao(m) === 'PE Mínimo (metade - 3/efeito)',
+    );
+    const modEspacosDobrado = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-dobrado' && getOpcao(m) === 'Espaços Dobrados',
+    );
+    const modEspacosTotal = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-total' && getOpcao(m) === 'Todos Espaços',
+    );
+    const modEspacosReduzido = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-reduzido' && getOpcao(m) === 'Espaços pela Metade',
+    );
+    const modEspacosMinimo = globalModifications.find(
+      (m) => m.modificationBaseId === 'custo-pe-minimo' && getOpcao(m) === 'Espaços Fixos (3)',
+    );
+
+    // Aplica modificadores de PE
+    if (modPEDobrado) {
+      totalPE *= 2;
+    } else if (modPETotal) {
+      totalPE = pePorEfeito.reduce((acc, pe) => acc + pe, 0);
+    } else if (modPEReduzido) {
+      totalPE = Math.max(1, Math.ceil(totalPE / 2));
+    } else if (modPEMinimo) {
+      totalPE = Math.max(1, Math.floor(totalPE / 2) - 3 * effects.length);
+    }
+
+    // Aplica modificadores de Espaços
+    if (modEspacosDobrado) {
+      totalEspacos *= 2;
+    } else if (modEspacosTotal) {
+      totalEspacos = espacosPorEfeito.reduce((acc, e) => acc + e, 0);
+    } else if (modEspacosReduzido) {
+      totalEspacos = Math.max(1, Math.ceil(totalEspacos / 2));
+    } else if (modEspacosMinimo) {
+      totalEspacos = 3;
     }
 
     totalPdA = Math.max(0, totalPdA);
     totalEspacos = Math.max(0, totalEspacos);
+    totalPE = Math.max(0, totalPE);
 
     const custoTotal = PowerCost.create({
       pda: totalPdA,
