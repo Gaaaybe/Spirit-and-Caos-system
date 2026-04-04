@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState, Badge, Select } from '../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, toast, EmptyState, Badge, Select, ConfirmDialog } from '../shared/ui';
 import { usePoderes } from '../features/criador-de-poder/hooks/usePoderes';
 import { SwipeablePoderCard, DOMINIO_VISUAL } from '../features/criador-de-poder/components/SwipeablePoderCard';
 import { GerenciadorCustomizados } from '../features/criador-de-poder/components/GerenciadorCustomizados';
@@ -29,6 +29,7 @@ export function BibliotecaPage() {
     error: erroItens,
     atualizar: atualizarItem,
     deletar: deletarItem,
+    copiar: copiarItem,
     carregar: recarregarItens,
   } = useItems();
   const { efeitos, modificacoes } = useCatalog();
@@ -78,6 +79,10 @@ export function BibliotecaPage() {
   const [carregandoItemId, setCarregandoItemId] = useState<string | null>(null);
   const [deletandoItemId, setDeletandoItemId] = useState<string | null>(null);
   const [togglePublicItemId, setTogglePublicItemId] = useState<string | null>(null);
+  
+  const [confirmarDeletarPoder, setConfirmarDeletarPoder] = useState<PoderResponse | null>(null);
+  const [confirmarDeletarItem, setConfirmarDeletarItem] = useState<ItemResponse | null>(null);
+
   const importInputRef = useRef<HTMLInputElement>(null);
   const [abaAtiva, setAbaAtiva] = useState<'poderes' | 'itens' | 'acervos' | 'peculiaridades'>(() => {
     const saved = localStorage.getItem('biblioteca-aba-ativa');
@@ -218,11 +223,14 @@ export function BibliotecaPage() {
     }
   };
 
-  const handleDeletar = async (id: string, nome: string) => {
+  const handleDeletarPoderConfirmado = async () => {
+    if (!confirmarDeletarPoder) return;
+    const { id, nome } = confirmarDeletarPoder;
     setDeletandoId(id);
     try {
       await deletar(id);
       toast.success(`Poder "${nome}" deletado.`);
+      setConfirmarDeletarPoder(null);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -301,11 +309,14 @@ export function BibliotecaPage() {
     }
   };
 
-  const handleDeletarItem = async (item: ItemResponse) => {
-    setDeletandoItemId(item.id);
+  const handleDeletarItemConfirmado = async () => {
+    if (!confirmarDeletarItem) return;
+    const { id, nome } = confirmarDeletarItem;
+    setDeletandoItemId(id);
     try {
-      await deletarItem(item.id);
-      toast.success(`Item "${item.nome}" deletado.`);
+      await deletarItem(id);
+      toast.success(`Item "${nome}" deletado.`);
+      setConfirmarDeletarItem(null);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -325,6 +336,19 @@ export function BibliotecaPage() {
       toast.error(getErrorMessage(err));
     } finally {
       setTogglePublicItemId(null);
+    }
+  };
+
+  const handleDuplicarItem = async (item: ItemResponse) => {
+    setCarregandoItemId(item.id); // Reusando o estado de carregamento do item para duplicação ou criando um novo se necessário
+    try {
+      await copiarItem(item.id);
+      toast.success(`Cópia de "${item.nome}" criada.`);
+      recarregarItens();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setCarregandoItemId(null);
     }
   };
 
@@ -355,7 +379,14 @@ export function BibliotecaPage() {
     try {
       const text = await file.text();
       const parsed = JSON.parse(text);
-      const lista = Array.isArray(parsed) ? parsed : [parsed];
+      
+      // Suporte para wrapper {"poderes": [...]} comum em backups manuais
+      let rawLista = parsed;
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && Array.isArray((parsed as any).poderes)) {
+        rawLista = (parsed as any).poderes;
+      }
+
+      const lista = Array.isArray(rawLista) ? rawLista : [rawLista];
       let ok = 0;
       let falhou = 0;
       for (const item of lista) {
@@ -599,7 +630,7 @@ export function BibliotecaPage() {
                             onCarregar={() => handleCarregar(poderResp)}
                             onDuplicar={() => handleDuplicar(poderResp, poderSalvo.nome)}
                             onExportar={() => handleExportar(poderResp, poderSalvo.nome)}
-                            onDeletar={() => handleDeletar(poderSalvo.id, poderSalvo.nome)}
+                            onDeletar={() => setConfirmarDeletarPoder(poderResp)}
                             onTogglePublic={() => handleTogglePublic(poderResp)}
                             onVerResumo={() => setPoderVisualizando(poderResp)}
                             formatarData={formatarData}
@@ -748,11 +779,13 @@ export function BibliotecaPage() {
                           key={item.id}
                           item={item}
                           onCarregar={() => handleCarregarItem(item)}
-                          onDeletar={() => handleDeletarItem(item)}
+                          onDuplicar={() => handleDuplicarItem(item)}
+                          onDeletar={() => setConfirmarDeletarItem(item)}
                           onTogglePublic={() => handleTogglePublicItem(item)}
                           onVerResumo={() => setItemVisualizando(item)}
                           formatarData={formatarData}
                           carregandoId={carregandoItemId}
+                          duplicandoId={carregandoItemId}
                           deletandoId={deletandoItemId}
                           togglePublicId={togglePublicItemId}
                         />
@@ -815,6 +848,27 @@ export function BibliotecaPage() {
         }}
         poder={itemPoderResumoSelecionado}
         acervo={itemAcervoResumoSelecionado}
+      />
+
+      {/* Modais de Confirmação */}
+      <ConfirmDialog
+        isOpen={!!confirmarDeletarPoder}
+        onClose={() => setConfirmarDeletarPoder(null)}
+        onConfirm={handleDeletarPoderConfirmado}
+        title="Deletar Poder"
+        message={`Tem certeza que deseja deletar o poder "${confirmarDeletarPoder?.nome}" da sua biblioteca? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Deletar"
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmarDeletarItem}
+        onClose={() => setConfirmarDeletarItem(null)}
+        onConfirm={handleDeletarItemConfirmado}
+        title="Deletar Item"
+        message={`Tem certeza que deseja deletar o item "${confirmarDeletarItem?.nome}" da sua biblioteca? Esta ação não pode ser desfeita.`}
+        variant="danger"
+        confirmText="Deletar"
       />
     </div>
   );

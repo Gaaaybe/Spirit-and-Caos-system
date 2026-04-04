@@ -290,12 +290,14 @@ export type CreateItemPayload =
       alcance: WeaponRange;
       alcanceExtraMetros?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (ItemCommonPayload & {
       tipo: 'defensive-equipment';
       tipoEquipamento: EquipmentType;
       baseRD?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (ItemCommonPayload & {
       tipo: 'consumable';
@@ -325,12 +327,14 @@ export type UpdateItemPayload =
       alcance?: WeaponRange;
       alcanceExtraMetros?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (ItemCommonUpdatePayload & {
       tipo: 'defensive-equipment';
       tipoEquipamento?: EquipmentType;
       baseRD?: number;
       atributoEscalonamento?: string;
+      upgradeLevel?: number;
     })
   | (ItemCommonUpdatePayload & {
       tipo: 'consumable';

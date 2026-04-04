@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast, Badge, Select } from '../../../shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, EmptyState, toast, Badge, Select, ConfirmDialog } from '../../../shared/ui';
 import { usePowerArrays } from '../hooks/usePowerArrays';
 import { CriadorAcervo } from './CriadorAcervo';
 import { ResumoAcervo } from './ResumoAcervo';
@@ -18,6 +18,7 @@ export function ListaAcervos() {
   const [acervoEditando, setAcervoEditando] = useState<Acervo | null>(null);
   const [acervoVisualizando, setAcervoVisualizando] = useState<Acervo | null>(null);
   const [togglePublicId, setTogglePublicId] = useState<string | null>(null);
+  const [confirmarDeletar, setConfirmarDeletar] = useState<AcervoResponse | null>(null);
 
   const acervosFiltrados = useMemo(() => {
     const filtrados = acervos.filter((a: AcervoResponse) =>
@@ -60,14 +61,15 @@ export function ListaAcervos() {
     return Object.keys(acervosAgrupados).sort((a, b) => ordem.indexOf(a) - ordem.indexOf(b));
   }, [acervosAgrupados]);
 
-  const handleDeletar = async (id: string, nome: string) => {
-    if (confirm(`Tem certeza que deseja deletar o acervo "${nome}"?`)) {
-      try {
-        await deletar(id);
-        toast.success(`Acervo "${nome}" deletado.`);
-      } catch {
-        toast.error(`Erro ao deletar acervo "${nome}".`);
-      }
+  const handleDeletarConfirmado = async () => {
+    if (!confirmarDeletar) return;
+    const { id, nome } = confirmarDeletar;
+    try {
+      await deletar(id);
+      toast.success(`Acervo "${nome}" deletado.`);
+      setConfirmarDeletar(null);
+    } catch {
+      toast.error(`Erro ao deletar acervo "${nome}".`);
     }
   };
 
@@ -184,7 +186,7 @@ export function ListaAcervos() {
                           key={acervo.id}
                           acervo={acervo}
                           onEditar={() => setAcervoEditando(acervoResponseToAcervo(acervo))}
-                          onDeletar={() => handleDeletar(acervo.id, acervo.nome)}
+                          onDeletar={() => setConfirmarDeletar(acervo)}
                           onTogglePublic={() => handleTogglePublic(acervo)}
                           onVerResumo={() => setAcervoVisualizando(acervoResponseToAcervo(acervo))}
                           togglePublicId={togglePublicId}
@@ -215,6 +217,16 @@ export function ListaAcervos() {
         isOpen={!!acervoVisualizando}
         onClose={() => setAcervoVisualizando(null)}
         acervo={acervoVisualizando}
+      />
+
+      <ConfirmDialog
+        isOpen={!!confirmarDeletar}
+        onClose={() => setConfirmarDeletar(null)}
+        onConfirm={handleDeletarConfirmado}
+        title="Deletar Acervo"
+        message={`Tem certeza que deseja deletar o acervo "${confirmarDeletar?.nome}"? Esta ação removerá o agrupamento, mas os poderes individuais permanecerão na sua biblioteca.`}
+        variant="danger"
+        confirmText="Deletar"
       />
     </div>
   );

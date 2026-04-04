@@ -37,6 +37,7 @@ export function CharacterSheetDashboard({ characterId }: CharacterSheetDashboard
     spendRunics,
     acquireBenefit,
     removeBenefit,
+    updateUnarmedMastery,
     pendingAction,
     clearPendingAction,
   } = useCharacterSheet(characterId);
@@ -102,6 +103,7 @@ export function CharacterSheetDashboard({ characterId }: CharacterSheetDashboard
             onUpgradeItem={upgradeItem}
             onAcquireBenefit={acquireBenefit}
             onRemoveBenefit={removeBenefit}
+            onUpdateUnarmedMastery={updateUnarmedMastery}
           />
         </div>
       </div>

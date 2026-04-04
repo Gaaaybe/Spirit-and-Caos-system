@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { CharacterResponse, SyncCharacterData } from '@/services/characters.types';
 import { Badge, Button, DynamicIcon, Modal, Input, ModalFooter } from '@/shared/ui';
-import { User, Settings, Shield, MoreHorizontal, Camera, Sparkles, Save, X, Edit2, ArrowUpCircle } from 'lucide-react';
+import { User, Settings, Shield, MoreHorizontal, Camera, Sparkles, Save, X, Edit2, ArrowUpCircle, Dices } from 'lucide-react';
+import { FreeDiceRollerModal } from '@/shared/components/FreeDiceRollerModal';
 
 interface CharacterHeaderProps {
   character: CharacterResponse;
@@ -13,6 +14,7 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
   // Estados para Modais
   const [isArtModalOpen, setIsArtModalOpen] = useState(false);
   const [isSymbolModalOpen, setIsSymbolModalOpen] = useState(false);
+  const [isDiceModalOpen, setIsDiceModalOpen] = useState(false);
   const [tempUrl, setTempUrl] = useState('');
 
   // Estados para Edição de Nome
@@ -188,6 +190,16 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
         </div>
 
         <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-gray-100 dark:border-gray-800 flex-wrap">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsDiceModalOpen(true)}
+            className="flex items-center gap-2 h-9 md:h-10 px-3 md:px-4 rounded-lg shrink-0 border-indigo-200 dark:border-indigo-800 bg-indigo-50/30 dark:bg-indigo-900/10 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-100 transition-all"
+          >
+            <Dices className="w-4 h-4" />
+            <span className="text-sm font-bold">Dados</span>
+          </Button>
+
           <Button variant="outline" size="sm" className="flex items-center gap-2 h-9 md:h-10 px-3 md:px-4 rounded-lg shrink-0">
             <Sparkles className="w-4 h-4 text-blue-500" />
             <span className="text-sm">Bônus Ativos</span>
@@ -202,6 +214,12 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
           </div>
         </div>
       </div>
+
+      {/* Diceroller Livre */}
+      <FreeDiceRollerModal 
+        isOpen={isDiceModalOpen} 
+        onClose={() => setIsDiceModalOpen(false)} 
+      />
 
       {/* Modais de Edição */}
       <Modal isOpen={isArtModalOpen} onClose={() => setIsArtModalOpen(false)} title="Editar Arte do Personagem">

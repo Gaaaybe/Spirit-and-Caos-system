@@ -38,11 +38,13 @@ interface ItemBuilderState {
     alcance: 'adjacente' | 'natural' | 'curto' | 'medio' | 'longo';
     alcanceExtraMetros: number;
     atributoEscalonamento: string;
+    upgradeLevel: number;
   };
   defensive: {
     tipoEquipamento: 'traje' | 'protecao';
     baseRD: number;
     atributoEscalonamento: string;
+    upgradeLevel: number;
   };
   consumable: {
     descritorEfeito: string;
@@ -75,11 +77,13 @@ const createInitialState = (): ItemBuilderState => ({
     alcance: 'natural',
     alcanceExtraMetros: 0,
     atributoEscalonamento: '',
+    upgradeLevel: 0,
   },
   defensive: {
     tipoEquipamento: 'protecao',
     baseRD: 2,
     atributoEscalonamento: '',
+    upgradeLevel: 0,
   },
   consumable: {
     descritorEfeito: '',
@@ -130,6 +134,7 @@ export function useItemBuilder() {
           alcance: item.alcance,
           alcanceExtraMetros: item.alcanceExtraMetros,
           atributoEscalonamento: item.atributoEscalonamento ?? '',
+          upgradeLevel: item.upgradeLevel,
         };
       }
 
@@ -138,6 +143,7 @@ export function useItemBuilder() {
           tipoEquipamento: item.tipoEquipamento,
           baseRD: item.baseRD,
           atributoEscalonamento: item.atributoEscalonamento ?? '',
+          upgradeLevel: item.upgradeLevel,
         };
       }
 
@@ -232,14 +238,20 @@ export function useItemBuilder() {
   };
 
   const updateWeaponField = (
-    key: 'critMargin' | 'critMultiplier' | 'alcance' | 'alcanceExtraMetros' | 'atributoEscalonamento',
+    key:
+      | 'critMargin'
+      | 'critMultiplier'
+      | 'alcance'
+      | 'alcanceExtraMetros'
+      | 'atributoEscalonamento'
+      | 'upgradeLevel',
     value: number | string,
   ) => {
     setState((prev) => ({ ...prev, weapon: { ...prev.weapon, [key]: value } }));
   };
 
   const updateDefensiveField = (
-    key: 'tipoEquipamento' | 'baseRD' | 'atributoEscalonamento',
+    key: 'tipoEquipamento' | 'baseRD' | 'atributoEscalonamento' | 'upgradeLevel',
     value: number | string,
   ) => {
     setState((prev) => ({ ...prev, defensive: { ...prev.defensive, [key]: value } }));
@@ -339,6 +351,7 @@ export function useItemBuilder() {
         ...(state.weapon.atributoEscalonamento.trim() && {
           atributoEscalonamento: state.weapon.atributoEscalonamento.trim(),
         }),
+        upgradeLevel: state.weapon.upgradeLevel,
       };
     }
 
@@ -351,6 +364,7 @@ export function useItemBuilder() {
         ...(state.defensive.atributoEscalonamento.trim() && {
           atributoEscalonamento: state.defensive.atributoEscalonamento.trim(),
         }),
+        upgradeLevel: state.defensive.upgradeLevel,
       };
     }
 

@@ -1,4 +1,4 @@
-import { Coins, FlaskConical, FolderOpen, Gem, Globe, HandCoins, Layers, Lock, Package, Shield, Sword, Trash2, Zap } from 'lucide-react';
+import { Coins, Copy, FlaskConical, FolderOpen, Gem, Globe, HandCoins, Layers, Lock, Package, Shield, Sword, Trash2, Zap } from 'lucide-react';
 import { Badge, Button, Card, CardContent, DynamicIcon } from '@/shared/ui';
 import { useIsTouchDevice, useSwipeToDismiss } from '@/shared/hooks';
 import { MarkdownText } from '@/shared/components';
@@ -7,11 +7,13 @@ import type { ItemResponse } from '@/services/types';
 interface SwipeableItemCardProps {
   item: ItemResponse;
   onCarregar: () => void;
+  onDuplicar: () => void;
   onDeletar: () => void;
   onTogglePublic: () => void;
   onVerResumo: () => void;
   formatarData: (data: string) => string;
   carregandoId: string | null;
+  duplicandoId: string | null;
   deletandoId: string | null;
   togglePublicId: string | null;
 }
@@ -51,11 +53,13 @@ function getTipoItemIcon(tipo: ItemResponse['tipo']) {
 export function SwipeableItemCard({
   item,
   onCarregar,
+  onDuplicar,
   onDeletar,
   onTogglePublic,
   onVerResumo,
   formatarData,
   carregandoId,
+  duplicandoId,
   deletandoId,
   togglePublicId,
 }: SwipeableItemCardProps) {
@@ -182,6 +186,17 @@ export function SwipeableItemCard({
                   >
                     {item.isPublic ? <Globe className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
                   </Button>
+                  
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onDuplicar}
+                    title="Duplicar"
+                    loading={duplicandoId === item.id}
+                    disabled={duplicandoId !== null && duplicandoId !== item.id}
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
 
                   <Button
                     variant="ghost"
@@ -197,7 +212,7 @@ export function SwipeableItemCard({
                 </div>
               </div>
 
-<Button
+              <Button
                 variant="primary"
                 size="sm"
                 onClick={onCarregar}

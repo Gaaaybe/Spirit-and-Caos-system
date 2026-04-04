@@ -35,6 +35,7 @@ interface MainAreaProps {
   onUpgradeItem: (itemId: string, materialId: string, runicsCost: number) => Promise<void>;
   onAcquireBenefit: (benefitName: string, targetDegree: number) => Promise<void>;
   onRemoveBenefit: (benefitId: string) => void;
+  onUpdateUnarmedMastery: (mastery: any) => Promise<void>;
 }
 
 export function MainArea({ 
@@ -63,6 +64,7 @@ export function MainArea({
   onUpgradeItem,
   onAcquireBenefit,
   onRemoveBenefit,
+  onUpdateUnarmedMastery,
 }: MainAreaProps) {
   const tabs = [
     { id: 'acoes', label: 'Ações', icon: <Sword className="w-4 h-4" /> },
@@ -97,7 +99,12 @@ export function MainArea({
 
       {/* Tab Content */}
       <div className="flex-1 min-h-0">
-        {activeTab === 'acoes' && <AcoesTab character={character} />}
+        {activeTab === 'acoes' && (
+          <AcoesTab 
+            character={character} 
+            onUpdateUnarmedMastery={onUpdateUnarmedMastery} 
+          />
+        )}
         {activeTab === 'poderes' && (
           <PoderesTab 
             character={character} 

@@ -383,6 +383,20 @@ export function useCharacterSheet(characterId: string) {
     }
   };
 
+  const updateUnarmedMastery = async (mastery: any) => {
+    if (!character) return;
+    setIsSyncing(true);
+    try {
+      const updated = await charactersService.updateUnarmedMastery(characterId, mastery);
+      setCharacter(updated);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Erro ao atualizar domínio desarmado');
+      throw err;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   const removeBenefit = (benefitId: string) => {
     if (!character) return;
     setPendingAction({
@@ -432,6 +446,7 @@ export function useCharacterSheet(characterId: string) {
     spendRunics,
     acquireBenefit,
     removeBenefit,
+    updateUnarmedMastery,
     refresh: fetchCharacter,
     pendingAction,
     clearPendingAction: () => setPendingAction(null),

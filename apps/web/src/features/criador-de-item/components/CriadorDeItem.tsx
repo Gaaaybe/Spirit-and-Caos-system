@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Package, Save, RefreshCw, Link2, Sword, Shield, FlaskConical, FileText, Plus, Eye, Sparkles, BookOpen, Hammer, Box } from 'lucide-react';
 import { DOMINIOS } from '@/data';
 import { usePeculiaridades } from '@/shared/hooks/usePeculiaridades';
-import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Textarea, Badge, toast, Tooltip, DynamicIcon } from '@/shared/ui';
+import { Button, Card, CardContent, CardHeader, CardTitle, Input, Select, Textarea, Badge, toast, Tooltip, DynamicIcon, ConfirmDialog } from '@/shared/ui';
 import { usePoderes } from '@/features/criador-de-poder/hooks/usePoderes';
 import { usePowerArrays } from '@/features/criador-de-poder/hooks/usePowerArrays';
 import { useItemBuilder } from '../hooks/useItemBuilder';
@@ -37,6 +37,7 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
   const [modalResumoAberto, setModalResumoAberto] = useState(false);
   const [poderResumoId, setPoderResumoId] = useState<string | null>(null);
   const [acervoResumoId, setAcervoResumoId] = useState<string | null>(null);
+  const [confirmarReset, setConfirmarReset] = useState(false);
 
   const {
     state,
@@ -451,6 +452,15 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
                   onChange={(e) => updateWeaponField('atributoEscalonamento', e.target.value)}
                   placeholder="FOR, DES..."
                 />
+                <Input
+                  label="Upgrade Inicial"
+                  type="number"
+                  min={0}
+                  max={7}
+                  value={state.weapon.upgradeLevel}
+                  onChange={(e) => updateWeaponField('upgradeLevel', Number(e.target.value || 0))}
+                  helperText="0 a 7"
+                />
               </div>
             </>
           )}
@@ -479,6 +489,15 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
                 value={state.defensive.atributoEscalonamento}
                 onChange={(e) => updateDefensiveField('atributoEscalonamento', e.target.value)}
                 placeholder="CON, DES..."
+              />
+              <Input
+                label="Upgrade Inicial"
+                type="number"
+                min={0}
+                max={9}
+                value={state.defensive.upgradeLevel}
+                onChange={(e) => updateDefensiveField('upgradeLevel', Number(e.target.value || 0))}
+                helperText="0 a 9"
               />
             </div>
           )}
@@ -653,12 +672,12 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col sm:flex-row gap-3 sm:justify-between sm:items-center">
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              <p>
-                <span className="font-semibold">Resumo em tempo real:</span> nível {nivelCalculado}, custo real {custoRealCalculado}, venda {precoVendaCalculado},
-                {` ${state.powerIds.length}`} poderes e {` ${state.powerArrayIds.length}`} acervos vinculados.
-              </p>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setConfirmarReset(true)}>
+                <RefreshCw className="w-4 h-4 mr-1" /> {state.editingItemId ? 'Cancelar Edição' : 'Resetar'}
+              </Button>
             </div>
+            
             <div className="flex gap-2">
               <Tooltip content="Ver resumo completo do item atual">
                 <Button
@@ -669,9 +688,6 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
                   <FileText className="w-4 h-4" /> Resumo
                 </Button>
               </Tooltip>
-              <Button variant="outline" onClick={reset}>
-                <RefreshCw className="w-4 h-4 mr-1" /> {state.editingItemId ? 'Cancelar Edição' : 'Resetar'}
-              </Button>
               <Button onClick={salvarItem} loading={salvando} disabled={loading}>
                 <Save className="w-4 h-4 mr-1" /> {state.editingItemId ? 'Atualizar Item' : 'Salvar Item'}
               </Button>
@@ -740,6 +756,20 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
         }}
         poder={poderResumoSelecionado}
         acervo={acervoResumoSelecionado}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmarReset}
+        onClose={() => setConfirmarReset(false)}
+        onConfirm={() => {
+          reset();
+          setConfirmarReset(false);
+          toast.info(state.editingItemId ? 'Edição cancelada.' : 'Formulário resetado.');
+        }}
+        title={state.editingItemId ? 'Cancelar Edição' : 'Resetar Formulário'}
+        message={state.editingItemId ? 'Tem certeza que deseja cancelar a edição? Todas as alterações não salvas serão perdidas.' : 'Tem certeza que deseja limpar todo o formulário? Esta ação não pode ser desfeita.'}
+        variant="warning"
+        confirmText={state.editingItemId ? 'Sim, cancelar' : 'Sim, resetar'}
       />
     </div>
   );

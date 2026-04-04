@@ -202,4 +202,9 @@ export const charactersService = {
     const { data } = await api.delete<CharacterResponse>(`/characters/${id}/benefits/${benefitId}`);
     return data;
   },
+
+  async updateUnarmedMastery(id: string, payload: any): Promise<CharacterResponse> {
+    const { data } = await api.post<CharacterResponse>(`/characters/${id}/unarmed-mastery`, payload);
+    return data;
+  },
 };

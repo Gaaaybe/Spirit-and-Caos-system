@@ -1,9 +1,9 @@
-import { useState, useMemo } from 'react';
-import { Search, AlertCircle, Sword, Shield, Droplets, Gem, Sparkles, Package, Hammer, Box } from 'lucide-react';
-import { Modal, Button, Input, DynamicIcon, Badge } from '@/shared/ui';
+import { useState, useMemo, useEffect } from 'react';
+import { Search, AlertCircle, Sword, Shield, Droplets, Gem, Sparkles, Package, Hammer, Box, Copy } from 'lucide-react';
+import { Modal, Button, Input, DynamicIcon, Badge, Tooltip, toast } from '@/shared/ui';
 import { fetchMyItems } from '@/services/items.service';
-import { useEffect } from 'react';
 import type { ItemResponse, ItemType } from '@/services/types';
+import { useItems } from '@/features/criador-de-item/hooks/useItems';
 
 const TYPE_LABELS: Record<ItemType, string> = {
   weapon: 'Arma',
@@ -76,6 +76,8 @@ export function BibliotecaAdicionarItemModal({
   const [loading, setLoading] = useState(false);
   const [busca, setBusca] = useState('');
   const [filtro, setFiltro] = useState<ItemType | 'tudo'>('tudo');
+  const { copiar } = useItems();
+  const [duplicandoId, setDuplicandoId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -88,16 +90,31 @@ export function BibliotecaAdicionarItemModal({
 
   const itensFiltrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();
-    let lista = filtro === 'tudo' ? items : items.filter((i) => i.tipo === filtro);
+    let lista = filtro === 'tudo' ? items : items.filter((i: ItemResponse) => i.tipo === filtro);
     if (termo) {
       lista = lista.filter(
-        (i) =>
+        (i: ItemResponse) =>
           i.nome.toLowerCase().includes(termo) ||
           i.descricao.toLowerCase().includes(termo),
       );
     }
-    return lista.sort((a, b) => a.nome.localeCompare(b.nome));
+    return lista.sort((a: ItemResponse, b: ItemResponse) => a.nome.localeCompare(b.nome));
   }, [items, busca, filtro]);
+
+  const handleDuplicar = async (id: string) => {
+    setDuplicandoId(id);
+    try {
+      await copiar(id);
+      toast.success('Item duplicado com sucesso!');
+      // Atualiza a lista local
+      const novosItens = await fetchMyItems();
+      setItems(novosItens);
+    } catch {
+      toast.error('Erro ao duplicar item.');
+    } finally {
+      setDuplicandoId(null);
+    }
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Adicionar da Biblioteca" size="xl">
@@ -139,17 +156,17 @@ export function BibliotecaAdicionarItemModal({
               <p>Nenhum item encontrado.</p>
             </div>
           ) : (
-            itensFiltrados.map((item) => (
+            itensFiltrados.map((item: ItemResponse) => (
               <div
                 key={item.id}
                 className="flex items-start justify-between gap-4 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-amber-200 dark:hover:border-amber-800 bg-amber-50/20 dark:bg-amber-900/5 transition-all"
               >
                 <div className="flex gap-3 flex-1 min-w-0">
-                  <div className={`w-12 h-12 shrink-0 rounded-lg flex items-center justify-center border overflow-hidden ${ICON_COLORS[item.tipo]}`}>
+                  <div className={`w-12 h-12 shrink-0 rounded-lg flex items-center justify-center border overflow-hidden ${ICON_COLORS[item.tipo as ItemType]}`}>
                     {item.icone ? (
                       <DynamicIcon name={item.icone} className="w-full h-full object-cover" />
                     ) : (
-                      <ItemTypeIcon tipo={item.tipo} />
+                      <ItemTypeIcon tipo={item.tipo as ItemType} />
                     )}
                   </div>
 
@@ -159,9 +176,9 @@ export function BibliotecaAdicionarItemModal({
                         {item.nome}
                       </h4>
                       <Badge
-                        className={`text-[9px] px-1.5 py-0 h-4 shrink-0 border-none ${TYPE_COLORS[item.tipo]}`}
+                        className={`text-[9px] px-1.5 py-0 h-4 shrink-0 border-none ${TYPE_COLORS[item.tipo as ItemType]}`}
                       >
-                        {TYPE_LABELS[item.tipo]}
+                        {TYPE_LABELS[item.tipo as ItemType]}
                       </Badge>
                     </div>
                     <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
@@ -179,14 +196,27 @@ export function BibliotecaAdicionarItemModal({
                   </div>
                 </div>
 
-                <Button
-                  size="sm"
-                  onClick={() => onAddItem(item.id)}
-                  loading={isProcessing}
-                  className="shrink-0 h-9 px-3 bg-amber-600 hover:bg-amber-700 text-white"
-                >
-                  Adicionar
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Tooltip content="Duplicar na Biblioteca">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDuplicar(item.id)}
+                      loading={duplicandoId === item.id}
+                      className="h-9 w-9 p-0"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </Button>
+                  </Tooltip>
+                  <Button
+                    size="sm"
+                    onClick={() => onAddItem(item.id)}
+                    loading={isProcessing}
+                    className="shrink-0 h-9 px-3 bg-amber-600 hover:bg-amber-700 text-white"
+                  >
+                    Adicionar
+                  </Button>
+                </div>
               </div>
             ))
           )}

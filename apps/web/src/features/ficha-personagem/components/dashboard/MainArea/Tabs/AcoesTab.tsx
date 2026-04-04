@@ -1,18 +1,20 @@
 import { useState, useEffect } from 'react';
 import { CharacterResponse } from '@/services/characters.types';
-import { Card, CardHeader, CardTitle, CardContent, Badge, Button, DynamicIcon } from '@/shared/ui';
+import { Card, CardHeader, CardTitle, CardContent, Badge, Button, DynamicIcon, toast } from '@/shared/ui';
 import { Sword, Zap, Shield, Repeat, Package, Activity, Dices, Plus, Minus, RotateCcw, Search } from 'lucide-react';
 import { ACOES_COMBATE } from '@/data';
 import { DiceRoller } from '@/shared/components/DiceRoller';
 import { getItemById } from '@/services/items.service';
 import { getPowerById } from '@/services/powers.service';
 import type { ItemResponse, WeaponItemResponse, PoderResponse } from '@/services/types';
+import { UnarmedMasteryModal } from './UnarmedMasteryModal';
 
 interface AcoesTabProps {
   character: CharacterResponse;
+  onUpdateUnarmedMastery: (mastery: any) => Promise<void>;
 }
 
-export function AcoesTab({ character }: AcoesTabProps) {
+export function AcoesTab({ character, onUpdateUnarmedMastery }: AcoesTabProps) {
   const [detailedItems, setDetailedItems] = useState<Record<string, ItemResponse>>({});
   const [detailedPowers, setDetailedPowers] = useState<Record<string, PoderResponse>>({});
 
@@ -33,6 +35,22 @@ export function AcoesTab({ character }: AcoesTabProps) {
     critMultiplier?: number;
     efficiencyBonus?: number;
   } | null>(null);
+
+  const [isUnarmedModalOpen, setIsUnarmedModalOpen] = useState(false);
+  const [isProcessingMastery, setIsProcessingMastery] = useState(false);
+
+  const handleUpdateMastery = async (mastery: any) => {
+    setIsProcessingMastery(true);
+    try {
+      await onUpdateUnarmedMastery(mastery);
+      toast.success('Domínio Desarmado atualizado!');
+    } catch (err) {
+      console.error(err);
+      toast.error('Erro ao atualizar domínio.');
+    } finally {
+      setIsProcessingMastery(false);
+    }
+  };
 
   useEffect(() => {
     const fetchItemDetails = async () => {
@@ -185,6 +203,66 @@ export function AcoesTab({ character }: AcoesTabProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
+                {/* --- ATAQUE DESARMADO (Universal) --- */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-red-50/10 dark:bg-red-900/10 border border-red-100/50 dark:border-red-900/20 group hover:border-red-500/30 transition-all gap-4">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="p-1.5 rounded-xl bg-white dark:bg-gray-800 border-none shadow-sm group-hover:scale-110 transition-transform flex items-center justify-center overflow-hidden flex-shrink-0">
+                      <DynamicIcon name="Hand" className="w-5 h-5 text-red-500" />
+                    </div>
+                    <div className="flex flex-col justify-center min-w-0">
+                      <div className="flex items-center gap-2 leading-tight">
+                        <h4 className="font-black text-xs text-gray-900 dark:text-gray-100 uppercase tracking-tight truncate">
+                          {character.unarmedMastery?.customName || 'Ataque Desarmado'}
+                        </h4>
+                        <Badge variant="secondary" className="h-3.5 px-1 text-[7px] font-black bg-gray-100 dark:bg-gray-800 text-gray-500 border-none uppercase flex-shrink-0">
+                          Grau {character.unarmedMastery?.degree || 0}
+                        </Badge>
+                      </div>
+                      <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tighter mt-0.5 truncate">
+                        {character.unarmedMastery?.damageDie || '1d2'} {character.unarmedMastery?.damageType || 'Impacto'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-7 px-2 text-[9px] font-black border-red-200 dark:border-red-800 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 gap-1 active:scale-95 uppercase"
+                      onClick={() => {
+                        const attrKey = character.attributes.keyPhysical || 'strength';
+                        const mod = (character.attributes[attrKey] as any)?.rollModifier || 0;
+
+                        setRollingAction({
+                          name: character.unarmedMastery?.customName || 'Ataque Desarmado',
+                          damage: character.unarmedMastery?.damageDie || '1d2',
+                          modifier: mod,
+                          damageModifier: mod,
+                          critMargin: character.unarmedMastery?.criticalMargin || 20,
+                          critMultiplier: character.unarmedMastery?.criticalMultiplier || 2,
+                          efficiencyBonus: character.efficiencyBonus
+                        });
+                      }}
+                    >
+                      <Dices className="w-3 h-3" /> Atacar
+                    </Button>
+                    
+                    {/* Só exibe evolução se possuir o domínio */}
+                    {character.domainMasteries?.some(d => d.domainId === 'desarmado' || d.nome?.includes('Desarmado')) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 w-7 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-90"
+                        onClick={() => setIsUnarmedModalOpen(true)}
+                        title="Evoluir Domínio Desarmado"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="h-px bg-gray-100 dark:bg-gray-800 my-2" />
+
                 {equippedItems.length > 0 ? equippedItems.map((item, idx) => {
                   const itemDetail = detailedItems[item.itemId] as WeaponItemResponse | undefined;
 
@@ -445,6 +523,14 @@ export function AcoesTab({ character }: AcoesTabProps) {
         initialApplyEfficiency={true}
         modifierLabel="Bônus de Ataque"
         rollButtonLabel="Atacar"
+      />
+
+      <UnarmedMasteryModal 
+        isOpen={isUnarmedModalOpen}
+        onClose={() => setIsUnarmedModalOpen(false)}
+        character={character}
+        onUpdate={handleUpdateMastery}
+        isProcessing={isProcessingMastery}
       />
     </div>
   );

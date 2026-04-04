@@ -26,15 +26,15 @@ interface PoderesTabProps {
   character: CharacterResponse;
   _onSync: (data: SyncCharacterData) => Promise<void>;
   onAcquireDomainMastery: (domainId: string, masteryLevel: 'INICIANTE' | 'PRATICANTE' | 'MESTRE') => Promise<void>;
-  onDiscardDomainMastery: (domainId: string) => Promise<void>;
+  onDiscardDomainMastery: (domainId: string) => void | Promise<void>;
   onAcquirePower: (powerId: string) => Promise<void>;
   onAcquirePowerArray: (powerArrayId: string) => Promise<void>;
   onEquipPower: (powerId: string) => Promise<void>;
   onUnequipPower: (powerId: string) => Promise<void>;
   onEquipPowerArray: (powerArrayId: string) => Promise<void>;
   onUnequipPowerArray: (powerArrayId: string) => Promise<void>;
-  onRemovePower: (powerId: string) => Promise<void>;
-  onRemovePowerArray: (powerArrayId: string) => Promise<void>;
+  onRemovePower: (powerId: string) => void | Promise<void>;
+  onRemovePowerArray: (powerArrayId: string) => void | Promise<void>;
 }
 
 export function PoderesTab({ 

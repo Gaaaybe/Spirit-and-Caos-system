@@ -267,13 +267,24 @@ export function legacyPoderToCreatePayload(raw: unknown): CreatePoderPayload {
     'arma-branca', 'arma-fogo', 'arma-tensao', 'arma-explosiva', 'arma-tecnologica',
   ];
   const dominioName = validDomains.includes(dominioFinal) ? dominioFinal : 'natural';
+  const areaConhecimento = legacy.dominioAreaConhecimento || (dominioName === 'cientifico' ? 'Geral' : undefined);
+
+  // Validação de ícone: deve ser uma URL válida para o Zod do backend
+  let icone: string | undefined = legacy.icone?.trim();
+  if (icone) {
+    try {
+      new URL(icone);
+    } catch {
+      icone = undefined; // Se não for URL válida, remove para passar na validação
+    }
+  }
 
   return {
     nome,
     descricao,
     dominio: {
       name: dominioName as DomainName,
-      areaConhecimento: legacy.dominioAreaConhecimento,
+      areaConhecimento,
       peculiarId: dominioName === 'peculiar' ? legacy.dominioIdPeculiar : undefined,
     },
     parametros: {
@@ -305,7 +316,7 @@ export function legacyPoderToCreatePayload(raw: unknown): CreatePoderPayload {
         nota: m.nota,
       }),
     ),
-    icone: legacy.icone?.trim() || undefined,
+    icone,
     notas: legacy.notas?.trim() || undefined,
     custoAlternativo: legacy.custoAlternativo ? {
       tipo: legacy.custoAlternativo.tipo,

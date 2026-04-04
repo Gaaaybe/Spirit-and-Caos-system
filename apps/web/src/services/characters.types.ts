@@ -63,6 +63,18 @@ export interface InventoryItemResponse {
   quantity: number;
 }
 
+export interface UnarmedMasteryResponse {
+  customName?: string;
+  degree: number;
+  marginImprovements: number;
+  multiplierImprovements: number;
+  damageType: string;
+  damageDie: string;
+  criticalMargin: number;
+  criticalMultiplier: number;
+  totalPdaCost: number;
+}
+
 export interface CharacterResponse {
   id: string;
   userId: string;
@@ -124,6 +136,7 @@ export interface CharacterResponse {
   powers: CharacterPowerResponse[];
   powerArrays: CharacterPowerArrayResponse[];
   benefits: CharacterBenefitResponse[];
+  unarmedMastery: UnarmedMasteryResponse;
   symbol: string | null;
   art: string | null;
   combatStats: {
