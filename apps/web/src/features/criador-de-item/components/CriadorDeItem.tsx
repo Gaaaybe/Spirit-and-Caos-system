@@ -69,7 +69,21 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
       return;
     }
 
-    if (hydratedRef.current === 'localStorage') return;
+    const rawTemplate = localStorage.getItem('criador-de-item-template');
+    if (rawTemplate) {
+      hydratedRef.current = 'localStorage';
+      try {
+        const item = JSON.parse(rawTemplate) as ItemResponse;
+        hydrateFromItem(item, true); // true = asTemplate
+        toast.success(`Template de "${item.nome}" carregado.`);
+      } catch {
+        toast.error('Erro ao carregar o template.');
+      } finally {
+        localStorage.removeItem('criador-de-item-template');
+      }
+      return;
+    }
+
     const raw = localStorage.getItem('criador-de-item-carregar');
     if (!raw) {
       return;
@@ -177,8 +191,9 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
         reset();
         if (onSaved) onSaved(item);
       }
-    } catch {
-      toast.error('Erro ao salvar item. Verifique os campos e tente novamente.');
+    } catch (err: any) {
+      const message = err.response?.data?.message || 'Erro ao salvar item. Verifique os campos e tente novamente.';
+      toast.error(Array.isArray(message) ? message[0] : message);
     } finally {
       setSalvando(false);
     }
@@ -452,15 +467,16 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
                   onChange={(e) => updateWeaponField('atributoEscalonamento', e.target.value)}
                   placeholder="FOR, DES..."
                 />
-                <Input
-                  label="Upgrade Inicial"
-                  type="number"
-                  min={0}
-                  max={7}
-                  value={state.weapon.upgradeLevel}
-                  onChange={(e) => updateWeaponField('upgradeLevel', Number(e.target.value || 0))}
-                  helperText="0 a 7"
-                />
+                  <Input
+                    label="Upgrade Inicial"
+                    type="number"
+                    min={0}
+                    max={7}
+                    value={state.weapon.upgradeLevel}
+                    onChange={(e) => updateWeaponField('upgradeLevel', Number(e.target.value || 0))}
+                    disabled={!!state.editingItemId} // Trava de regra de negócio
+                    helperText={!!state.editingItemId ? "Upgrade só pode ser alterado na criação (Regra de Negócio)" : "0 a 7"}
+                  />
               </div>
             </>
           )}
@@ -497,7 +513,8 @@ export function CriadorDeItem({ itemInicial, onSaved }: { itemInicial?: ItemResp
                 max={9}
                 value={state.defensive.upgradeLevel}
                 onChange={(e) => updateDefensiveField('upgradeLevel', Number(e.target.value || 0))}
-                helperText="0 a 9"
+                disabled={!!state.editingItemId} // Trava de regra de negócio
+                helperText={!!state.editingItemId ? "Upgrade só pode ser alterado na criação (Regra de Negócio)" : "0 a 9"}
               />
             </div>
           )}

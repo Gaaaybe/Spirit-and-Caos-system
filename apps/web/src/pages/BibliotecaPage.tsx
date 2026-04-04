@@ -340,11 +340,25 @@ export function BibliotecaPage() {
   };
 
   const handleDuplicarItem = async (item: ItemResponse) => {
-    setCarregandoItemId(item.id); // Reusando o estado de carregamento do item para duplicação ou criando um novo se necessário
+    setCarregandoItemId(item.id); 
     try {
       await copiarItem(item.id);
       toast.success(`Cópia de "${item.nome}" criada.`);
       recarregarItens();
+    } catch (err) {
+      toast.error(getErrorMessage(err));
+    } finally {
+      setCarregandoItemId(null);
+    }
+  };
+
+  const handleUsarComoTemplate = (item: ItemResponse) => {
+    setCarregandoItemId(item.id);
+    try {
+      localStorage.setItem('criador-de-item-template', JSON.stringify(item));
+      localStorage.setItem('criador-aba-ativa', JSON.stringify('itens'));
+      navigate('/criador');
+      toast.success(`Usando "${item.nome}" como base para novo item.`);
     } catch (err) {
       toast.error(getErrorMessage(err));
     } finally {
@@ -783,6 +797,7 @@ export function BibliotecaPage() {
                           onDeletar={() => setConfirmarDeletarItem(item)}
                           onTogglePublic={() => handleTogglePublicItem(item)}
                           onVerResumo={() => setItemVisualizando(item)}
+                          onUsarComoTemplate={() => handleUsarComoTemplate(item)}
                           formatarData={formatarData}
                           carregandoId={carregandoItemId}
                           duplicandoId={carregandoItemId}

@@ -30,7 +30,7 @@ export interface ItemBaseProps {
   durabilidade: DurabilityStatus;
   powerIds: ItemPowerIdList;
   powerArrayIds: ItemPowerArrayIdList;
-  icone?: string;
+  icone?: string | null;
   isPublic: boolean;
   canStack: boolean;
   maxStack: number;
@@ -117,7 +117,7 @@ export abstract class Item<Props extends ItemBaseProps> extends OwnableEntity<Pr
     return this.props.powerArrayIds;
   }
 
-  get icone(): string | undefined {
+  get icone(): string | null | undefined {
     return this.props.icone;
   }
 

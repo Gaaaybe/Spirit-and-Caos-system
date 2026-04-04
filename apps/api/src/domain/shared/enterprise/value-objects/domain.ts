@@ -14,6 +14,7 @@ export enum DomainName {
   ARMA_TENSAO = 'arma-tensao',
   ARMA_EXPLOSIVA = 'arma-explosiva',
   ARMA_TECNOLOGICA = 'arma-tecnologica',
+  DESARMADO = 'desarmado',
 }
 
 interface DomainProps {

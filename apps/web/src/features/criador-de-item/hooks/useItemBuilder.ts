@@ -100,12 +100,12 @@ const createInitialState = (): ItemBuilderState => ({
 export function useItemBuilder() {
   const [state, setState] = useState<ItemBuilderState>(createInitialState);
 
-  const hydrateFromItem = (item: ItemResponse) => {
+  const hydrateFromItem = (item: ItemResponse, asTemplate = false) => {
     setState((prev) => {
       const next = {
         ...createInitialState(),
         tipo: item.tipo,
-        nome: item.nome,
+        nome: asTemplate ? `Cópia de ${item.nome}` : item.nome,
         descricao: item.descricao,
         dominio: {
           name: item.dominio.name,
@@ -113,12 +113,12 @@ export function useItemBuilder() {
           peculiarId: item.dominio.peculiarId ?? undefined,
         },
         custoBase: item.custoBase,
-        isPublic: item.isPublic,
+        isPublic: asTemplate ? false : item.isPublic,
         icone: item.icone ?? '',
         notas: item.notas ?? '',
         powerIds: item.powerIds,
         powerArrayIds: item.powerArrayIds,
-        editingItemId: item.id,
+        editingItemId: asTemplate ? null : item.id,
         // Preserva seções não relacionadas quando o tipo atual for o mesmo.
         weapon: prev.tipo === item.tipo ? prev.weapon : createInitialState().weapon,
         defensive: prev.tipo === item.tipo ? prev.defensive : createInitialState().defensive,

@@ -11,6 +11,7 @@ interface SwipeableItemCardProps {
   onDeletar: () => void;
   onTogglePublic: () => void;
   onVerResumo: () => void;
+  onUsarComoTemplate?: () => void;
   formatarData: (data: string) => string;
   carregandoId: string | null;
   duplicandoId: string | null;
@@ -57,6 +58,7 @@ export function SwipeableItemCard({
   onDeletar,
   onTogglePublic,
   onVerResumo,
+  onUsarComoTemplate,
   formatarData,
   carregandoId,
   duplicandoId,
@@ -208,6 +210,16 @@ export function SwipeableItemCard({
                     disabled={deletandoId !== null && deletandoId !== item.id}
                   >
                     <Trash2 className="w-4 h-4" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onUsarComoTemplate}
+                    className="text-purple-500 hover:text-purple-700"
+                    title="Usar como Template"
+                  >
+                    <Layers className="w-4 h-4" />
                   </Button>
                 </div>
               </div>

@@ -62,7 +62,7 @@ const commonFields = {
   isPublic: z.boolean().default(false),
   notas: z.string().max(2000).optional(),
   powerIds: z.array(z.string().min(1)).default([]),
-  icone: z.url('Ícone deve ser um link válido').optional(),
+  icone: z.union([z.url('Ícone deve ser um link válido'), z.null()]).optional(),
   powerArrayIds: z.array(z.string().min(1)).default([]),
   canStack: z.boolean().optional(),
   maxStack: z.number().int().min(2).optional(),

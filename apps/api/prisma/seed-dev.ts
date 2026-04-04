@@ -161,7 +161,7 @@ async function main() {
       tipo: 'WEAPON',
       nome: 'Lâmina Rúnica do Alvorecer',
       descricao: 'Uma espada antiga gravada com runas que brilham com luz solar.',
-      domainName: 'ARMA_BRANCA',
+      domainName: 'PSIQUICO',
       custoBase: 500,
       nivelItem: 1,
       icone: LUCIDE_ICON('sword'),
