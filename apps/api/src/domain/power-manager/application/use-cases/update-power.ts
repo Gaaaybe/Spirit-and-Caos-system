@@ -69,7 +69,7 @@ export class UpdatePowerUseCase {
     const existingPower = await this.powersRepository.findById(powerId);
 
     if (!existingPower) {
-      return left(new ResourceNotFoundError());
+      return left(new ResourceNotFoundError(`Poder com ID ${powerId} não encontrado`));
     }
 
     if (!existingPower.canBeEditedBy(userId)) {

@@ -75,7 +75,7 @@ const updatePowerBodySchema = z.object({
         'arma-tecnologica',
       ]),
       areaConhecimento: z.string().min(1).optional(),
-      peculiarId: z.string().min(1).optional(),
+      peculiarId: z.string().optional(),
     })
     .refine((d) => d.name !== 'cientifico' || !!d.areaConhecimento, {
       message: 'Domínio Científico requer área de conhecimento',

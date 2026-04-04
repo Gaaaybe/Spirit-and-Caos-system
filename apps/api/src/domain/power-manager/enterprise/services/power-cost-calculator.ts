@@ -66,7 +66,7 @@ export class PowerCostCalculator {
       const effectBase = await this.effectsRepository.findById(appliedEffect.effectBaseId);
 
       if (!effectBase) {
-        return left(new ResourceNotFoundError());
+        return left(new ResourceNotFoundError(`Efeito base não encontrado: ${appliedEffect.effectBaseId}`));
       }
 
       defaultParamsPerEffect.push(effectBase.parametrosPadrao.toValue());
@@ -81,7 +81,7 @@ export class PowerCostCalculator {
       const effectBase = await this.effectsRepository.findById(appliedEffect.effectBaseId);
 
       if (!effectBase) {
-        return left(new ResourceNotFoundError());
+        return left(new ResourceNotFoundError(`Efeito base não encontrado: ${appliedEffect.effectBaseId}`));
       }
 
       const gradeData = this.getUniversalGradeData(appliedEffect.grau);
@@ -102,7 +102,7 @@ export class PowerCostCalculator {
       for (const globalMod of globalModifications) {
         const modBase = await this.modificationsRepository.findById(globalMod.modificationBaseId);
         if (!modBase) {
-          return left(new ResourceNotFoundError());
+          return left(new ResourceNotFoundError(`Modificação base não encontrada: ${globalMod.modificationBaseId}`));
         }
 
         const grauMod = globalMod.grau ?? 1;
@@ -124,7 +124,7 @@ export class PowerCostCalculator {
         );
 
         if (!modBase) {
-          return left(new ResourceNotFoundError());
+          return left(new ResourceNotFoundError(`Modificação base não encontrada: ${modification.modificationBaseId}`));
         }
 
         const grauMod = modification.grau ?? 1;
