@@ -47,6 +47,14 @@
     ]
   },
   {
+    "id": "desarmado",
+    "nome": "Domínio Desarmado",
+    "categoria": "físico",
+    "espiritual": false,
+    "icone": "Sword",
+    "descricao": "O Domínio Desarmado abrange todas as formas de combate corpo a corpo que não utilizam armas tradicionais, como socos, chutes, cotoveladas, cabeçadas, agarrões aprimorados e técnicas marciais."
+  },
+  {
     "id": "peculiar",
     "nome": "Peculiar",
     "descricao": "O Domínio Peculiar representa poderes únicos e personalizados que não se encaixam nas categorias tradicionais. Pode ser espiritual ou não, dependendo da natureza específica do poder.",

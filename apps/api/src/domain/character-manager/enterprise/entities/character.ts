@@ -17,6 +17,7 @@ import { SlotManager } from './value-objects/slot-manager';
 import { SpiritualPrinciple, SpiritualStage } from './value-objects/spiritual-principle';
 import { DomainValidationError } from '@/core/errors/domain-validation-error';
 import { MasteryLevel } from './value-objects/domain-mastery';
+import { UnarmedMastery } from './value-objects/unarmed-mastery';
 
 import { CharacterItemDiscardedEvent } from '../events/character-item-discarded-event';
 import { CharacterPowerDiscardedEvent } from '../events/character-power-discarded-event';
@@ -53,6 +54,7 @@ export interface CharacterProps {
   powers: CharacterPowerList;
   powerArrays: CharacterPowerArrayList;
   benefits: CharacterBenefitList;
+  unarmedMastery: UnarmedMastery;
 
   symbol?: string;
   art?: string;
@@ -61,15 +63,18 @@ export interface CharacterProps {
   updatedAt?: Date;
 }
 
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
 export class Character extends AggregateRoot<CharacterProps> {
   static create(
-    props: Omit<CharacterProps, 'createdAt'> & { createdAt?: Date },
+    props: Optional<CharacterProps, 'createdAt' | 'unarmedMastery'>,
     id?: UniqueEntityId,
   ): Character {
     const isNew = !id;
     const character = new Character(
       {
         ...props,
+        unarmedMastery: props.unarmedMastery ?? UnarmedMastery.createDefault(),
         createdAt: props.createdAt ?? new Date(),
       },
       id,
@@ -159,6 +164,10 @@ export class Character extends AggregateRoot<CharacterProps> {
   }
   get benefits(): CharacterBenefitList {
     return this.props.benefits;
+  }
+
+  get unarmedMastery(): UnarmedMastery {
+    return this.props.unarmedMastery;
   }
 
   getCombatStats(equippedSuitRd = 0, equippedSuitBlockRd = 0, weaponShieldBlockRd = 0): CombatStats {
@@ -317,6 +326,11 @@ removeDomainMastery(domainId: string): void {
   this.touch();
 }
 
+updateUnarmedMastery(mastery: UnarmedMastery): void {
+  this.props.unarmedMastery = mastery;
+  this.touch();
+}
+
 
 unlockSpiritualPrinciple(stage: SpiritualStage = 'NORMAL'): void {
   if (this.props.spiritualPrinciple.isUnlocked) {
@@ -354,9 +368,15 @@ evolveSpiritualPrinciple(): void {
   this.touch();
 }
 
-spendPda(amount: number): void {  this.props.pda = this.pda.spend(amount);
-  this.touch();
-}
+  spendPda(amount: number): void {
+    this.props.pda = this.pda.spend(amount);
+    this.touch();
+  }
+
+  refundPda(amount: number): void {
+    this.props.pda = this.pda.refund(amount);
+    this.touch();
+  }
 
 updateExtraPda(amount: number): void {
   this.props.pda = this.pda.updateExtraPda(amount);

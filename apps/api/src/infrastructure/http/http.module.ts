@@ -45,6 +45,7 @@ import { UnequipItemUseCase } from '@/domain/character-manager/application/use-c
 import { UnequipPowerUseCase } from '@/domain/character-manager/application/use-cases/unequip-power';
 import { UnequipPowerArrayUseCase } from '@/domain/character-manager/application/use-cases/unequip-power-array';
 import { UnlockSpiritualPrincipleUseCase } from '@/domain/character-manager/application/use-cases/unlock-spiritual-principle';
+import { UpdateUnarmedMasteryUseCase } from '@/domain/character-manager/application/use-cases/update-unarmed-mastery';
 import { UpgradeItemUseCase } from '@/domain/character-manager/application/use-cases/upgrade-item';
 import { CopyPublicItemUseCase } from '@/domain/item-manager/application/use-cases/copy-public-item';
 import { CreateItemUseCase } from '@/domain/item-manager/application/use-cases/create-item';
@@ -117,6 +118,7 @@ import { UnequipItemController } from './controllers/characters/unequip-item.con
 import { UnequipPowerController } from './controllers/characters/unequip-power.controller';
 import { UnequipPowerArrayController } from './controllers/characters/unequip-power-array.controller';
 import { UnlockSpiritualPrincipleController } from './controllers/characters/unlock-spiritual-principle.controller';
+import { UpdateUnarmedMasteryController } from './controllers/characters/update-unarmed-mastery.controller';
 import { UpgradeItemController } from './controllers/characters/upgrade-item.controller';
 import { CatalogController } from './controllers/catalog/catalog.controller';
 import { FetchEffectsController } from './controllers/catalog/fetch-effects.controller';
@@ -189,6 +191,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     UnlockSpiritualPrincipleController,
     EvolveSpiritualPrincipleController,
     RestCharacterController,
+    UpdateUnarmedMasteryController,
     TickDeathCounterController,
     FetchEffectsController,
     FetchModificationsController,
@@ -256,6 +259,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     AcquireBenefitUseCase,
     AcquireDomainMasteryUseCase,
     DiscardDomainMasteryUseCase,
+    UpdateUnarmedMasteryUseCase,
     UpgradeItemUseCase,
     RegisterUserUseCase,
     CatalogService,

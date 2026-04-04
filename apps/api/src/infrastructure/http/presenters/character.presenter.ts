@@ -159,6 +159,17 @@ export class CharacterPresenter {
         degree: benefit.degree,
         pdaCost: benefit.pdaCost,
       })),
+      unarmedMastery: {
+        customName: character.unarmedMastery.customName,
+        degree: character.unarmedMastery.degree,
+        marginImprovements: character.unarmedMastery.marginImprovements,
+        multiplierImprovements: character.unarmedMastery.multiplierImprovements,
+        damageType: character.unarmedMastery.damageType,
+        damageDie: character.unarmedMastery.damageDie,
+        criticalMargin: character.unarmedMastery.criticalMargin,
+        criticalMultiplier: character.unarmedMastery.criticalMultiplier,
+        totalPdaCost: character.unarmedMastery.totalPdaCost,
+      },
       symbol: character.symbol ?? null,
       art: character.art ?? null,
       combatStats: {

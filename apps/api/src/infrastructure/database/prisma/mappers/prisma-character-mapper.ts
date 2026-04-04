@@ -21,6 +21,7 @@ import { SpiritualPrinciple, type SpiritualStage } from '@/domain/character-mana
 import { CharacterBenefitList } from '@/domain/character-manager/enterprise/entities/watched-lists/character-benefit-list';
 import { CharacterPowerArrayList } from '@/domain/character-manager/enterprise/entities/watched-lists/character-power-array-list';
 import { CharacterPowerList } from '@/domain/character-manager/enterprise/entities/watched-lists/character-power-list';
+import { UnarmedMastery, type UnarmedMasteryProps } from '@/domain/character-manager/enterprise/entities/value-objects/unarmed-mastery';
 
 export type PrismaCharacterFull = Prisma.CharacterGetPayload<{
   include: { powers: true; powerArrays: true; benefits: true; domains: true };
@@ -142,6 +143,7 @@ export function toDomain(raw: PrismaCharacterFull): Character {
   const equipmentRaw = asJson<EquipmentSlotsJson>(raw.equipmentSlots);
   const inventoryRaw = asJson<InventoryJson>(raw.inventory);
   const conditionsRaw = asJson<ConditionName[]>(raw.conditions);
+  const unarmedMasteryRaw = raw.unarmedMastery ? asJson<UnarmedMasteryProps>(raw.unarmedMastery) : undefined;
 
   const attributes = AttributeSet.create({
     strength: Attribute.create(attributesRaw.strength),
@@ -283,6 +285,9 @@ export function toDomain(raw: PrismaCharacterFull): Character {
       benefits: benefitsList,
       symbol: raw.symbol ?? undefined,
       art: raw.art ?? undefined,
+      unarmedMastery: unarmedMasteryRaw 
+        ? UnarmedMastery.create(unarmedMasteryRaw) 
+        : UnarmedMastery.createDefault(),
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
     },
@@ -368,6 +373,7 @@ export function toPrisma(character: Character): Prisma.CharacterUncheckedCreateI
     deathCounter: character.deathManager.deathCounter,
     symbol: character.symbol ?? null,
     art: character.art ?? null,
+    unarmedMastery: character.unarmedMastery.toValue() as unknown as Prisma.InputJsonValue,
     createdAt: character.createdAt,
     updatedAt: character.updatedAt ?? undefined,
     powers: {
