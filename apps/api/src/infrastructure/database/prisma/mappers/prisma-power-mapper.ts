@@ -41,6 +41,7 @@ const DOMAIN_NAME_TO_DOMAIN: Record<PrismaDomainName, DomainName> = {
   ARMA_TENSAO: DomainName.ARMA_TENSAO,
   ARMA_EXPLOSIVA: DomainName.ARMA_EXPLOSIVA,
   ARMA_TECNOLOGICA: DomainName.ARMA_TECNOLOGICA,
+  DESARMADO: DomainName.DESARMADO,
 };
 
 const DOMAIN_NAME_TO_PRISMA: Record<DomainName, PrismaDomainName> = {
@@ -55,6 +56,7 @@ const DOMAIN_NAME_TO_PRISMA: Record<DomainName, PrismaDomainName> = {
   [DomainName.ARMA_TENSAO]: 'ARMA_TENSAO',
   [DomainName.ARMA_EXPLOSIVA]: 'ARMA_EXPLOSIVA',
   [DomainName.ARMA_TECNOLOGICA]: 'ARMA_TECNOLOGICA',
+  [DomainName.DESARMADO]: 'DESARMADO',
 };
 
 export function toDomain(raw: PrismaPowerFull): Power {

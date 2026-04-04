@@ -73,6 +73,7 @@ enum DomainName {
   ARMA_TENSAO
   ARMA_EXPLOSIVA
   ARMA_TECNOLOGICA
+  DESARMADO
 }
 
 model Power {
