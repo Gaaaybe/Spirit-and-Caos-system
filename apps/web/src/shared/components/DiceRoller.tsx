@@ -37,7 +37,7 @@ export function DiceRoller({
   referenceCDs = [],
 }: DiceRollerProps) {
   const [attackRoll, setAttackRoll] = useState<(RollResult & { efficiency?: number, manual?: number }) | null>(null);
-  const [damageRoll, setDamageRoll] = useState<{ total: number; rolls: number[]; modifier: number; multiplier: number } | null>(null);
+  const [damageRoll, setDamageRoll] = useState<{ total: number; rolls: number[]; modifier: number; multiplier: number; expression: string } | null>(null);
   const [isRolling, setIsRolling] = useState(false);
   
   const [extraDice, setExtraDice] = useState(0);
@@ -94,7 +94,8 @@ export function DiceRoller({
         ...result,
         total: finalTotal,
         modifier: result.modifier + bonusToUse,
-        multiplier
+        multiplier,
+        expression: result.expression
       });
       setIsRolling(false);
     }, 400);
@@ -274,6 +275,9 @@ export function DiceRoller({
                   {attackRoll.manual ? ` + ${attackRoll.manual}Extra` : ''} )
                 </span>
               </div>
+              <div className="mt-1 flex">
+                <code className="text-[9px] text-indigo-400/70 font-mono">{attackRoll.expression}</code>
+              </div>
               {attackRoll.allRolls.length > 1 && (
                 <div className="mt-3 flex flex-wrap gap-1.5 py-2 border-t border-black/5 dark:border-white/5">
                   {attackRoll.allRolls.map((val, idx) => (
@@ -310,6 +314,9 @@ export function DiceRoller({
                   Dados: [{damageRoll.rolls.join(', ')}] {damageRoll.modifier !== 0 ? `${damageRoll.modifier >= 0 ? '+' : ''}${damageRoll.modifier}` : ''}
                   {damageRoll.multiplier > 1 ? ` x ${damageRoll.multiplier}` : ''}
                 </span>
+              </div>
+              <div className="mt-1 flex">
+                <code className="text-[9px] text-amber-500/70 font-mono">{damageRoll.expression}</code>
               </div>
             </div>
           )}

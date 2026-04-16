@@ -1,7 +1,4 @@
-/**
- * Utilitários de Rolagem de Dados
- * Sistema simples e provisório para rolagem de dados d20
- */
+import { DiceRoll } from '@dice-roller/rpg-dice-roller';
 
 /**
  * Resultado de uma rolagem
@@ -15,14 +12,11 @@ export interface RollResult {
   isCritical: boolean;
   isFumble: boolean;
   timestamp: Date;
+  expression: string;
 }
 
 /**
  * Rola um d20 com modificador e suporte a múltiplas vantagens/desvantagens
- * @param modifier Modificador a ser somado
- * @param extraDice Quantidade de dados extras a rolar (0 a 6)
- * @param rule Regra de escolha ('advantage' | 'disadvantage' | 'normal')
- * @param critMargin Valor mínimo no d20 para considerar crítico (padrão 20)
  */
 export function rollD20(
   modifier: number = 0, 
@@ -31,32 +25,40 @@ export function rollD20(
   critMargin: number = 20
 ): RollResult {
   const numDice = 1 + extraDice;
-  const rolls: number[] = [];
+  let formula = `${numDice}d20`;
   
-  for (let i = 0; i < numDice; i++) {
-    rolls.push(Math.floor(Math.random() * 20) + 1);
-  }
-  
-  let d20: number;
   if (rule === 'advantage') {
-    d20 = Math.max(...rolls);
+    formula += `kh1`;
   } else if (rule === 'disadvantage') {
-    d20 = Math.min(...rolls);
-  } else {
-    d20 = rolls[0];
+    formula += `kl1`;
   }
   
-  const total = d20 + modifier;
+  const modStr = modifier >= 0 ? `+${modifier}` : `${modifier}`;
+  const expression = modifier !== 0 ? `${formula}${modStr}` : formula;
   
+  const roll = new DiceRoll(expression);
+  
+  // A biblioteca retorna as rolagens detalhadas no primeiro grupo da notação
+  const firstGroup = (roll as any).rolls[0];
+  const allRolls: number[] = [];
+  let d20 = 0;
+
+  if (firstGroup && firstGroup.type === 'die') {
+    firstGroup.rolls.forEach((r: any) => allRolls.push(r.initialValue));
+    d20 = firstGroup.value; // O valor que efetivamente contou (após aplicar os keep/drop)
+  }
+
+  // Falha crítica e sucesso em Vantagem dependem do dado final que sobrou
   return {
-    total,
+    total: roll.total,
     d20,
-    allRolls: rolls,
+    allRolls,
     modifier,
     advantage: rule === 'advantage' ? extraDice : rule === 'disadvantage' ? -extraDice : 0,
     isCritical: d20 >= critMargin,
     isFumble: d20 === 1,
     timestamp: new Date(),
+    expression: roll.output,
   };
 }
 
@@ -64,62 +66,41 @@ export function rollD20(
  * Rola múltiplos dados (ex: 2d6, 3d8)
  */
 export function rollDice(numDice: number, diceSides: number): number {
-  let total = 0;
-  for (let i = 0; i < numDice; i++) {
-    total += Math.floor(Math.random() * diceSides) + 1;
-  }
-  return total;
+  const roll = new DiceRoll(`${numDice}d${diceSides}`);
+  return roll.total;
 }
 
 /**
  * Rola dano (ex: "2d6+5", "1d8 + 1d6 + 5") com suporte a multiplicador de crítico.
- * O multiplicador afeta o resultado final do dano (soma total).
  */
-export function rollDamage(damageFormula: string, multiplier: number = 1): { total: number; rolls: number[]; modifier: number; baseTotal: number } {
+export function rollDamage(damageFormula: string, multiplier: number = 1): { total: number; rolls: number[]; modifier: number; baseTotal: number; expression: string } {
+  // Limpar espaços e padronizar
   const cleanFormula = damageFormula.replace(/\s+/g, '').toLowerCase();
-  const parts = cleanFormula.split(/([+-])/);
-  
-  let currentSign = 1;
-  let baseTotal = 0;
-  let modifier = 0;
-  const allRolls: number[] = [];
-
-  for (const part of parts) {
-    if (part === '+') {
-      currentSign = 1;
-      continue;
-    }
-    if (part === '-') {
-      currentSign = -1;
-      continue;
-    }
-    if (!part) continue;
-
-    const diceMatch = part.match(/^(\d+)d(\d+)$/);
-    if (diceMatch) {
-      const numDice = parseInt(diceMatch[1]);
-      const diceSides = parseInt(diceMatch[2]);
-      for (let i = 0; i < numDice; i++) {
-        const roll = Math.floor(Math.random() * diceSides) + 1;
-        allRolls.push(roll);
-        baseTotal += roll * currentSign;
-      }
-    } else {
-      const flatValue = parseInt(part);
-      if (!isNaN(flatValue)) {
-        baseTotal += flatValue * currentSign;
-        modifier += flatValue * currentSign;
-      }
-    }
+  if (!cleanFormula) {
+    return { total: 0, rolls: [], modifier: 0, baseTotal: 0, expression: "" };
   }
+
+  const roll = new DiceRoll(cleanFormula);
+  const baseTotal = roll.total;
+  
+  const allRolls: number[] = [];
+  let detectedModifier = 0;
+
+  // Analisamos os grupos de rolagens gerados pela lib
+  (roll as any).rolls.forEach((r: any) => {
+    if (r.type === 'die') {
+      r.rolls.forEach((dieRoll: any) => allRolls.push(dieRoll.initialValue));
+    }
+  });
 
   const finalTotal = baseTotal * multiplier;
   
   return { 
     total: finalTotal, 
     rolls: allRolls, 
-    modifier, 
-    baseTotal 
+    modifier: detectedModifier, 
+    baseTotal,
+    expression: roll.output
   };
 }
 
@@ -137,5 +118,5 @@ export function formatRollResult(result: RollResult): string {
     advantageText = ` (Desvantagem: [${result.allRolls.join(', ')}])`;
   }
   
-  return `🎲 ${result.d20} ${modifierText} = ${result.total}${criticalText}${advantageText}`;
+  return `🎲 ${result.d20} ${modifierText} = ${result.total}${criticalText}${advantageText}\n> ${result.expression}`;
 }
