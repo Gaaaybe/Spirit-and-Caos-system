@@ -448,6 +448,7 @@ export function useCharacterSheet(characterId: string) {
     removeBenefit,
     updateUnarmedMastery,
     refresh: fetchCharacter,
+    updateLocalCharacter: (char: CharacterResponse) => setCharacter(char),
     pendingAction,
     clearPendingAction: () => setPendingAction(null),
   };
