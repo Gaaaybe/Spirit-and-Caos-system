@@ -1,10 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { type Either, left, right } from '@/core/either';
-import { UniqueEntityId } from '@/core/entities/unique-entity-ts';
 import { ResourceNotFoundError } from '@/core/errors/resource-not-found-error';
 import { DomainEvents } from '@/core/events/domain-events';
 import { AppliedEffect } from '../../enterprise/entities/applied-effect';
-import { Peculiarity } from '../../enterprise/entities/peculiarity';
 import { Power } from '../../enterprise/entities/power';
 import { AlternativeCost } from '../../enterprise/entities/value-objects/alternative-cost';
 import { AppliedModification } from '../../enterprise/entities/value-objects/applied-modification';
@@ -41,8 +39,6 @@ type CreatePowerUseCaseResponse = Either<
 >;
 @Injectable()
 export class CreatePowerUseCase {
-  private readonly logger = new Logger(CreatePowerUseCase.name);
-
   constructor(
     private powersRepository: PowersRepository,
     private powerCostCalculator: PowerCostCalculator,
@@ -80,49 +76,16 @@ export class CreatePowerUseCase {
     const globalModificationsList = new PowerGlobalModificationList();
     globalModificationsList.update(globalModifications);
 
-    if (dominio.isPeculiar()) {
+    if (isPublic && dominio.isPeculiar()) {
       const peculiarityId = dominio.peculiarId;
       if (peculiarityId) {
         const peculiarity = await this.peculiaritiesRepository.findById(peculiarityId);
-
         if (!peculiarity) {
-          if (isPublic) {
-            return left(
-              new InvalidVisibilityError(
-                'Não é possível criar poder público: peculiaridade referenciada não foi encontrada',
-              ),
-            );
-          }
-
-          // Auto-Restauração de Peculiaridades (Ghost Peculiarity):
-          // Quando um power importado de outro ambiente aponta para uma
-          // peculiaridade que não existe neste banco, criamos um placeholder
-          // com o mesmo ID para satisfazer a FK e preservar os dados do power.
-          if (!userId) {
-            return left(
-              new InvalidVisibilityError(
-                'Não é possível restaurar peculiaridade durante importação: userId ausente',
-              ),
-            );
-          }
-
-          this.logger.warn(
-            `[Ghost Peculiarity] peculiarId "${peculiarityId}" não encontrado — criando placeholder para o power "${nome}" (userId=${userId})`,
+          return left(
+            new InvalidVisibilityError(
+              'Não é possível criar poder público: peculiaridade referenciada não foi encontrada',
+            ),
           );
-
-          const ghostPeculiarity = Peculiarity.create(
-            {
-              userId,
-              nome: `[Restaurada] Peculiaridade ${peculiarityId.slice(0, 8)}`,
-              descricao:
-                'Peculiaridade restaurada automaticamente durante importação. Edite com a descrição correta.',
-              espiritual: false,
-              isPublic: false,
-            },
-            new UniqueEntityId(peculiarityId),
-          );
-
-          await this.peculiaritiesRepository.create(ghostPeculiarity);
         }
       }
     }

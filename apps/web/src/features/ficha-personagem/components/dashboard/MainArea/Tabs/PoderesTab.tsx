@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { CharacterResponse, SyncCharacterData } from '@/services/characters.types';
 import { Card, CardHeader, CardTitle, CardContent, Button, Badge, Modal, ModalFooter, Select, DynamicIcon, Input } from '@/shared/ui';
-import { Zap, Plus, Search, Layers, Shield, Sparkles, Sword, Trash2, ChevronLeft, Package, Edit2, Info, Clock, Ruler, Timer, ChevronDown, ChevronUp, Check } from 'lucide-react';
+import { Zap, Plus, Search, Layers, Shield, Sparkles, Sword, Trash2, ChevronLeft, Package, Edit2, Info, Clock, Ruler, Timer, ChevronDown, ChevronUp, Check, Play } from 'lucide-react';
 import { DOMINIOS, ESCALAS } from '@/data';
 import { fetchMyPeculiarities, createPeculiarity } from '@/services/peculiarities.service';
 import { charactersService } from '@/services/characters.service';
@@ -15,6 +15,9 @@ import { CriadorAcervo } from '@/features/criador-de-poder/components/CriadorAce
 import { calcularDetalhesPoder, type Poder as PoderCalculo } from '@/features/criador-de-poder/regras/calculadoraCusto';
 import { CriadorDePoderModal } from '@/features/gerenciador-criaturas/components/CriadorDePoderModal';
 import { poderResponseToPoder, acervoResponseToAcervo } from '@/features/criador-de-poder/utils/poderApiConverter';
+import { PowerUsageModal } from './PowerUsageModal';
+import { ActivePowersTracker } from './ActivePowersTracker';
+import { usePowerUsage } from '@/features/ficha-personagem/hooks/usePowerUsage';
 
 // Helper para obter nome da escala
 function getNomeEscala(tipo: 'acao' | 'alcance' | 'duracao', valor: number): string {
@@ -33,8 +36,9 @@ interface PoderesTabProps {
   onUnequipPower: (powerId: string) => Promise<void>;
   onEquipPowerArray: (powerArrayId: string) => Promise<void>;
   onUnequipPowerArray: (powerArrayId: string) => Promise<void>;
-  onRemovePower: (powerId: string) => void | Promise<void>;
-  onRemovePowerArray: (powerArrayId: string) => void | Promise<void>;
+  onRemovePower: (powerId: string) => void;
+  onRemovePowerArray: (powerArrayId: string) => void;
+  onUpdateLocalCharacter: (char: CharacterResponse) => void;
 }
 
 export function PoderesTab({ 
@@ -49,7 +53,8 @@ export function PoderesTab({
   onEquipPowerArray,
   onUnequipPowerArray,
   onRemovePower,
-  onRemovePowerArray
+  onRemovePowerArray,
+  onUpdateLocalCharacter,
 }: PoderesTabProps) {
   // ─── Estados Principais (Ordem Crítica) ──────────────────────────────────
   const [viewingPower, setViewingPower] = useState<any | null>(null);
@@ -80,6 +85,13 @@ export function PoderesTab({
   const [myPeculiarities, setMyPeculiarities] = useState<PeculiaridadeResponse[]>([]);
   
   const { efeitos: catalogEfeitos, modificacoes: catalogModificacoes } = useCatalog();
+
+  const [usingPower, setUsingPower] = useState<any | null>(null);
+
+  const { activePowers, isUsing, usePower, maintainPower, deactivatePower } = usePowerUsage({
+    characterId: character.id,
+    onCharacterUpdate: onUpdateLocalCharacter,
+  });
 
   // Seleção de Domínio
   const [selectedDomain, setSelectedDomain] = useState('');
@@ -280,6 +292,17 @@ export function PoderesTab({
                 <Button variant="ghost" size="sm" onClick={() => setEditingPower(poderResponseToPoder(detail))} className="h-9 w-9 p-0 text-gray-400 hover:text-emerald-500" title="Editar">
                   <Edit2 className="w-5 h-5" />
                 </Button>
+                {isEquipped && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setUsingPower(detail)}
+                    className="h-9 w-9 p-0 text-indigo-500 hover:bg-indigo-50 hover:text-indigo-700"
+                    title="Usar poder"
+                  >
+                    <Play className="w-5 h-5" />
+                  </Button>
+                )}
                 {isEquipped ? (
                   <Button variant="ghost" size="sm" onClick={() => onUnequipPower(power.powerId)} className="h-9 w-9 p-0 text-amber-500 hover:bg-amber-50 hover:text-amber-600" title="Desequipar">
                     <Package className="w-5 h-5" />
@@ -322,7 +345,7 @@ export function PoderesTab({
           {detail.efeitos && detail.efeitos.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-1">
               {detail.efeitos.map((e: any, i: number) => (
-                <Badge key={i} variant="outline" className={`text-[9px] px-1.5 py-0 border-dashed ${e.grau < 0 ? 'border-red-300 text-red-600' : 'border-indigo-300 text-indigo-600'}`}>
+                <Badge key={i} variant="secondary" className={`text-[9px] px-1.5 py-0 ${e.grau < 0 ? 'border-red-300 text-red-600' : 'border-indigo-300 text-indigo-600'}`}>
                   {catalogEfeitos.find(ce => ce.id === e.effectBaseId)?.nome || e.effectBaseId} {e.grau !== 0 && (e.grau > 0 ? `+${e.grau}` : e.grau)}
                 </Badge>
               ))}
@@ -446,6 +469,20 @@ export function PoderesTab({
                 </p>
               </div>
             </div>
+            <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/20">
+              <div>
+                <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase">PE Atual</p>
+                <p className="text-lg font-black text-blue-900 dark:text-blue-100">
+                  {character.energy.currentPE}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-[10px] font-bold text-blue-700 dark:text-blue-400 uppercase">PE Máx.</p>
+                <p className="text-lg font-black text-blue-900 dark:text-blue-100">
+                  {character.energy.maxPE}
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -490,6 +527,15 @@ export function PoderesTab({
         </Card>
       </div>
 
+      {activePowers.length > 0 && (
+        <ActivePowersTracker
+          activePowers={activePowers}
+          onMaintain={maintainPower}
+          onDeactivate={deactivatePower}
+          isUsing={isUsing}
+        />
+      )}
+
       {/* ─── Resumo de Gasto ─────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="border-none shadow-sm bg-purple-50 dark:bg-purple-900/10 p-4 flex flex-col items-center">
@@ -513,7 +559,7 @@ export function PoderesTab({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input type="text" placeholder="Buscar no arsenal..." className="pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-lg text-sm w-full outline-none focus:ring-2 focus:ring-purple-500 transition-all" />
           </div>
-          <Badge variant="outline" className="h-8 px-3 font-bold">{character.powers.length + character.powerArrays.length} Total</Badge>
+          <Badge variant="secondary" className="h-8 px-3 font-bold">{character.powers.length + character.powerArrays.length} Total</Badge>
         </div>
         <Button onClick={() => setIsAddModalOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg shadow-lg shadow-purple-600/20">
           <Plus className="w-4 h-4" /> Adicionar
@@ -633,6 +679,33 @@ export function PoderesTab({
       </Modal>
 
       <BibliotecaAdicionarPoderModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} onAcquirePower={async id => { await onAcquirePower(id); setIsAddModalOpen(false); }} onAcquirePowerArray={async id => { await onAcquirePowerArray(id); setIsAddModalOpen(false); }} isProcessing={isProcessing} />
+
+      {usingPower && (
+        <PowerUsageModal
+          isOpen={!!usingPower}
+          onClose={() => setUsingPower(null)}
+          power={usingPower as any}
+          character={character}
+          currentPE={character.energy.currentPE}
+          isUsing={isUsing}
+          onConfirm={async () => {
+            const detail = usingPower as any;
+            const peCost = calcularDetalhesPoder(
+              poderResponseToPoder(detail) as PoderCalculo,
+              catalogEfeitos,
+              catalogModificacoes,
+            ).peTotal;
+            await usePower({
+              powerId: detail.id,
+              nome: detail.nome,
+              icone: detail.icone,
+              duracao: detail.parametros.duracao,
+              peCost,
+            });
+            setUsingPower(null);
+          }}
+        />
+      )}
 
       {viewingPower && (
         <ResumoPoder

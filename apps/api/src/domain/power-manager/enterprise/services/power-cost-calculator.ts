@@ -53,8 +53,8 @@ export class PowerCostCalculator {
   > {
     const custoPorEfeito = new Map<string, PowerCost>();
     let totalPdA = 0;
-    const espacosPorEfeito: number[] = [];
-    const pePorEfeito: number[] = [];
+    let totalPE = 0;
+    let totalEspacos = 0;
 
     const defaultParamsPerEffect = [] as Array<{
       acao: number;
@@ -66,7 +66,7 @@ export class PowerCostCalculator {
       const effectBase = await this.effectsRepository.findById(appliedEffect.effectBaseId);
 
       if (!effectBase) {
-        return left(new ResourceNotFoundError(`Efeito base não encontrado: ${appliedEffect.effectBaseId}`));
+        return left(new ResourceNotFoundError());
       }
 
       defaultParamsPerEffect.push(effectBase.parametrosPadrao.toValue());
@@ -81,50 +81,28 @@ export class PowerCostCalculator {
       const effectBase = await this.effectsRepository.findById(appliedEffect.effectBaseId);
 
       if (!effectBase) {
-        return left(new ResourceNotFoundError(`Efeito base não encontrado: ${appliedEffect.effectBaseId}`));
+        return left(new ResourceNotFoundError());
       }
 
       const gradeData = this.getUniversalGradeData(appliedEffect.grau);
-      let custoPorGrauEfeito = effectBase.custoBase + paramsModifierByGrade;
-      let custoFixoEfeito = 0;
+      let pdaEfeito = (effectBase.custoBase + paramsModifierByGrade) * appliedEffect.grau;
       const peEfeito = gradeData.pe;
-      const espacosEfeito = Math.max(0, gradeData.espacos);
+      let espacosEfeito = gradeData.espacos;
 
       if (appliedEffect.configuracaoId && effectBase.hasConfiguracoes()) {
         const config = effectBase.getConfiguracao(appliedEffect.configuracaoId);
         if (config?.modificadorCusto) {
-          custoPorGrauEfeito += config.modificadorCusto;
+          pdaEfeito += config.modificadorCusto * appliedEffect.grau;
         }
       }
 
-      // Modificações GLOBAIS: custoPorGrau somado ao custoPorGrau do efeito
-      //                        custoFixo somado ao custoFixo do efeito
-      for (const globalMod of globalModifications) {
-        const modBase = await this.modificationsRepository.findById(globalMod.modificationBaseId);
-        if (!modBase) {
-          return left(new ResourceNotFoundError(`Modificação base não encontrada: ${globalMod.modificationBaseId}`));
-        }
-
-        const grauMod = globalMod.grau ?? 1;
-        const selectedConfigurationId =
-          typeof globalMod.parametros?.configuracaoSelecionada === 'string'
-            ? globalMod.parametros.configuracaoSelecionada
-            : undefined;
-        const { custoFixo: cfGlobal, custoPorGrau: cpgGlobal } =
-          modBase.calcularCustoComConfiguracao(selectedConfigurationId);
-
-        custoPorGrauEfeito += cpgGlobal * grauMod;
-        custoFixoEfeito += cfGlobal;
-      }
-
-      // Modificações LOCAIS
       for (const modification of appliedEffect.modifications) {
         const modBase = await this.modificationsRepository.findById(
           modification.modificationBaseId,
         );
 
         if (!modBase) {
-          return left(new ResourceNotFoundError(`Modificação base não encontrada: ${modification.modificationBaseId}`));
+          return left(new ResourceNotFoundError());
         }
 
         const grauMod = modification.grau ?? 1;
@@ -132,19 +110,15 @@ export class PowerCostCalculator {
           typeof modification.parametros?.configuracaoSelecionada === 'string'
             ? modification.parametros.configuracaoSelecionada
             : undefined;
-        const { custoFixo: cfLocal, custoPorGrau: cpgLocal } =
-          modBase.calcularCustoComConfiguracao(selectedConfigurationId);
-
-        custoPorGrauEfeito += cpgLocal * grauMod;
-        custoFixoEfeito += cfLocal;
+        const { custoFixo, custoPorGrau } = modBase.calcularCustoComConfiguracao(
+          selectedConfigurationId,
+        );
+        const custoMod = custoFixo + custoPorGrau * grauMod;
+        pdaEfeito += custoMod * appliedEffect.grau;
       }
 
-      // custoPorGrau final não pode ser menor que 1 (mesma regra do frontend: Math.max(1, ...))
-      custoPorGrauEfeito = Math.max(1, custoPorGrauEfeito);
-
-      const grauParaCalculo = appliedEffect.grau < 1 ? 1 : appliedEffect.grau;
-      let pdaEfeito = custoPorGrauEfeito * grauParaCalculo + custoFixoEfeito;
-      pdaEfeito = Math.max(1, pdaEfeito);
+      pdaEfeito = Math.max(0, pdaEfeito);
+      espacosEfeito = Math.max(0, espacosEfeito);
 
       const custoEfeito = PowerCost.create({
         pda: pdaEfeito,
@@ -155,77 +129,25 @@ export class PowerCostCalculator {
       custoPorEfeito.set(appliedEffect.id.toString(), custoEfeito);
 
       totalPdA += pdaEfeito;
-      espacosPorEfeito.push(espacosEfeito);
-      pePorEfeito.push(peEfeito);
+      totalPE += peEfeito;
+      totalEspacos += espacosEfeito;
     }
 
-    // Espaços e PE: mesmo que o frontend — maior efeito + 1 por efeito adicional
-    // Frontend: calcularEspacosTotal → max(espacos) + (numEfeitos - 1)
-    // Frontend: calcularPETotal → max(pe) + (numEfeitos - 1)
-    const maiorEspacos = espacosPorEfeito.length > 0 ? Math.max(...espacosPorEfeito) : 0;
-    const maiorPE = pePorEfeito.length > 0 ? Math.max(...pePorEfeito) : 0;
-    const qtdEfeitosAdicionais = Math.max(0, effects.length - 1);
+    for (const globalMod of globalModifications) {
+      const modBase = await this.modificationsRepository.findById(globalMod.modificationBaseId);
 
-    let totalEspacos = maiorEspacos + qtdEfeitosAdicionais;
-    let totalPE = maiorPE + qtdEfeitosAdicionais;
+      if (!modBase) {
+        return left(new ResourceNotFoundError());
+      }
 
-    // ── Modificações globais especiais de PE e Espaços ──────────────────────
-    // Espelha calcularPETotal() e calcularEspacosTotal() do frontend
-    const getOpcao = (mod: (typeof globalModifications)[number]) =>
-      typeof mod.parametros?.opcao === 'string' ? mod.parametros.opcao : undefined;
+      const grauMod = globalMod.grau ?? 1;
+      const custoMod = modBase.custoFixo + modBase.custoPorGrau * grauMod;
 
-    const modPEDobrado = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-dobrado' && getOpcao(m) === 'PE Dobrado',
-    );
-    const modPETotal = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-total' && getOpcao(m) === 'Todos PE',
-    );
-    const modPEReduzido = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-reduzido' && getOpcao(m) === 'PE pela Metade',
-    );
-    const modPEMinimo = globalModifications.find(
-      (m) =>
-        m.modificationBaseId === 'custo-pe-minimo' &&
-        getOpcao(m) === 'PE Mínimo (metade - 3/efeito)',
-    );
-    const modEspacosDobrado = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-dobrado' && getOpcao(m) === 'Espaços Dobrados',
-    );
-    const modEspacosTotal = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-total' && getOpcao(m) === 'Todos Espaços',
-    );
-    const modEspacosReduzido = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-reduzido' && getOpcao(m) === 'Espaços pela Metade',
-    );
-    const modEspacosMinimo = globalModifications.find(
-      (m) => m.modificationBaseId === 'custo-pe-minimo' && getOpcao(m) === 'Espaços Fixos (3)',
-    );
-
-    // Aplica modificadores de PE
-    if (modPEDobrado) {
-      totalPE *= 2;
-    } else if (modPETotal) {
-      totalPE = pePorEfeito.reduce((acc, pe) => acc + pe, 0);
-    } else if (modPEReduzido) {
-      totalPE = Math.max(1, Math.ceil(totalPE / 2));
-    } else if (modPEMinimo) {
-      totalPE = Math.max(1, Math.floor(totalPE / 2) - 3 * effects.length);
-    }
-
-    // Aplica modificadores de Espaços
-    if (modEspacosDobrado) {
-      totalEspacos *= 2;
-    } else if (modEspacosTotal) {
-      totalEspacos = espacosPorEfeito.reduce((acc, e) => acc + e, 0);
-    } else if (modEspacosReduzido) {
-      totalEspacos = Math.max(1, Math.ceil(totalEspacos / 2));
-    } else if (modEspacosMinimo) {
-      totalEspacos = 3;
+      totalPdA += custoMod * totalPdA;
     }
 
     totalPdA = Math.max(0, totalPdA);
     totalEspacos = Math.max(0, totalEspacos);
-    totalPE = Math.max(0, totalPE);
 
     const custoTotal = PowerCost.create({
       pda: totalPdA,

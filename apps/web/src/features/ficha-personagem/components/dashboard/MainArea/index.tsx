@@ -36,6 +36,7 @@ interface MainAreaProps {
   onAcquireBenefit: (benefitName: string, targetDegree: number) => Promise<void>;
   onRemoveBenefit: (benefitId: string) => void;
   onUpdateUnarmedMastery: (mastery: any) => Promise<void>;
+  onUpdateLocalCharacter: (char: CharacterResponse) => void;
 }
 
 export function MainArea({ 
@@ -65,6 +66,7 @@ export function MainArea({
   onAcquireBenefit,
   onRemoveBenefit,
   onUpdateUnarmedMastery,
+  onUpdateLocalCharacter,
 }: MainAreaProps) {
   const tabs = [
     { id: 'acoes', label: 'Ações', icon: <Sword className="w-4 h-4" /> },
@@ -119,6 +121,7 @@ export function MainArea({
             onUnequipPowerArray={onUnequipPowerArray}
             onRemovePower={onRemovePower}
             onRemovePowerArray={onRemovePowerArray}
+            onUpdateLocalCharacter={onUpdateLocalCharacter}
           />
         )}
         {activeTab === 'beneficios' && <BeneficiosTab character={character} onAcquireBenefit={onAcquireBenefit} onRemoveBenefit={onRemoveBenefit} />}

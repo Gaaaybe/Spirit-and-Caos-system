@@ -150,6 +150,14 @@ export const charactersService = {
     return data;
   },
 
+  async usePower(characterId: string, powerId: string, peCost: number): Promise<CharacterResponse & { peCost: number }> {
+    const { data } = await api.post<CharacterResponse & { peCost: number }>(
+      `/characters/${characterId}/powers/${powerId}/use`,
+      { peCost }
+    );
+    return data;
+  },
+
   async updateCharacterPower(id: string, powerId: string, payload: any): Promise<void> {
     await api.put(`/powers/${powerId}`, payload);
   },
