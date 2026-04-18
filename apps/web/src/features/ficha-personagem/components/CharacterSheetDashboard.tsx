@@ -4,6 +4,7 @@ import { CharacterHeader } from './dashboard/CharacterHeader';
 import { SidebarColumn } from './dashboard/SidebarColumn';
 import { StatsColumn } from './dashboard/StatsColumn';
 import { MainArea } from './dashboard/MainArea';
+import { MobileBottomNav } from './dashboard/Mobile/MobileBottomNav';
 import { ConfirmDialog } from '@/shared/ui';
 
 interface CharacterSheetDashboardProps {
@@ -46,9 +47,31 @@ export function CharacterSheetDashboard({ characterId }: CharacterSheetDashboard
     return localStorage.getItem(storageKey) || 'acoes';
   });
 
+  const [activeMobileSection, setActiveMobileSection] = useState('geral');
+
   useEffect(() => {
     localStorage.setItem(storageKey, activeTab);
+    
+    // Sincroniza a nav mobile com a aba atual
+    if (['acoes', 'poderes', 'beneficios'].includes(activeTab)) {
+      setActiveMobileSection('combate');
+    } else if (activeTab === 'inventario') {
+      setActiveMobileSection('inventario');
+    } else if (['narrativa', 'anotacoes'].includes(activeTab)) {
+      setActiveMobileSection('lore');
+    }
   }, [activeTab, storageKey]);
+
+  const handleMobileNavChange = (section: string) => {
+    setActiveMobileSection(section);
+    if (section === 'combate' && !['acoes', 'poderes', 'beneficios'].includes(activeTab)) {
+      setActiveTab('acoes');
+    } else if (section === 'inventario') {
+      setActiveTab('inventario');
+    } else if (section === 'lore' && !['narrativa', 'anotacoes'].includes(activeTab)) {
+      setActiveTab('narrativa');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -61,22 +84,22 @@ export function CharacterSheetDashboard({ characterId }: CharacterSheetDashboard
   if (!character) return null;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 animate-in fade-in duration-500 pb-20 lg:pb-0">
       <CharacterHeader character={character} onSync={sync} onLevelUp={levelUp} />
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Coluna 1: Sidebar Fixa (Estatísticas vitais) */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className={`lg:col-span-3 space-y-6 ${activeMobileSection === 'geral' ? 'block' : 'hidden'} lg:block`}>
           <SidebarColumn character={character} onSync={sync} />
         </div>
 
         {/* Coluna 2: Detalhes de Atributos e Perícias */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className={`lg:col-span-3 space-y-6 ${activeMobileSection === 'geral' ? 'block' : 'hidden'} lg:block`}>
           <StatsColumn character={character} onSync={sync} />
         </div>
 
         {/* Coluna 3: Área Principal de Conteúdo Dinâmico */}
-        <div className="lg:col-span-6 space-y-6">
+        <div className={`lg:col-span-6 space-y-6 ${activeMobileSection !== 'geral' ? 'block' : 'hidden'} lg:block`}>
           <MainArea 
             character={character} 
             activeTab={activeTab} 
@@ -107,6 +130,8 @@ export function CharacterSheetDashboard({ characterId }: CharacterSheetDashboard
           />
         </div>
       </div>
+
+      <MobileBottomNav activeSection={activeMobileSection} onChange={handleMobileNavChange} />
 
       <ConfirmDialog
         isOpen={!!pendingAction}

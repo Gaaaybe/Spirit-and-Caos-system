@@ -78,7 +78,7 @@ export function MainArea({
   return (
     <div className="flex flex-col gap-6 h-full">
       {/* Tab Navigation */}
-      <Card className="border-none shadow-md bg-white dark:bg-gray-900 p-1 rounded-xl overflow-hidden">
+      <Card className={`border-none shadow-md bg-white dark:bg-gray-900 p-1 rounded-xl overflow-hidden ${activeTab === 'inventario' ? 'hidden lg:block' : 'block'}`}>
         <div className="flex flex-wrap md:flex-nowrap gap-1">
           {tabs.map((tab) => (
             <button
@@ -88,6 +88,12 @@ export function MainArea({
                 activeTab === tab.id
                   ? 'bg-purple-600 text-white shadow-md shadow-purple-600/20'
                   : 'text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800'
+              } ${
+                ['acoes', 'poderes', 'beneficios'].includes(tab.id) && !['acoes', 'poderes', 'beneficios'].includes(activeTab) ? 'hidden lg:flex' : ''
+              } ${
+                ['narrativa', 'anotacoes'].includes(tab.id) && !['narrativa', 'anotacoes'].includes(activeTab) ? 'hidden lg:flex' : ''
+              } ${
+                tab.id === 'inventario' && activeTab !== 'inventario' ? 'hidden lg:flex' : ''
               }`}
             >
               <div className="shrink-0">{tab.icon}</div>

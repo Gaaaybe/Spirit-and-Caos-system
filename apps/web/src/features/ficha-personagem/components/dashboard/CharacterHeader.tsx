@@ -74,13 +74,13 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-800 p-4 md:p-6 transition-all duration-300">
-      <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="flex items-center gap-6 w-full md:w-auto">
+    <div className="bg-white dark:bg-gray-900 rounded-none lg:rounded-lg shadow-sm border-b lg:border border-gray-200 dark:border-gray-800 p-3 md:p-6 transition-all duration-300">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 lg:gap-6">
+        <div className="flex items-center gap-4 lg:gap-6 w-full md:w-auto">
           {/* Avatar com Edição */}
-          <div className="relative group">
+          <div className="relative group shrink-0">
             <div 
-              className="w-20 h-20 md:w-24 md:h-24 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/20 border-2 border-purple-500/20 flex items-center justify-center overflow-hidden shrink-0 shadow-inner transition-transform group-hover:scale-105 cursor-pointer relative"
+              className="w-16 h-16 md:w-24 md:h-24 rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/20 dark:to-indigo-900/20 border-2 border-purple-500/20 flex items-center justify-center overflow-hidden shrink-0 shadow-inner transition-transform group-hover:scale-105 cursor-pointer relative"
               onClick={openArtModal}
             >
               {character.art ? (
@@ -101,18 +101,18 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
               </div>
             </div>
             
-            <div className="absolute -bottom-2 -right-2 bg-purple-600 text-white text-xs font-bold px-1.5 py-1 rounded shadow-lg border-2 border-white dark:border-gray-900 flex items-center gap-1 group/level transition-colors" title="Editar Nível">
-              <span className="pl-1">NV</span>
+            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 md:-bottom-2 md:-right-2 bg-purple-600 text-white text-[10px] md:text-xs font-bold px-1.5 md:px-1.5 py-0.5 md:py-1 rounded shadow-lg border-2 border-white dark:border-gray-900 flex items-center gap-0.5 md:gap-1 group/level transition-colors whitespace-nowrap" title="Editar Nível">
+              <span className="pl-0.5 md:pl-1">NV</span>
               <input 
                 type="number"
                 value={localLevel}
                 onChange={(e) => setLocalLevel(e.target.value)}
                 onBlur={handleLevelBlur}
                 onKeyDown={(e) => e.key === 'Enter' && handleLevelBlur()}
-                className="w-8 bg-transparent border-none p-0 text-center font-bold focus:ring-0 focus:outline-none focus:bg-purple-700 rounded"
+                className="w-5 md:w-8 bg-transparent border-none p-0 text-center font-bold focus:ring-0 focus:outline-none focus:bg-purple-700/50 rounded"
               />
               <ArrowUpCircle 
-                className="w-3.5 h-3.5 opacity-60 hover:opacity-100 cursor-pointer" 
+                className="w-3.5 h-3.5 opacity-80 hover:opacity-100 cursor-pointer text-white" 
                 onClick={onLevelUp}
               />
             </div>
@@ -158,7 +158,7 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
                 </div>
               ) : (
                 <h1 
-                  className="text-xl md:text-3xl font-black text-gray-900 dark:text-white tracking-tight cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 px-2 rounded -ml-2 transition-colors flex items-center gap-2 group/text truncate"
+                  className="text-lg md:text-3xl font-black text-gray-900 dark:text-white tracking-tight cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 px-2 rounded -ml-2 transition-colors flex items-center gap-2 group/text truncate"
                   onClick={() => setIsEditingName(true)}
                 >
                   <span className="truncate">{character.narrative.identity}</span>
@@ -167,29 +167,28 @@ export function CharacterHeader({ character, onSync, onLevelUp }: CharacterHeade
               )}
             </div>
             
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-3">
-              <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <div className="flex flex-wrap items-center gap-y-2 gap-x-2 md:gap-x-3 mt-1">
+              <span className="text-xs md:text-sm font-medium text-gray-500 dark:text-gray-400 w-full sm:w-auto">
                 {character.narrative.origin}
               </span>
-              <div className="flex items-center gap-2">
-                <span className="text-gray-300 dark:text-gray-700 hidden xs:inline">•</span>
-                <Badge variant="default" className="bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400 whitespace-nowrap">
+              <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
+                <Badge variant="default" className="bg-purple-50/50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-400 whitespace-nowrap px-1.5 md:px-2.5">
                   Rank {character.calamityRank}
                 </Badge>
-                <Badge variant="default" className="bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 whitespace-nowrap">
+                <Badge variant="default" className="bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 text-amber-700 dark:text-amber-400 whitespace-nowrap px-1.5 md:px-2.5">
                   {character.spiritualPrinciple.stage === 'DIVINE' ? 'Desperto' : 'Mortal'}
                 </Badge>
                 
-                <div className="flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold whitespace-nowrap">
+                <div className="flex items-center gap-1.5 px-1.5 md:px-2 py-0.5 rounded bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-900/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold whitespace-nowrap">
                   <Shield className="w-3 h-3" />
-                  Eficiência +{character.efficiencyBonus}
+                  <span className="hidden sm:inline">Eficiência</span> +{character.efficiencyBonus}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-gray-100 dark:border-gray-800 flex-wrap">
+        <div className="hidden lg:flex items-center gap-2 w-full md:w-auto justify-end border-t md:border-t-0 pt-4 md:pt-0 border-gray-100 dark:border-gray-800 flex-wrap">
           <Button 
             variant="outline" 
             size="sm" 

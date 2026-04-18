@@ -246,8 +246,8 @@ export function PoderesTab({
         onClick={() => isNested && arrayId && selectActivePowerInArray(arrayId, detail.id)}
       >
         <CardContent className="p-4 flex flex-col gap-3">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto sm:flex-1">
               <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border overflow-hidden ${
                 isEquipped 
                   ? (isPassive ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800 text-blue-500' : 'bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800 text-purple-500')
@@ -262,18 +262,18 @@ export function PoderesTab({
                   </h4>
                   {isActive && <div className="bg-indigo-500 text-white rounded-full p-0.5 shadow-sm animate-in zoom-in duration-200"><Check className="w-3 h-3" /></div>}
                 </div>
-                <div className="flex items-center gap-2 mt-1 flex-wrap text-[10px] font-bold">
-                  <span className="flex items-center gap-1 text-gray-500"><Sparkles className="w-3 h-3" /> {(isNested ? (detail.custoTotal?.pda ?? detail.pdaCost) : power.finalPdaCost)} PdA</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="text-gray-500">{(isNested ? (detail.custoTotal?.espacos ?? detail.slotCost) : power.slotCost)} Espaços</span>
-                  <span className="text-gray-300">•</span>
-                  <span className="uppercase text-gray-500">{getDomainName({ domainId: detail.dominio.peculiarId || detail.dominio.name })}</span>
+                <div className="flex items-center gap-x-2 gap-y-1 mt-1 flex-wrap text-[10px] font-bold">
+                  <span className="flex items-center gap-1 text-gray-500 whitespace-nowrap"><Sparkles className="w-3 h-3" /> {(isNested ? (detail.custoTotal?.pda ?? detail.pdaCost) : power.finalPdaCost)} PdA</span>
+                  <span className="text-gray-300 hidden xs:inline">•</span>
+                  <span className="text-gray-500 whitespace-nowrap">{(isNested ? (detail.custoTotal?.espacos ?? detail.slotCost) : power.slotCost)} Espaços</span>
+                  <span className="text-gray-300 hidden xs:inline">•</span>
+                  <span className="uppercase text-gray-500 whitespace-nowrap">{getDomainName({ domainId: detail.dominio.peculiarId || detail.dominio.name })}</span>
                 </div>
               </div>
             </div>
             
             {!isNested && (
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0 w-full sm:w-auto justify-end border-t sm:border-0 pt-2 sm:pt-0 border-gray-100 dark:border-gray-800 mt-1 sm:mt-0">
                 <Button variant="ghost" size="sm" onClick={() => setViewingPower(poderResponseToPoder(detail))} className="h-9 w-9 p-0 text-gray-400 hover:text-indigo-500">
                   <Info className="w-5 h-5" />
                 </Button>
@@ -295,7 +295,7 @@ export function PoderesTab({
               </div>
             )}
             {isNested && (
-              <div className="flex items-center gap-1 shrink-0">
+              <div className="flex items-center gap-1 shrink-0 w-full sm:w-auto justify-end border-t sm:border-0 pt-2 sm:pt-0 border-gray-100 dark:border-gray-800 mt-1 sm:mt-0">
                 <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); setViewingPower(poderResponseToPoder(detail)); }} className="h-8 w-8 p-0 text-gray-400 hover:text-indigo-500">
                   <Info className="w-4 h-4" />
                 </Button>
@@ -306,13 +306,13 @@ export function PoderesTab({
             )}
           </div>
 
-          <div className="flex gap-2 text-[10px] bg-gray-50 dark:bg-gray-800/50 p-2 rounded-lg text-gray-600 dark:text-gray-400">
-            <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {getNomeEscala('acao', detail.parametros.acao)}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><Ruler className="w-3 h-3" /> {getNomeEscala('alcance', detail.parametros.alcance)}</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><Timer className="w-3 h-3" /> {getNomeEscala('duracao', detail.parametros.duracao)}</span>
-            {peCost > 0 && <><span>•</span><span className="flex items-center gap-1 text-blue-500 font-bold"><Zap className="w-3 h-3" /> {peCost} PE</span></>}
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5 text-[10px] bg-gray-50 dark:bg-gray-800/50 p-2.5 rounded-lg text-gray-600 dark:text-gray-400">
+            <span className="flex items-center gap-1 whitespace-nowrap shrink-0"><Clock className="w-3 h-3" /> {getNomeEscala('acao', detail.parametros.acao)}</span>
+            <span className="text-gray-300 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1 whitespace-nowrap shrink-0"><Ruler className="w-3 h-3" /> {getNomeEscala('alcance', detail.parametros.alcance)}</span>
+            <span className="text-gray-300 hidden sm:inline">•</span>
+            <span className="flex items-center gap-1 whitespace-nowrap shrink-0"><Timer className="w-3 h-3" /> {getNomeEscala('duracao', detail.parametros.duracao)}</span>
+            {peCost > 0 && <><span className="text-gray-300 hidden sm:inline">•</span><span className="flex items-center gap-1 text-blue-500 font-bold whitespace-nowrap shrink-0"><Zap className="w-3 h-3" /> {peCost} PE</span></>}
           </div>
           
           {detail.descricao && (
@@ -346,8 +346,8 @@ export function PoderesTab({
       } relative overflow-hidden`}>
         {isEquipped && <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500" />}
         <CardContent className="p-4 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 w-full sm:w-auto sm:flex-1 min-w-0">
               <div className={`w-12 h-12 shrink-0 rounded-xl flex items-center justify-center border overflow-hidden ${
                 isEquipped ? 'bg-indigo-100 border-indigo-200 text-indigo-600' : 'bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-400'
               }`}>
@@ -363,7 +363,7 @@ export function PoderesTab({
               </div>
             </div>
             
-            <div className="flex items-center gap-1 shrink-0">
+            <div className="flex items-center gap-1 shrink-0 w-full sm:w-auto justify-end border-t sm:border-0 pt-2 sm:pt-0 border-gray-100 dark:border-gray-800 mt-1 sm:mt-0">
               <Button variant="ghost" size="sm" onClick={() => detail && setViewingArray(detail)} className="h-9 w-9 p-0 text-gray-400 hover:text-indigo-500">
                 <Info className="w-5 h-5" />
               </Button>
