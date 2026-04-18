@@ -436,13 +436,13 @@ export function PoderesTab({
               <div>
                 <p className="text-[10px] font-bold text-purple-700 dark:text-purple-400 uppercase">Mental CD</p>
                 <p className="text-lg font-black text-purple-900 dark:text-purple-100">
-                  {10 + character.attributes[character.attributes.keyMental].rollModifier + character.efficiencyBonus}
+                  {10 + character.attributes[character.attributes.keyMental].rollModifier}
                 </p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] font-bold text-red-700 dark:text-red-400 uppercase">Física CD</p>
                 <p className="text-lg font-black text-red-900 dark:text-red-100">
-                  {10 + character.attributes[character.attributes.keyPhysical].rollModifier + character.efficiencyBonus}
+                  {10 + character.attributes[character.attributes.keyPhysical].rollModifier}
                 </p>
               </div>
             </div>
