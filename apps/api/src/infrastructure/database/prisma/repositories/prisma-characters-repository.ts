@@ -63,6 +63,15 @@ export class PrismaCharactersRepository extends CharactersRepository {
     return raws.map(PrismaCharacterMapper.toDomain);
   }
 
+  async findMany(): Promise<Character[]> {
+    const raws = await this.prisma.character.findMany({
+      include: INCLUDE,
+      orderBy: { updatedAt: 'desc' },
+    });
+
+    return raws.map(PrismaCharacterMapper.toDomain);
+  }
+
   async delete(character: Character): Promise<void> {
     await this.prisma.character.delete({ where: { id: character.id.toString() } });
   }

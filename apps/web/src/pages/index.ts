@@ -8,3 +8,4 @@ export { PersonagensPage } from './PersonagensPage';
 export { CharacterSheetDetailPage } from './CharacterSheetDetailPage';
 export { CampanhasPage } from './CampanhasPage';
 export { ComunidadePage } from './ComunidadePage';
+export { MasterDashboardPage } from './MasterDashboardPage';

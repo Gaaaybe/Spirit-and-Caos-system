@@ -5,5 +5,6 @@ export abstract class CharactersRepository {
   abstract save(character: Character): Promise<void>;
   abstract findById(id: string): Promise<Character | null>;
   abstract findByUserId(userId: string): Promise<Character[]>;
+  abstract findMany(): Promise<Character[]>;
   abstract delete(character: Character): Promise<void>;
 }

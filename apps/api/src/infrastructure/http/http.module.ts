@@ -30,6 +30,7 @@ import { FetchCharacterItemsController } from './controllers/characters/fetch-ch
 import { FetchCharacterPowerArraysController } from './controllers/characters/fetch-character-power-arrays.controller';
 import { FetchCharacterPowersController } from './controllers/characters/fetch-character-powers.controller';
 import { FetchUserCharactersUseCase } from '@/domain/character-manager/application/use-cases/fetch-user-characters';
+import { FetchAllCharactersUseCase } from '@/domain/character-manager/application/use-cases/fetch-all-characters';
 import { GetCharacterByIdUseCase } from '@/domain/character-manager/application/use-cases/get-character-by-id';
 import { HealCharacterUseCase } from '@/domain/character-manager/application/use-cases/heal-character';
 import { LevelUpCharacterUseCase } from '@/domain/character-manager/application/use-cases/level-up-character';
@@ -107,6 +108,7 @@ import { EquipPowerController } from './controllers/characters/equip-power.contr
 import { EquipPowerArrayController } from './controllers/characters/equip-power-array.controller';
 import { EvolveSpiritualPrincipleController } from './controllers/characters/evolve-spiritual-principle.controller';
 import { FetchUserCharactersController } from './controllers/characters/fetch-user-characters.controller';
+import { FetchAllCharactersController } from './controllers/characters/fetch-all-characters.controller';
 import { GetCharacterByIdController } from './controllers/characters/get-character-by-id.controller';
 import { LevelUpCharacterController } from './controllers/characters/level-up-character.controller';
 import { RemoveFromInventoryController } from './controllers/characters/remove-from-inventory.controller';
@@ -161,6 +163,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     AuthenticateController,
     CreateCharacterController,
     FetchUserCharactersController,
+    FetchAllCharactersController,
     FetchCharacterItemsController,
     FetchCharacterPowersController,
     FetchCharacterPowerArraysController,
@@ -267,6 +270,7 @@ import { UpdateItemController } from './controllers/items/update-item.controller
     CreateCharacterUseCase,
     GetCharacterByIdUseCase,
     FetchUserCharactersUseCase,
+    FetchAllCharactersUseCase,
     DeleteCharacterUseCase,
     DeletePowerFromCharacterUseCase,
     DeletePowerArrayFromCharacterUseCase,

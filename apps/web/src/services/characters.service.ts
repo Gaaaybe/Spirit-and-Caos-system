@@ -10,6 +10,11 @@ export const charactersService = {
     return data;
   },
 
+  async fetchAdminCharacters(): Promise<CharacterResponse[]> {
+    const { data } = await api.get<CharacterResponse[]>('/admin/characters');
+    return data;
+  },
+
   async getCharacterById(id: string): Promise<CharacterResponse> {
     const { data } = await api.get<CharacterResponse>(`/characters/${id}`);
     return data;

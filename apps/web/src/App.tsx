@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink, Link, useLocation } from 'react-
 import { UserCircle, GitBranch, BookOpen, Moon, Sun, Users, LogIn, LogOut, Globe, ChevronDown, Layers, Zap } from 'lucide-react';
 import { useDarkMode, useScrollToTop, useMetaTags } from './shared/hooks';
 import { Button, ToastContainer } from './shared/ui';
-import { CriadorPage, BibliotecaPage, SobrePage, GerenciadorPage, LandingPage, LoginPage, PersonagensPage, CharacterSheetDetailPage, CampanhasPage, ComunidadePage } from './pages';
+import { CriadorPage, BibliotecaPage, SobrePage, GerenciadorPage, LandingPage, LoginPage, PersonagensPage, CharacterSheetDetailPage, CampanhasPage, ComunidadePage, MasterDashboardPage } from './pages';
 import { Breadcrumbs, PrivateRoute } from './shared/components';
 import { useAuth } from './context/useAuth';
 import { MigracaoLocalStorage } from './features/criador-de-poder/components/MigracaoLocalStorage';
@@ -211,6 +211,14 @@ function AppContent() {
           <Route path="/gerenciador" element={<GerenciadorPage />} />
           <Route path="/comunidade" element={<ComunidadePage />} />
           <Route path="/sobre" element={<SobrePage />} />
+          <Route
+            path="/mestre"
+            element={
+              <PrivateRoute>
+                <MasterDashboardPage />
+              </PrivateRoute>
+            }
+          />
         </Routes>
       </main>
 
